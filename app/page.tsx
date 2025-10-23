@@ -14,6 +14,7 @@ import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { vehiclesApi, condosApi, customersApi } from "@/lib/api"
 import { useRole } from "@/hooks/use-role"
+import { cn } from "@/lib/utils"
 
 export default function HomePage() {
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
@@ -83,6 +84,10 @@ export default function HomePage() {
     }
   }, [showContent, fetchStats])
 
+  useEffect(() => {
+    console.log("[v0] Logo animation state - isPressed:", isPressed)
+  }, [isPressed])
+
   if (!showContent) {
     return null
   }
@@ -114,7 +119,7 @@ export default function HomePage() {
 
           <div className="rounded-2xl bg-background p-2 sm:p-4 border border-border flex items-center justify-center">
             <div
-              className={!isPressed ? "animate-spin-slow" : ""}
+              className={cn("transition-transform", !isPressed ? "animate-spin-slow" : "")}
               onMouseDown={handlePress}
               onMouseUp={handleRelease}
               onMouseLeave={handleRelease}
