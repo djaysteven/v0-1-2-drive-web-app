@@ -114,17 +114,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Adding custom spin-slow animation for Tailwind v4 */
-  --animate-spin-slow: spin-slow 3s linear infinite;
-
-  @keyframes spin-slow {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
+  /* Removed custom spin-slow animation - using Tailwind's built-in animate-spin instead */
 }
 
 @layer base {
@@ -134,4 +124,18 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Added fallback CSS for spinSlow animation to ensure it works in production */
+@keyframes spinSlow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spinSlow {
+  animation: spinSlow 12s linear infinite !important;
 }

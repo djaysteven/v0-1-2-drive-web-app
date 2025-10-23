@@ -14,7 +14,6 @@ import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { vehiclesApi, condosApi, customersApi } from "@/lib/api"
 import { useRole } from "@/hooks/use-role"
-import { cn } from "@/lib/utils"
 
 export default function HomePage() {
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
@@ -51,6 +50,15 @@ export default function HomePage() {
       }
     }
   }, [showContent])
+
+  useEffect(() => {
+    if (isPressed) {
+      const timer = setTimeout(() => {
+        setIsPressed(false)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [isPressed])
 
   const fetchStats = useCallback(async () => {
     try {
@@ -119,7 +127,6 @@ export default function HomePage() {
 
           <div className="rounded-2xl bg-background p-2 sm:p-4 border border-border flex items-center justify-center">
             <div
-              className={cn("transition-transform", !isPressed ? "animate-spin-slow" : "")}
               onMouseDown={handlePress}
               onMouseUp={handleRelease}
               onMouseLeave={handleRelease}
@@ -131,9 +138,9 @@ export default function HomePage() {
               <Image
                 src="/logo.png"
                 alt="1-2 DRIVE Logo"
-                width={600}
-                height={600}
-                className="w-full max-w-[450px] lg:max-w-[600px] h-auto"
+                width={900}
+                height={900}
+                className={`w-full max-w-[675px] lg:max-w-[900px] h-auto ${!isPressed ? "animate-spinSlow" : ""}`}
                 style={{
                   mixBlendMode: "screen",
                   filter: "drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3))",
