@@ -6,7 +6,6 @@ import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookingWizard } from "@/components/booking-wizard"
-import { RemindersCard } from "@/components/reminders-card"
 import { NotificationSettings } from "@/components/notification-settings"
 import { DatabaseSetupBanner } from "@/components/database-setup-banner"
 import { Car, Building2, Users, Calendar, Plus, Bike } from "lucide-react"
@@ -127,9 +126,9 @@ export default function HomePage() {
               <Image
                 src="/logo.png"
                 alt="1-2 DRIVE Logo"
-                width={400}
-                height={400}
-                className="w-full max-w-[300px] lg:max-w-[400px] h-auto"
+                width={600}
+                height={600}
+                className="w-full max-w-[450px] lg:max-w-[600px] h-auto"
                 style={{
                   mixBlendMode: "screen",
                   filter: "drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3))",
@@ -140,8 +139,6 @@ export default function HomePage() {
               />
             </div>
           </div>
-
-          {isOwner && <RemindersCard />}
 
           {!isOwner && (
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
