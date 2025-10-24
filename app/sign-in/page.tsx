@@ -62,8 +62,7 @@ export default function SignInPage() {
         description: "Signed in successfully",
       })
 
-      // Redirect to calendar after successful sign-in
-      router.push("/calendar")
+      router.push("/")
     } catch (error) {
       toast({
         title: "Error",

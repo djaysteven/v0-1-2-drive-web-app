@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface ReserveVehicleModalProps {
   vehicle: Vehicle | null
@@ -36,6 +37,7 @@ export function ReserveVehicleModal({
   onOpenChange,
   booking,
 }: ReserveVehicleModalProps) {
+  const [isOwner, setIsOwner] = useState(false)
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([])
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(initialVehicle)
   const [customerName, setCustomerName] = useState("")
@@ -70,6 +72,15 @@ export function ReserveVehicleModal({
   const [openEndPicker, setOpenEndPicker] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+
+  useEffect(() => {
+    const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
+    if (ownerEmail && email.toLowerCase() === ownerEmail.toLowerCase()) {
+      setIsOwner(true)
+    } else {
+      setIsOwner(false)
+    }
+  }, [email])
 
   useEffect(() => {
     if (open && booking) {
@@ -278,6 +289,7 @@ export function ReserveVehicleModal({
     console.log("[v0] Form validation state:", {
       customerName,
       email,
+      isOwner,
       startDate: startDate?.toISOString(),
       endDate: endDate?.toISOString(),
       deliveryTime,
@@ -286,7 +298,7 @@ export function ReserveVehicleModal({
       deliveryAddress,
     })
 
-    if (!selectedVehicle || !startDate || !endDate || !customerName || !email) {
+    if (!selectedVehicle || !startDate || !endDate || !customerName || (!isOwner && !email)) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields",
@@ -322,7 +334,7 @@ export function ReserveVehicleModal({
       const days = diffCalendarDaysInclusive(startDate, endDate)
       let totalPrice = 0
 
-      if (useManualPrice) {
+      if (useManualPrice && isOwner) {
         totalPrice = Number.parseFloat(manualPrice) || 0
       } else {
         totalPrice = calculateTotal()
@@ -337,7 +349,7 @@ export function ReserveVehicleModal({
         assetName: selectedVehicle.name,
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
-        price: useManualPrice ? Number.parseFloat(manualPrice) : selectedVehicle.dailyPrice,
+        price: useManualPrice && isOwner ? Number.parseFloat(manualPrice) : selectedVehicle.dailyPrice,
         priceMode: "day",
         totalPrice,
         depositPaid: 0,
@@ -539,21 +551,17 @@ export function ReserveVehicleModal({
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Enter customer name"
-                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">
-                Email <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="email">Email {!isOwner && <span className="text-destructive">*</span>}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter email address"
-                required
               />
             </div>
 
@@ -650,6 +658,38 @@ export function ReserveVehicleModal({
                 </div>
               )}
             </div>
+
+            {isOwner && startDate && endDate && (
+              <div className="space-y-3 p-3 rounded-lg bg-secondary/50 border border-primary/30">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="useManualPrice" className="text-sm font-semibold">
+                    Custom Price (Owner Only)
+                  </Label>
+                  <Checkbox
+                    id="useManualPrice"
+                    checked={useManualPrice}
+                    onCheckedChange={(checked) => {
+                      setUseManualPrice(checked === true)
+                      if (!checked) setManualPrice("")
+                    }}
+                  />
+                </div>
+                {useManualPrice && (
+                  <div className="space-y-2">
+                    <Label htmlFor="manualPrice">Total Price (฿)</Label>
+                    <Input
+                      id="manualPrice"
+                      type="number"
+                      value={manualPrice}
+                      onChange={(e) => setManualPrice(e.target.value)}
+                      placeholder="Enter custom price"
+                      min="0"
+                      step="1"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="space-y-4">
               <div className="space-y-2">
@@ -853,7 +893,7 @@ export function ReserveVehicleModal({
                   checking ||
                   availability === "unavailable" ||
                   !customerName ||
-                  !email ||
+                  (!isOwner && !email) ||
                   !startDate ||
                   !endDate ||
                   !deliveryTime ||
