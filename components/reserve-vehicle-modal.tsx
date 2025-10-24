@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { createBrowserClient } from "@supabase/ssr"
 
 interface ReserveVehicleModalProps {
   vehicle: Vehicle | null
@@ -74,19 +75,36 @@ export function ReserveVehicleModal({
   const { toast } = useToast()
   const router = useRouter()
 
+  const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
+  const supabaseUrl = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
   useEffect(() => {
     const checkOwnerStatus = async () => {
       try {
-        const response = await fetch("/api/auth/session")
-        const session = await response.json()
-        const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
+        console.log("[v0] Checking owner status...")
+        console.log("[v0] Owner email from env:", ownerEmail)
+
+        // Create Supabase client
+        const supabase = createBrowserClient(supabaseUrl!, supabaseAnonKey!)
+
+        // Get current session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        console.log("[v0] Session user email:", session?.user?.email)
 
         if (session?.user?.email && ownerEmail && session.user.email.toLowerCase() === ownerEmail.toLowerCase()) {
+          console.log("[v0] User is OWNER - setting isOwner to true")
           setIsOwner(true)
           setEmail(session.user.email)
+        } else {
+          console.log("[v0] User is NOT owner")
+          setIsOwner(false)
         }
       } catch (error) {
-        console.log("[v0] Could not check owner status from session")
+        console.log("[v0] Error checking owner status:", error)
+        setIsOwner(false)
       }
     }
 
@@ -96,7 +114,6 @@ export function ReserveVehicleModal({
   }, [open])
 
   useEffect(() => {
-    const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
     if (ownerEmail && email.toLowerCase() === ownerEmail.toLowerCase()) {
       setIsOwner(true)
     } else if (email && email.toLowerCase() !== ownerEmail?.toLowerCase()) {
