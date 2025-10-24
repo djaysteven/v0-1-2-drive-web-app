@@ -139,33 +139,13 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
         : condos.find((c) => c.id === selectedAssetId)
 
   const handleSubmit = async () => {
-    if (!customerName || !phone || !email || !selectedAssetId || !startDate || !endDate) {
+    if (!customerName || !phone || (!isOwner && !email) || !selectedAssetId || !startDate || !endDate) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields",
         variant: "destructive",
       })
       return
-    }
-
-    if (assetType === "vehicle" && deliveryMethod === "delivery") {
-      if (!deliveryHotel || !deliveryAddress || !deliveryTime) {
-        toast({
-          title: "Missing delivery information",
-          description: "Please provide hotel name, address, and delivery time",
-          variant: "destructive",
-        })
-        return
-      }
-    } else if (assetType === "vehicle" && deliveryMethod === "pickup") {
-      if (!deliveryTime) {
-        toast({
-          title: "Missing pickup time",
-          description: "Please select a pickup time",
-          variant: "destructive",
-        })
-        return
-      }
     }
 
     setSaving(true)
@@ -488,16 +468,14 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">
-                Email <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="email">Email {!isOwner && <span className="text-destructive">*</span>}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter email address"
-                required
+                required={!isOwner}
               />
             </div>
 
@@ -826,7 +804,7 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
                   (availability === "unavailable" && selectedAssetId !== "tbd") ||
                   !customerName ||
                   !phone ||
-                  !email ||
+                  (!isOwner && !email) ||
                   !selectedAssetId ||
                   !startDate ||
                   !endDate ||
