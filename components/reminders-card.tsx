@@ -3,12 +3,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, FileText, Bell, CheckCircle } from "lucide-react"
+import { Calendar, FileText, Bell, CheckCircle, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getReminders, updateVehicle } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 import { checkAndNotifyReminders } from "@/lib/notifications"
+import { bookingsApi } from "@/lib/api"
 
 interface Reminder {
   id: string
@@ -28,6 +29,7 @@ export function RemindersCard() {
   const [loading, setLoading] = useState(true)
   const [dbError, setDbError] = useState(false)
   const [renewingTax, setRenewingTax] = useState<string | null>(null)
+  const [deletingBooking, setDeletingBooking] = useState<string | null>(null)
   const { toast } = useToast()
 
   async function loadReminders() {
@@ -98,7 +100,6 @@ export function RemindersCard() {
         })
       })
 
-      // Sort by date (earliest first)
       newReminders.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
       setReminders(newReminders)
@@ -117,7 +118,6 @@ export function RemindersCard() {
   }, [])
 
   async function handleRenewTax(reminderId: string) {
-    // Extract vehicle ID from reminder ID (format: "tax-{vehicleId}")
     const vehicleId = reminderId.replace("tax-", "")
 
     setRenewingTax(vehicleId)
@@ -134,7 +134,6 @@ export function RemindersCard() {
         description: "Tax reminder dismissed for 1 year",
       })
 
-      // Reload reminders to update the list
       await loadReminders()
     } catch (error) {
       console.error("[v0] Failed to dismiss tax reminder:", error)
@@ -145,6 +144,32 @@ export function RemindersCard() {
       })
     } finally {
       setRenewingTax(null)
+    }
+  }
+
+  async function handleDelivered(reminderId: string) {
+    const bookingId = reminderId.replace("booking-start-", "").replace("return-", "")
+
+    setDeletingBooking(bookingId)
+
+    try {
+      await bookingsApi.delete(bookingId)
+
+      toast({
+        title: "Booking Delivered",
+        description: "Booking has been marked as delivered and removed from the list",
+      })
+
+      await loadReminders()
+    } catch (error) {
+      console.error("[v0] Failed to delete booking:", error)
+      toast({
+        title: "Error",
+        description: "Failed to mark booking as delivered. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeletingBooking(null)
     }
   }
 
@@ -227,7 +252,6 @@ export function RemindersCard() {
       return "bg-amber-400/10 border-amber-400/30"
     }
 
-    // Bike/car reminders (have plate) are blue
     if (reminder.plate) {
       return reminder.severity === "urgent" ? "bg-blue-500/10 border-blue-500/30" : "bg-blue-500/10 border-blue-500/30"
     }
@@ -235,6 +259,14 @@ export function RemindersCard() {
     return reminder.severity === "urgent"
       ? "bg-purple-500/10 border-purple-500/30"
       : "bg-purple-500/10 border-purple-500/30"
+  }
+
+  const isUrgentBooking = (reminder: Reminder) => {
+    if (reminder.type !== "booking_start" && reminder.type !== "return") {
+      return false
+    }
+    const daysUntil = Math.ceil((new Date(reminder.date).getTime() - new Date().getTime()) / (24 * 60 * 60 * 1000))
+    return daysUntil <= 3 && daysUntil >= 0
   }
 
   return (
@@ -256,7 +288,9 @@ export function RemindersCard() {
         {reminders.map((reminder) => (
           <div
             key={reminder.id}
-            className={`flex items-start gap-3 p-3 rounded-xl border ${getReminderColor(reminder)}`}
+            className={`flex items-start gap-3 p-3 rounded-xl border ${getReminderColor(reminder)} ${
+              isUrgentBooking(reminder) ? "animate-pulse-glow" : ""
+            }`}
           >
             {reminder.photo && (
               <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-border">
@@ -300,18 +334,34 @@ export function RemindersCard() {
                   year: "numeric",
                 })}
               </p>
-              {reminder.type === "tax" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-2 h-7 text-xs bg-transparent"
-                  onClick={() => handleRenewTax(reminder.id)}
-                  disabled={renewingTax === reminder.id.replace("tax-", "")}
-                >
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  {renewingTax === reminder.id.replace("tax-", "") ? "Processing..." : "Tax Renewed"}
-                </Button>
-              )}
+              <div className="flex gap-2 mt-2">
+                {reminder.type === "tax" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs bg-transparent"
+                    onClick={() => handleRenewTax(reminder.id)}
+                    disabled={renewingTax === reminder.id.replace("tax-", "")}
+                  >
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    {renewingTax === reminder.id.replace("tax-", "") ? "Processing..." : "Tax Renewed"}
+                  </Button>
+                )}
+                {(reminder.type === "booking_start" || reminder.type === "return") && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs bg-transparent"
+                    onClick={() => handleDelivered(reminder.id)}
+                    disabled={deletingBooking === reminder.id.replace("booking-start-", "").replace("return-", "")}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    {deletingBooking === reminder.id.replace("booking-start-", "").replace("return-", "")
+                      ? "Processing..."
+                      : "Delivered"}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}

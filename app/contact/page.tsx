@@ -59,6 +59,39 @@ export default function ContactPage() {
             <p className="text-muted-foreground">We're here to help with your rental needs</p>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-border">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="rounded-full bg-primary/10 p-3">
+                  <Phone className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Phone</h3>
+                  <a
+                    href="tel:+66884866866"
+                    onClick={handlePhoneClick}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    +66 884 866 866
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="rounded-full bg-primary/10 p-3">
+                  <Mail className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Email</h3>
+                  <a
+                    href="mailto:info@1-2drive.com"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    info@1-2drive.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-center gap-4 pb-4 border-b border-border">
               <a
                 href="tel:+66884866866"
@@ -112,38 +145,6 @@ export default function ContactPage() {
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </a>
-            </div>
-
-            <div className="flex flex-col items-center gap-2 text-center">
-              <div className="rounded-full bg-primary/10 p-3">
-                <Phone className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                <a
-                  href="tel:+66884866866"
-                  onClick={handlePhoneClick}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  +66 884 866 866
-                </a>
-                <p className="text-sm text-muted-foreground mt-1">Office: 038 195 250</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-2 text-center">
-              <div className="rounded-full bg-primary/10 p-3">
-                <Mail className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                <a
-                  href="mailto:info@1-2drive.com"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  info@1-2drive.com
-                </a>
-              </div>
             </div>
 
             <div className="pt-4 border-t border-border">

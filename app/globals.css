@@ -138,3 +138,18 @@
 .animate-wheel-spin {
   animation: wheel-spin 2.5s linear infinite;
 }
+
+/* Adding pulsing glow animation for urgent bookings */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(0, 255, 60, 0.3), 0 0 20px rgba(0, 255, 60, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 255, 60, 0.6), 0 0 40px rgba(0, 255, 60, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
