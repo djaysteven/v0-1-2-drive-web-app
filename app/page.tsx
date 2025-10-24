@@ -115,7 +115,7 @@ export default function HomePage() {
 
           <div className="rounded-2xl bg-background p-2 sm:p-4 border border-border flex items-center justify-center">
             <div
-              className={!isPressed ? "animate-spin-slow" : ""}
+              className={!isPressed ? "animate-wheel-spin" : ""}
               onMouseDown={handlePress}
               onMouseUp={handleRelease}
               onMouseLeave={handleRelease}

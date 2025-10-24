@@ -124,3 +124,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Adding wheel spin animation for logo */
+@keyframes wheel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-wheel-spin {
+  animation: wheel-spin 2.5s linear infinite;
+}

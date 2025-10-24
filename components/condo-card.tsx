@@ -28,9 +28,9 @@ interface CondoCardProps {
 
 export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: CondoCardProps) {
   const statusColors = {
-    available: "bg-primary/80 text-white border-primary/90",
-    rented: "bg-blue-500/80 text-white border-blue-500/90",
-    maintenance: "bg-destructive/80 text-white border-destructive/90",
+    available: "bg-primary/30 text-primary border-primary/50",
+    rented: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    maintenance: "bg-destructive/20 text-destructive border-destructive/30",
   }
 
   return (

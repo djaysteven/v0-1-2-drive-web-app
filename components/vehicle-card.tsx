@@ -42,7 +42,7 @@ export function VehicleCard({
   const { toast } = useToast()
 
   const statusColors = {
-    available: "bg-primary/20 text-primary border-primary/30",
+    available: "bg-primary/30 text-primary border-primary/50",
     rented: "bg-blue-500/20 text-blue-400 border-blue-500/30",
     maintenance: "bg-destructive/20 text-destructive border-destructive/30",
   }
