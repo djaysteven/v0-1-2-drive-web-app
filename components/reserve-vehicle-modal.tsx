@@ -907,6 +907,7 @@ export function ReserveVehicleModal({
                     availability,
                     customerName,
                     email,
+                    isOwner,
                     startDate: startDate?.toISOString(),
                     endDate: endDate?.toISOString(),
                     deliveryTime,
@@ -918,7 +919,7 @@ export function ReserveVehicleModal({
                       checking ||
                       availability === "unavailable" ||
                       !customerName ||
-                      !email ||
+                      (!isOwner && !email) ||
                       !startDate ||
                       !endDate ||
                       !deliveryTime ||
