@@ -341,14 +341,14 @@ export default function BookingsPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-0 sm:p-6">
+          <CardContent className="p-0 sm:p-6 overflow-x-auto">
             {filteredBookings.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No bookings found</p>
               </div>
             ) : (
-              <div className="overflow-x-auto w-full">
+              <div className="w-full">
                 <Table className="min-w-[1200px]">
                   <TableHeader>
                     <TableRow>
