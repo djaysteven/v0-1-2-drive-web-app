@@ -2,33 +2,26 @@ import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  let response = NextResponse.next({ request })
 
-  const supabaseUrl = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = proSUPABASE_NEXT_PUBLIC_SUPABASE_ANON_KEY_ANON_KEY
+  // Supabase configuration
+  const supabaseUrl = "https://jmeuyzklrfbovnreicjw.supabase.co"
+  const supabaseKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptZXV5emtscmZib3ZucmVpY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2OTkxNDIsImV4cCI6MjA3NjI3NTE0Mn0.X6rA3NNOSAIlsDT-ZjSISvveMHxVa3HenFjDOrB9Rmo"
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables")
-    return supabaseResponse
-  }
-
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-        supabaseResponse = NextResponse.next({
-          request,
-        })
-        cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+        response = NextResponse.next({ request })
+        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
       },
     },
   })
 
   await supabase.auth.getUser()
-  return supabaseResponse
+  return response
 }
