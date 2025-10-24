@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, MapPin } from "lucide-react"
+import { Loader2, MapPin, AlertCircle } from "lucide-react"
 import { format, startOfToday } from "date-fns"
 import { enGB } from "date-fns/locale"
 import type { Vehicle, BookingChannel, Booking } from "@/lib/types"
@@ -23,6 +23,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface ReserveVehicleModalProps {
   vehicle: Vehicle | null
@@ -74,10 +75,31 @@ export function ReserveVehicleModal({
   const router = useRouter()
 
   useEffect(() => {
+    const checkOwnerStatus = async () => {
+      try {
+        const response = await fetch("/api/auth/session")
+        const session = await response.json()
+        const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
+
+        if (session?.user?.email && ownerEmail && session.user.email.toLowerCase() === ownerEmail.toLowerCase()) {
+          setIsOwner(true)
+          setEmail(session.user.email)
+        }
+      } catch (error) {
+        console.log("[v0] Could not check owner status from session")
+      }
+    }
+
+    if (open) {
+      checkOwnerStatus()
+    }
+  }, [open])
+
+  useEffect(() => {
     const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
     if (ownerEmail && email.toLowerCase() === ownerEmail.toLowerCase()) {
       setIsOwner(true)
-    } else {
+    } else if (email && email.toLowerCase() !== ownerEmail?.toLowerCase()) {
       setIsOwner(false)
     }
   }, [email])
@@ -282,6 +304,23 @@ export function ReserveVehicleModal({
     )
     return result.breakdown
   }
+
+  const getValidationErrors = () => {
+    const errors: string[] = []
+    if (!customerName) errors.push("Customer name")
+    if (!isOwner && !email) errors.push("Email")
+    if (!startDate) errors.push("Delivery/Pickup date")
+    if (!endDate) errors.push("Return date")
+    if (!deliveryTime) errors.push(`${deliveryMethod === "pickup" ? "Pickup" : "Delivery"} time`)
+    if (deliveryMethod === "delivery") {
+      if (!deliveryHotel) errors.push("Hotel/Condo name")
+      if (!deliveryAddress) errors.push("Delivery address")
+    }
+    return errors
+  }
+
+  const validationErrors = getValidationErrors()
+  const hasValidationErrors = validationErrors.length > 0
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -555,7 +594,10 @@ export function ReserveVehicleModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email {!isOwner && <span className="text-destructive">*</span>}</Label>
+              <Label htmlFor="email">
+                Email {!isOwner && <span className="text-destructive">*</span>}
+                {isOwner && <span className="text-xs text-muted-foreground ml-2">(optional for owner)</span>}
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -659,7 +701,7 @@ export function ReserveVehicleModal({
               )}
             </div>
 
-            {isOwner && startDate && endDate && (
+            {isOwner && (
               <div className="space-y-3 p-3 rounded-lg bg-secondary/50 border border-primary/30">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="useManualPrice" className="text-sm font-semibold">
@@ -686,6 +728,11 @@ export function ReserveVehicleModal({
                       min="0"
                       step="1"
                     />
+                    {startDate && endDate && (
+                      <p className="text-xs text-muted-foreground">
+                        Calculated price: ฿{calculateTotal().toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -882,50 +929,23 @@ export function ReserveVehicleModal({
               </div>
             </div>
 
+            {hasValidationErrors && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Please fill in the following required fields: {validationErrors.join(", ")}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={
-                  saving ||
-                  checking ||
-                  availability === "unavailable" ||
-                  !customerName ||
-                  (!isOwner && !email) ||
-                  !startDate ||
-                  !endDate ||
-                  !deliveryTime ||
-                  (deliveryMethod === "delivery" && (!deliveryHotel || !deliveryAddress))
-                }
+                disabled={saving || checking || availability === "unavailable" || hasValidationErrors}
                 style={{ backgroundColor: "#00FF3C", color: "#000" }}
-                onClick={() => {
-                  console.log("[v0] Button click - validation state:", {
-                    saving,
-                    checking,
-                    availability,
-                    customerName,
-                    email,
-                    isOwner,
-                    startDate: startDate?.toISOString(),
-                    endDate: endDate?.toISOString(),
-                    deliveryTime,
-                    deliveryMethod,
-                    deliveryHotel: deliveryMethod === "delivery" ? deliveryHotel : "N/A",
-                    deliveryAddress: deliveryMethod === "delivery" ? deliveryAddress : "N/A",
-                    isDisabled:
-                      saving ||
-                      checking ||
-                      availability === "unavailable" ||
-                      !customerName ||
-                      (!isOwner && !email) ||
-                      !startDate ||
-                      !endDate ||
-                      !deliveryTime ||
-                      (deliveryMethod === "delivery" && (!deliveryHotel || !deliveryAddress)),
-                  })
-                }}
               >
                 {saving ? (
                   <>
