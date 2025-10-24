@@ -43,9 +43,9 @@ export function SpinningLogo() {
           <Image
             src="/logo.png"
             alt="1-2 DRIVE Logo"
-            width={900}
-            height={900}
-            className="w-full max-w-[675px] lg:max-w-[900px] h-auto"
+            width={400}
+            height={400}
+            className="w-full max-w-[300px] lg:max-w-[400px] h-auto"
             style={{
               mixBlendMode: "screen",
               filter: "drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3))",
