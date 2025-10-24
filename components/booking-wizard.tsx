@@ -139,10 +139,19 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
         : condos.find((c) => c.id === selectedAssetId)
 
   const handleSubmit = async () => {
-    if (!customerName || !phone || (!isOwner && !email) || !selectedAssetId || !startDate || !endDate) {
+    if (!customerName || (!isOwner && !email) || !selectedAssetId || !startDate || !endDate) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (selectedAssetId === "tbd" && !useManualPrice) {
+      toast({
+        title: "Manual price required",
+        description: "TBD bookings require a manual price to be set",
         variant: "destructive",
       })
       return
@@ -475,12 +484,11 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter email address"
-                required={!isOwner}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone (optional)</Label>
+              <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -707,12 +715,19 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
               </div>
             )}
 
-            {isOwner && startDate && endDate && selectedAssetId && selectedAssetId !== "tbd" && (
+            {isOwner && startDate && endDate && selectedAssetId && (
               <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="manualPrice" className="text-sm font-medium">
-                    Manual price override
-                  </Label>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">
+                      {selectedAssetId === "tbd" ? "Custom price (required for TBD)" : "Custom price override"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {selectedAssetId === "tbd"
+                        ? "Set a custom price for this TBD booking."
+                        : "Override the default price calculation."}
+                    </p>
+                  </div>
                   <Switch
                     id="manualPriceToggle"
                     checked={useManualPrice}
@@ -803,7 +818,6 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
                   checking ||
                   (availability === "unavailable" && selectedAssetId !== "tbd") ||
                   !customerName ||
-                  !phone ||
                   (!isOwner && !email) ||
                   !selectedAssetId ||
                   !startDate ||
