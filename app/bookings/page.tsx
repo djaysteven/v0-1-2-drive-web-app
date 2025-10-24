@@ -348,146 +348,142 @@ export default function BookingsPage() {
                 <p>No bookings found</p>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-6 sm:mx-0">
-                <div className="inline-block min-w-full align-middle">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="whitespace-nowrap">Customer</TableHead>
-                        <TableHead className="whitespace-nowrap">Asset</TableHead>
-                        <TableHead className="whitespace-nowrap">Start Date</TableHead>
-                        <TableHead className="whitespace-nowrap">End Date</TableHead>
-                        <TableHead className="whitespace-nowrap">Total</TableHead>
-                        <TableHead className="whitespace-nowrap">Status</TableHead>
-                        <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredBookings.map((booking) => (
-                        <TableRow
-                          key={booking.id}
-                          className={isBookingStartingToday(booking.startDate) ? "bg-green-500/10" : ""}
-                        >
-                          <TableCell className="font-medium whitespace-nowrap">
-                            {booking.customerName ||
-                              (booking.assetType === "condo"
-                                ? "airbnb"
-                                : booking.source === "airbnb"
-                                  ? "Airbnb"
-                                  : "Unknown")}
-                          </TableCell>
-                          <TableCell className="min-w-[200px]">
-                            <div className="flex items-center gap-2">
-                              {booking.assetType === "vehicle" ? (
-                                <Car className="h-4 w-4 text-muted-foreground shrink-0" />
-                              ) : (
-                                <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                              )}
-                              <div className="flex flex-col">
-                                <span className="text-sm">{booking.assetName}</span>
-                                {booking.vehiclePlate && (
-                                  <span className="text-xs text-muted-foreground font-mono">
-                                    {booking.vehiclePlate}
-                                  </span>
-                                )}
-                                {booking.deliveryMethod === "pickup" && booking.pickupLocationLabel && (
-                                  <div className="flex items-center gap-1 mt-1">
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30"
-                                    >
-                                      Pickup @ {booking.pickupLocationLabel}
-                                    </Badge>
-                                    {booking.pickupLocationUrl && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-5 px-1 text-xs"
-                                        onClick={() => window.open(booking.pickupLocationUrl, "_blank")}
-                                      >
-                                        Maps
-                                      </Button>
-                                    )}
-                                  </div>
-                                )}
-                                {booking.deliveryMethod === "delivery" && booking.deliveryHotel && (
-                                  <div className="flex flex-col gap-0.5 mt-1 text-xs text-muted-foreground">
-                                    <div className="font-medium text-foreground">{booking.deliveryHotel}</div>
-                                    {booking.deliveryAddress && <div>{booking.deliveryAddress}</div>}
-                                    {booking.deliveryEta && (
-                                      <div>
-                                        ETA:{" "}
-                                        {new Date(booking.deliveryEta).toLocaleString("en-GB", {
-                                          day: "numeric",
-                                          month: "short",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            {booking.isLongTerm && (
-                              <Badge variant="outline" className="mt-1 text-xs">
-                                Long-term
-                              </Badge>
+              <div className="overflow-x-auto w-full">
+                <Table className="min-w-[1200px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Customer</TableHead>
+                      <TableHead className="whitespace-nowrap">Asset</TableHead>
+                      <TableHead className="whitespace-nowrap">Start Date</TableHead>
+                      <TableHead className="whitespace-nowrap">End Date</TableHead>
+                      <TableHead className="whitespace-nowrap">Total</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredBookings.map((booking) => (
+                      <TableRow
+                        key={booking.id}
+                        className={isBookingStartingToday(booking.startDate) ? "bg-green-500/10" : ""}
+                      >
+                        <TableCell className="font-medium whitespace-nowrap">
+                          {booking.customerName ||
+                            (booking.assetType === "condo"
+                              ? "airbnb"
+                              : booking.source === "airbnb"
+                                ? "Airbnb"
+                                : "Unknown")}
+                        </TableCell>
+                        <TableCell className="min-w-[200px]">
+                          <div className="flex items-center gap-2">
+                            {booking.assetType === "vehicle" ? (
+                              <Car className="h-4 w-4 text-muted-foreground shrink-0" />
+                            ) : (
+                              <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                             )}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">{formatDate(booking.startDate)}</TableCell>
-                          <TableCell className="whitespace-nowrap">{formatDate(booking.endDate)}</TableCell>
-                          <TableCell className="font-semibold whitespace-nowrap">
-                            ฿{booking.totalPrice.toLocaleString()}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            <Badge className={getStatusColor(booking.status)}>
-                              {booking.status === "returned" ? "delivered" : booking.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right whitespace-nowrap">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-3 bg-green-500/10 text-green-500 hover:bg-green-500/20 hover:text-green-600 border-green-500/30"
-                                onClick={() => {
-                                  setBookingToMarkDelivered(booking.id)
-                                  setDeliveredDialogOpen(true)
-                                }}
-                                title="Mark as delivered"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Delivered
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-3 bg-transparent"
-                                onClick={() => handleEdit(booking)}
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-3 bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/30"
-                                onClick={() => {
-                                  setBookingToDelete(booking.id)
-                                  setDeleteDialogOpen(true)
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Delete
-                              </Button>
+                            <div className="flex flex-col">
+                              <span className="text-sm">{booking.assetName}</span>
+                              {booking.vehiclePlate && (
+                                <span className="text-xs text-muted-foreground font-mono">{booking.vehiclePlate}</span>
+                              )}
+                              {booking.deliveryMethod === "pickup" && booking.pickupLocationLabel && (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30"
+                                  >
+                                    Pickup @ {booking.pickupLocationLabel}
+                                  </Badge>
+                                  {booking.pickupLocationUrl && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 px-1 text-xs"
+                                      onClick={() => window.open(booking.pickupLocationUrl, "_blank")}
+                                    >
+                                      Maps
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
+                              {booking.deliveryMethod === "delivery" && booking.deliveryHotel && (
+                                <div className="flex flex-col gap-0.5 mt-1 text-xs text-muted-foreground">
+                                  <div className="font-medium text-foreground">{booking.deliveryHotel}</div>
+                                  {booking.deliveryAddress && <div>{booking.deliveryAddress}</div>}
+                                  {booking.deliveryEta && (
+                                    <div>
+                                      ETA:{" "}
+                                      {new Date(booking.deliveryEta).toLocaleString("en-GB", {
+                                        day: "numeric",
+                                        month: "short",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                          </div>
+                          {booking.isLongTerm && (
+                            <Badge variant="outline" className="mt-1 text-xs">
+                              Long-term
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">{formatDate(booking.startDate)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{formatDate(booking.endDate)}</TableCell>
+                        <TableCell className="font-semibold whitespace-nowrap">
+                          ฿{booking.totalPrice.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <Badge className={getStatusColor(booking.status)}>
+                            {booking.status === "returned" ? "delivered" : booking.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right whitespace-nowrap">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-3 bg-green-500/10 text-green-500 hover:bg-green-500/20 hover:text-green-600 border-green-500/30"
+                              onClick={() => {
+                                setBookingToMarkDelivered(booking.id)
+                                setDeliveredDialogOpen(true)
+                              }}
+                              title="Mark as delivered"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Delivered
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-3 bg-transparent"
+                              onClick={() => handleEdit(booking)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-3 bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/30"
+                              onClick={() => {
+                                setBookingToDelete(booking.id)
+                                setDeleteDialogOpen(true)
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </CardContent>
