@@ -1,23 +1,20 @@
 "use client"
 
-import type React from "react"
-
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookingWizard } from "@/components/booking-wizard"
 import { NotificationSettings } from "@/components/notification-settings"
 import { DatabaseSetupBanner } from "@/components/database-setup-banner"
+import { SpinningLogo } from "@/components/spinning-logo"
 import { Car, Building2, Users, Calendar, Plus, Bike } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
 import { vehiclesApi, condosApi, customersApi } from "@/lib/api"
 import { useRole } from "@/hooks/use-role"
 
 export default function HomePage() {
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
-  const [isPressed, setIsPressed] = useState(false)
   const [showContent, setShowContent] = useState(() => {
     if (typeof window !== "undefined") {
       return sessionStorage.getItem("splashShown") === "true"
@@ -51,15 +48,6 @@ export default function HomePage() {
     }
   }, [showContent])
 
-  useEffect(() => {
-    if (isPressed) {
-      const timer = setTimeout(() => {
-        setIsPressed(false)
-      }, 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [isPressed])
-
   const fetchStats = useCallback(async () => {
     try {
       const [vehiclesWithStatus, condos, customers] = await Promise.all([
@@ -92,21 +80,8 @@ export default function HomePage() {
     }
   }, [showContent, fetchStats])
 
-  useEffect(() => {
-    console.log("[v0] Logo animation state - isPressed:", isPressed)
-  }, [isPressed])
-
   if (!showContent) {
     return null
-  }
-
-  const handlePress = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault()
-    setIsPressed(true)
-  }
-
-  const handleRelease = () => {
-    setIsPressed(false)
   }
 
   return (
@@ -125,32 +100,7 @@ export default function HomePage() {
         <div className="container mx-auto p-4 lg:p-6 space-y-6">
           {isOwner && <DatabaseSetupBanner />}
 
-          <div className="rounded-2xl bg-background p-2 sm:p-4 border border-border flex items-center justify-center">
-            <div
-              onMouseDown={handlePress}
-              onMouseUp={handleRelease}
-              onMouseLeave={handleRelease}
-              onTouchStart={handlePress}
-              onTouchEnd={handleRelease}
-              onContextMenu={(e) => e.preventDefault()}
-              style={{ cursor: "pointer" }}
-            >
-              <Image
-                src="/logo.png"
-                alt="1-2 DRIVE Logo"
-                width={900}
-                height={900}
-                className={`w-full max-w-[675px] lg:max-w-[900px] h-auto ${!isPressed ? "animate-spinSlow" : ""}`}
-                style={{
-                  mixBlendMode: "screen",
-                  filter: "drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3))",
-                  pointerEvents: "none",
-                }}
-                priority
-                draggable={false}
-              />
-            </div>
-          </div>
+          <SpinningLogo />
 
           {!isOwner && (
             <div className="grid grid-cols-3 gap-2 sm:gap-4">

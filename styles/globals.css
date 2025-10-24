@@ -126,16 +126,30 @@
   }
 }
 
-/* Added fallback CSS for spinSlow animation to ensure it works in production */
-@keyframes spinSlow {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+/* Removed @layer utilities animation - using hard-coded CSS instead */
+
+/* ==== HARD-CODED LOGO SPIN — IMPOSSIBLE TO PURGE ==== */
+.logo-container {
+  display: inline-block;
+  cursor: pointer;
 }
 
-.animate-spinSlow {
-  animation: spinSlow 12s linear infinite !important;
+.logo-ball {
+  display: inline-block;
+  animation: logoSpin 12s linear infinite;
+  transform-origin: center;
+}
+
+.logo-ball.paused {
+  animation-play-state: paused !important;
+  transform: rotate(0deg) !important;
+}
+
+@keyframes logoSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
