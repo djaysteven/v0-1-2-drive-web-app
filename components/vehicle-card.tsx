@@ -180,9 +180,11 @@ export function VehicleCard({
 
         <CardContent className="p-4 space-y-3">
           <div>
-            <h3 className="font-semibold text-lg text-foreground text-balance">{vehicle.name}</h3>
+            <h3 className="font-semibold text-lg text-foreground text-balance">
+              {vehicle.name.replace(/\s*\d{4}\s*/g, "").trim()}
+            </h3>
             <p className="text-sm text-muted-foreground">
-              {vehicle.plate} {vehicle.cc && `• ${vehicle.cc}cc`} {vehicle.year && `• ${vehicle.year}`}
+              {vehicle.plate} {vehicle.cc && `• ${vehicle.cc}cc`}
             </p>
           </div>
 
@@ -192,18 +194,26 @@ export function VehicleCard({
               <span className="text-sm text-muted-foreground">/day</span>
             </div>
             {(vehicle.weeklyPrice || vehicle.monthlyPrice) && (
-              <div className="flex gap-3 text-sm text-muted-foreground">
-                {vehicle.weeklyPrice && (
-                  <span>
-                    ฿{vehicle.weeklyPrice}
-                    <span className="text-xs">/week</span>
-                  </span>
-                )}
+              <div className="space-y-1">
+                <div className="flex gap-3 text-sm text-muted-foreground">
+                  {vehicle.weeklyPrice && (
+                    <span>
+                      ฿{vehicle.weeklyPrice}
+                      <span className="text-xs">/week</span>
+                    </span>
+                  )}
+                  {vehicle.monthlyPrice && (
+                    <span>
+                      ฿{vehicle.monthlyPrice}
+                      <span className="text-xs">/month</span>
+                    </span>
+                  )}
+                </div>
                 {vehicle.monthlyPrice && (
-                  <span>
-                    ฿{vehicle.monthlyPrice}
-                    <span className="text-xs">/month</span>
-                  </span>
+                  <div className="inline-flex items-center gap-1 text-xs font-medium text-green-500">
+                    <span>1+ month =</span>
+                    <span className="font-bold">Save More</span>
+                  </div>
                 )}
               </div>
             )}
