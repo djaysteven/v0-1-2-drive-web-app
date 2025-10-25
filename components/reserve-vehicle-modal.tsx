@@ -76,8 +76,8 @@ export function ReserveVehicleModal({
   const router = useRouter()
 
   const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
-  const supabaseUrl = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseUrl = process.env.SUPABASE_SUPABASE_SUPABASE_NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_ANON_KEY_ANON_KEY_ANON_KEY
 
   useEffect(() => {
     const checkOwnerStatus = async () => {
@@ -223,7 +223,7 @@ export function ReserveVehicleModal({
       setEtaDate(undefined)
       setDeliveryTime("")
     }
-  }, [booking, open, selectedVehicle]) // Added selectedVehicle to dependencies
+  }, [booking, open, selectedVehicle])
 
   useEffect(() => {
     if (selectedVehicle && startDate && endDate) {
@@ -237,7 +237,7 @@ export function ReserveVehicleModal({
   useEffect(() => {
     if (startDate) {
       setEtaDate(startDate)
-      setDeliveryTime("") // Reset time when date changes
+      setDeliveryTime("")
     }
   }, [startDate])
 
@@ -490,7 +490,6 @@ export function ReserveVehicleModal({
         setEndDate(date)
       }
       setOpenStartPicker(false)
-      // Auto-open end date picker after a short delay
       setTimeout(() => setOpenEndPicker(true), 100)
     }
   }
@@ -511,6 +510,10 @@ export function ReserveVehicleModal({
     selectedVehicle.weeklyPrice,
     selectedVehicle.monthlyPrice,
   )
+
+  const getVehicleNameWithoutYear = (name: string) => {
+    return name.replace(/\s*\d{4}\s*/g, "").trim()
+  }
 
   return (
     <>
@@ -561,39 +564,43 @@ export function ReserveVehicleModal({
               </div>
             )}
 
-            <div className="p-3 rounded-lg bg-secondary/50">
-              <div className="font-semibold text-center mb-2">{selectedVehicle.name}</div>
+            <div className="p-4 rounded-lg bg-secondary/50 border border-primary/20">
+              <div className="font-semibold text-lg text-center mb-1">
+                {getVehicleNameWithoutYear(selectedVehicle.name)}
+              </div>
               {selectedVehicle.plate && (
-                <div className="text-sm text-muted-foreground text-center mb-2">{selectedVehicle.plate}</div>
+                <div className="text-sm text-muted-foreground text-center mb-3">{selectedVehicle.plate}</div>
               )}
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <div className="text-center">
-                  <div className="font-bold text-lg" style={{ color: "#00FF3C" }}>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-3 py-2 rounded bg-background/50">
+                  <span className="text-sm text-muted-foreground">Daily Rate</span>
+                  <span className="font-bold text-lg" style={{ color: "#00FF3C" }}>
                     ฿{selectedVehicle.dailyPrice}
-                  </div>
-                  <div className="text-xs text-muted-foreground">day</div>
+                  </span>
                 </div>
+
                 {selectedVehicle.weeklyPrice && (
-                  <>
-                    <div className="text-muted-foreground">|</div>
-                    <div className="text-center">
-                      <div className="font-bold text-lg" style={{ color: "#00FF3C" }}>
-                        ฿{selectedVehicle.weeklyPrice}
-                      </div>
-                      <div className="text-xs text-muted-foreground">week</div>
-                    </div>
-                  </>
+                  <div className="flex items-center justify-between px-3 py-2 rounded bg-background/50">
+                    <span className="text-sm text-muted-foreground">Weekly Rate</span>
+                    <span className="font-bold text-lg" style={{ color: "#00FF3C" }}>
+                      ฿{selectedVehicle.weeklyPrice}
+                    </span>
+                  </div>
                 )}
+
                 {selectedVehicle.monthlyPrice && (
-                  <>
-                    <div className="text-muted-foreground">|</div>
-                    <div className="text-center">
-                      <div className="font-bold text-lg" style={{ color: "#00FF3C" }}>
-                        ฿{selectedVehicle.monthlyPrice}
-                      </div>
-                      <div className="text-xs text-muted-foreground">month</div>
+                  <div className="flex items-center justify-between px-3 py-2 rounded bg-primary/10 border border-primary/30">
+                    <div className="flex flex-col">
+                      <span className="text-sm text-muted-foreground">Monthly Rate</span>
+                      <span className="text-xs font-semibold" style={{ color: "#00FF3C" }}>
+                        💰 Save More!
+                      </span>
                     </div>
-                  </>
+                    <span className="font-bold text-xl" style={{ color: "#00FF3C" }}>
+                      ฿{selectedVehicle.monthlyPrice}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
@@ -706,14 +713,19 @@ export function ReserveVehicleModal({
                 </PopoverContent>
               </Popover>
               {startDate && endDate && (
-                <div className="space-y-1">
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
                   <p className="text-sm text-muted-foreground">
-                    Duration: {diffCalendarDaysInclusive(startDate, endDate)}{" "}
-                    {diffCalendarDaysInclusive(startDate, endDate) === 1 ? "day" : "days"}
+                    Duration:{" "}
+                    <span className="font-semibold">{diffCalendarDaysInclusive(startDate, endDate)} days</span>
                   </p>
-                  <p className="text-base font-bold" style={{ color: "#00FF3C" }}>
+                  <p className="text-lg font-bold" style={{ color: "#00FF3C" }}>
                     {getPriceBreakdown()} = ฿{calculateTotal().toLocaleString()}
                   </p>
+                  {diffCalendarDaysInclusive(startDate, endDate) >= 30 && (
+                    <p className="text-xs font-semibold pt-1" style={{ color: "#00FF3C" }}>
+                      🎉 1+ month = Save More!
+                    </p>
+                  )}
                 </div>
               )}
             </div>
