@@ -227,7 +227,7 @@ export async function createVehicle(vehicle: Omit<Vehicle, "id">): Promise<Vehic
     image_url: vehicle.photos?.[0] || null,
     display_order: vehicle.displayOrder || null,
     cc: vehicle.cc || null,
-    popularity: vehicle.popularity || null,
+    popularity: vehicle.popularity ?? 5,
   }
   console.log("[v0] Inserting vehicle data:", JSON.stringify(insertData, null, 2))
 

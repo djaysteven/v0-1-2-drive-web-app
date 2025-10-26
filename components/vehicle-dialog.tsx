@@ -448,7 +448,7 @@ export function VehicleDialog({ open, onOpenChange, vehicle, onSave }: VehicleDi
 
             <div className="space-y-2">
               <Label htmlFor="popularity" className="text-foreground">
-                Popularity (1-10)
+                Popularity (1-10) *
               </Label>
               <Input
                 id="popularity"
@@ -458,6 +458,7 @@ export function VehicleDialog({ open, onOpenChange, vehicle, onSave }: VehicleDi
                 placeholder="5"
                 min="1"
                 max="10"
+                required
                 className="rounded-xl bg-secondary border-border"
               />
               <p className="text-xs text-muted-foreground">Higher number = more popular</p>
