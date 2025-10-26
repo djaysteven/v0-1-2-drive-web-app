@@ -17,29 +17,79 @@ export default function ContactPage() {
   }
 
   const handleDownload = async () => {
-    if (navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      try {
-        const response = await fetch("/qr-code.png")
-        const blob = await response.blob()
-        const file = new File([blob], "1-2-drive-qr-code.png", { type: "image/png" })
+    try {
+      // Load the PNG image
+      const img = new Image()
+      img.crossOrigin = "anonymous"
 
-        await navigator.share({
-          title: "1-2 DRIVE QR Code",
-          text: "Scan to visit 1-2 DRIVE",
-          files: [file],
-        })
-        return
-      } catch (error) {
-        console.log("Share failed, using download fallback")
+      await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+        img.src = "/qr-code.png"
+      })
+
+      // Create canvas and convert to JPEG
+      const canvas = document.createElement("canvas")
+      canvas.width = img.width
+      canvas.height = img.height
+      const ctx = canvas.getContext("2d")
+
+      if (!ctx) {
+        throw new Error("Could not get canvas context")
       }
-    }
 
-    const link = document.createElement("a")
-    link.href = "/qr-code.png"
-    link.download = "1-2-drive-qr-code.png"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+      // Fill white background (JPEG doesn't support transparency)
+      ctx.fillStyle = "#FFFFFF"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Draw the QR code
+      ctx.drawImage(img, 0, 0)
+
+      // Convert to JPEG blob
+      canvas.toBlob(
+        async (blob) => {
+          if (!blob) {
+            throw new Error("Could not create blob")
+          }
+
+          // Try Web Share API first (works better on mobile)
+          if (navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            try {
+              const file = new File([blob], "1-2-drive-qr-code.jpg", { type: "image/jpeg" })
+              await navigator.share({
+                title: "1-2 DRIVE QR Code",
+                text: "Scan to visit 1-2 DRIVE",
+                files: [file],
+              })
+              return
+            } catch (error) {
+              console.log("[v0] Share failed, using download fallback")
+            }
+          }
+
+          // Fallback: Create download link
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement("a")
+          link.href = url
+          link.download = "1-2-drive-qr-code.jpg"
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        },
+        "image/jpeg",
+        0.95,
+      )
+    } catch (error) {
+      console.error("[v0] Error downloading QR code:", error)
+      // Final fallback: direct PNG download
+      const link = document.createElement("a")
+      link.href = "/qr-code.png"
+      link.download = "1-2-drive-qr-code.png"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
   }
 
   const handleShare = async () => {
@@ -147,7 +197,7 @@ export default function ContactPage() {
                 title="Line"
               >
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="#00B900" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .628.285.628.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.348 0 .629.285.629.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" />
+                  <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .628.285.628.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.348 0 .629.285.629.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" />
                 </svg>
               </a>
 
