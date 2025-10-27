@@ -76,8 +76,8 @@ export function ReserveVehicleModal({
   const router = useRouter()
 
   const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
-  const supabaseUrl = process.env.SUPABASE_SUPABASE_SUPABASE_NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_ANON_KEY_ANON_KEY_ANON_KEY
+  const supabaseUrl = process.env.SUPABASE_SUPABASE_SUPABASE_SUPABASE_NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_ANON_KEY_ANON_KEY_ANON_KEY_ANON_KEY
 
   useEffect(() => {
     const checkOwnerStatus = async () => {
@@ -667,7 +667,7 @@ export function ReserveVehicleModal({
                     mode="single"
                     selected={startDate}
                     onSelect={handleStartDateSelect}
-                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    disabled={isOwner ? undefined : (date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                     modifiers={{ today: startOfToday() }}
                     modifiersClassNames={{ today: "ring-2 ring-lime-400/60 rounded-md" }}
                     initialFocus
@@ -704,7 +704,7 @@ export function ReserveVehicleModal({
                     selected={endDate}
                     onSelect={handleEndDateSelect}
                     disabled={(date) =>
-                      startDate ? date < startDate : date < new Date(new Date().setHours(0, 0, 0, 0))
+                      startDate ? date < startDate : isOwner ? false : date < new Date(new Date().setHours(0, 0, 0, 0))
                     }
                     modifiers={{ today: startOfToday() }}
                     modifiersClassNames={{ today: "ring-2 ring-lime-400/60 rounded-md" }}
@@ -764,6 +764,20 @@ export function ReserveVehicleModal({
                     )}
                   </div>
                 )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="isLongTerm" className="text-sm font-semibold">
+                      Long-term Rental
+                    </Label>
+                    <p className="text-xs text-muted-foreground">Mark this as a long-term booking</p>
+                  </div>
+                  <Checkbox
+                    id="isLongTerm"
+                    checked={isLongTerm}
+                    onCheckedChange={(checked) => setIsLongTerm(checked === true)}
+                  />
+                </div>
               </div>
             )}
 
