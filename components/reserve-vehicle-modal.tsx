@@ -76,8 +76,8 @@ export function ReserveVehicleModal({
   const router = useRouter()
 
   const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
-  const supabaseUrl = process.env.SUPABASE_SUPABASE_SUPABASE_SUPABASE_NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_ANON_KEY_ANON_KEY_ANON_KEY_ANON_KEY
+  const supabaseUrl = process.env.SUPABASE_SUPABASE_SUPABASE_SUPABASE_SUPABASE_NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_NEXT_PUBLIC_SUPABASE_ANON_KEY_ANON_KEY_ANON_KEY_ANON_KEY_ANON_KEY
 
   useEffect(() => {
     const checkOwnerStatus = async () => {
@@ -473,9 +473,31 @@ export function ReserveVehicleModal({
       onOpenChange(false)
     } catch (error: any) {
       console.error("[v0] Error creating booking:", error)
+
+      let errorTitle = "Booking Failed"
+      let errorDescription = error.message || "Failed to create booking"
+
+      // Parse specific error types
+      if (error.message?.includes("Double booking conflict")) {
+        errorTitle = "Double Booking Detected"
+        errorDescription = error.message
+      } else if (error.message?.includes("Missing required field")) {
+        errorTitle = "Missing Information"
+        errorDescription = error.message
+      } else if (error.message?.includes("Validation failed")) {
+        errorTitle = "Validation Error"
+        errorDescription = error.message
+      } else if (error.message?.includes("Invalid reference")) {
+        errorTitle = "Invalid Data"
+        errorDescription = error.message
+      } else if (error.message?.includes("Database error")) {
+        errorTitle = "Database Error"
+        errorDescription = error.message
+      }
+
       toast({
-        title: "Error",
-        description: error.message || "Failed to create booking",
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive",
       })
     } finally {

@@ -930,6 +930,48 @@ export async function createBooking(booking: Omit<Booking, "id">): Promise<Booki
 }
 
 export async function updateBooking(id: string, updates: Partial<Booking>): Promise<Booking> {
+  console.log("[v0] Updating booking:", id, "with updates:", updates)
+
+  const errors: string[] = []
+
+  if (updates.startDate && updates.endDate) {
+    const start = new Date(updates.startDate)
+    const end = new Date(updates.endDate)
+
+    if (start >= end) {
+      errors.push("End date must be after start date")
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Validation failed: ${errors.join(", ")}`)
+  }
+
+  if (updates.vehicleId || updates.startDate || updates.endDate) {
+    const currentBooking = await getBooking(id)
+    if (!currentBooking) {
+      throw new Error("Booking not found")
+    }
+
+    const vehicleId = updates.vehicleId || currentBooking.vehicleId
+    const startDate = updates.startDate || currentBooking.startDate
+    const endDate = updates.endDate || currentBooking.endDate
+
+    if (vehicleId) {
+      const { hasConflict, conflicts } = await hasOverlap(
+        vehicleId,
+        new Date(startDate),
+        new Date(endDate),
+        id, // Exclude current booking from conflict check
+      )
+
+      if (hasConflict && conflicts.length > 0) {
+        const conflictDetails = conflicts.map((c) => `${c.customerName} (${c.startDate} to ${c.endDate})`).join(", ")
+        throw new Error(`Double booking conflict with: ${conflictDetails}`)
+      }
+    }
+  }
+
   const supabase = createClient()
 
   let vehicleName: string | undefined
@@ -981,7 +1023,23 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
     )
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error("[v0] Database error updating booking:", error)
+
+    if (error.code === "23503") {
+      throw new Error("Invalid reference: Customer or vehicle not found")
+    } else if (error.code === "23505") {
+      throw new Error("Duplicate booking entry")
+    } else if (error.message.includes("null value")) {
+      const match = error.message.match(/column "([^"]+)"/)
+      const field = match ? match[1] : "required field"
+      throw new Error(`Missing required field: ${field}`)
+    } else {
+      throw new Error(`Database error: ${error.message}`)
+    }
+  }
+
+  console.log("[v0] Booking updated successfully")
   return mapBookingFromDB(data)
 }
 
