@@ -113,7 +113,7 @@ export default function HomePage() {
         <div className="container mx-auto p-4 lg:p-6 space-y-6">
           {isOwner && <DatabaseSetupBanner />}
 
-          <div className="rounded-2xl bg-background p-2 sm:p-4 border border-border flex items-center justify-center">
+          <div className="card-hover-glow-logo rounded-2xl bg-background p-2 sm:p-4 border border-primary/30 flex items-center justify-center group">
             <div
               className={!isPressed ? "animate-wheel-spin" : ""}
               onMouseDown={handlePress}
@@ -129,7 +129,7 @@ export default function HomePage() {
                 alt="1-2 DRIVE Logo"
                 width={400}
                 height={400}
-                className="w-full max-w-[300px] lg:max-w-[400px] h-auto"
+                className="w-full max-w-[300px] lg:max-w-[400px] h-auto transition-all"
                 style={{
                   mixBlendMode: "screen",
                   filter: "drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3))",
@@ -143,11 +143,11 @@ export default function HomePage() {
 
           {!isOwner && (
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
-              <Link href="/vehicles?type=bike" className="w-full">
+              <Link href="/vehicles?type=bike" className="w-full group">
                 <Card className="card-hover-glow rounded-xl sm:rounded-2xl bg-card shadow-lg cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
                   <CardContent className="flex flex-col items-center justify-center p-3 sm:p-8 gap-2 sm:gap-4 h-full">
                     <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-3 sm:p-6 shadow-lg">
-                      <Bike className="icon-glow-hover h-8 w-8 sm:h-12 sm:w-12 text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.6)]" />
+                      <Bike className="h-8 w-8 sm:h-12 sm:w-12 text-primary transition-all group-hover:drop-shadow-[0_0_16px_rgba(0,255,60,0.9)]" />
                     </div>
                     <div className="text-center">
                       <p className="text-xs sm:text-base text-muted-foreground">Rent a</p>
@@ -161,11 +161,11 @@ export default function HomePage() {
                 </Card>
               </Link>
 
-              <Link href="/vehicles?type=car" className="w-full">
+              <Link href="/vehicles?type=car" className="w-full group">
                 <Card className="card-hover-glow rounded-xl sm:rounded-2xl bg-card shadow-lg cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
                   <CardContent className="flex flex-col items-center justify-center p-3 sm:p-8 gap-2 sm:gap-4 h-full">
                     <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-3 sm:p-6 shadow-lg">
-                      <Car className="icon-glow-hover h-8 w-8 sm:h-12 sm:w-12 text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.6)]" />
+                      <Car className="h-8 w-8 sm:h-12 sm:w-12 text-primary transition-all group-hover:drop-shadow-[0_0_16px_rgba(0,255,60,0.9)]" />
                     </div>
                     <div className="text-center">
                       <p className="text-xs sm:text-base text-muted-foreground">Rent a</p>
@@ -179,11 +179,11 @@ export default function HomePage() {
                 </Card>
               </Link>
 
-              <Link href="/condos" className="w-full">
+              <Link href="/condos" className="w-full group">
                 <Card className="card-hover-glow rounded-xl sm:rounded-2xl bg-card shadow-lg cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
                   <CardContent className="flex flex-col items-center justify-center p-3 sm:p-8 gap-2 sm:gap-4 h-full">
                     <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-3 sm:p-6 shadow-lg">
-                      <Building2 className="icon-glow-hover h-8 w-8 sm:h-12 sm:w-12 text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.6)]" />
+                      <Building2 className="h-8 w-8 sm:h-12 sm:w-12 text-primary transition-all group-hover:drop-shadow-[0_0_16px_rgba(0,255,60,0.9)]" />
                     </div>
                     <div className="text-center">
                       <p className="text-xs sm:text-base text-muted-foreground">Rent a</p>
@@ -205,10 +205,10 @@ export default function HomePage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground text-center">Fleet Overview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
                     <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-2 shadow-md">
-                      <Car className="icon-glow-hover h-5 w-5 text-primary drop-shadow-[0_0_6px_rgba(0,255,60,0.5)]" />
+                      <Car className="h-5 w-5 text-primary transition-all group-hover:drop-shadow-[0_0_12px_rgba(0,255,60,0.8)]" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">Vehicles</p>
@@ -221,10 +221,10 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="h-px bg-border" />
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
                     <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-2 shadow-md">
-                      <Building2 className="icon-glow-hover h-5 w-5 text-primary drop-shadow-[0_0_6px_rgba(0,255,60,0.5)]" />
+                      <Building2 className="h-5 w-5 text-primary transition-all group-hover:drop-shadow-[0_0_12px_rgba(0,255,60,0.8)]" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">Condos</p>
@@ -242,10 +242,10 @@ export default function HomePage() {
 
           {isOwner && (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Card className="card-hover-glow rounded-2xl border-border bg-card shadow-lg">
+              <Card className="card-hover-glow rounded-2xl border-border bg-card shadow-lg group">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Active Customers</CardTitle>
-                  <Users className="icon-glow-hover h-4 w-4 text-primary" />
+                  <Users className="h-4 w-4 text-primary transition-all group-hover:drop-shadow-[0_0_10px_rgba(0,255,60,0.8)]" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-foreground">{stats.totalCustomers}</div>
@@ -259,23 +259,23 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-col gap-2">
-                    <Link href="/vehicles" className="w-full">
+                    <Link href="/vehicles" className="w-full group">
                       <Button variant="outline" className="w-full justify-start gap-2 h-auto py-2 bg-transparent">
-                        <Car className="icon-glow-hover h-4 w-4 text-primary" />
+                        <Car className="h-4 w-4 text-primary transition-all group-hover:drop-shadow-[0_0_10px_rgba(0,255,60,0.8)]" />
                         <span className="text-sm">Vehicles</span>
                       </Button>
                     </Link>
 
-                    <Link href="/condos" className="w-full">
+                    <Link href="/condos" className="w-full group">
                       <Button variant="outline" className="w-full justify-start gap-2 h-auto py-2 bg-transparent">
-                        <Building2 className="icon-glow-hover h-4 w-4 text-primary" />
+                        <Building2 className="h-4 w-4 text-primary transition-all group-hover:drop-shadow-[0_0_10px_rgba(0,255,60,0.8)]" />
                         <span className="text-sm">Condos</span>
                       </Button>
                     </Link>
 
-                    <Link href="/bookings" className="w-full">
+                    <Link href="/bookings" className="w-full group">
                       <Button variant="outline" className="w-full justify-start gap-2 h-auto py-2 bg-transparent">
-                        <Calendar className="icon-glow-hover h-4 w-4 text-primary" />
+                        <Calendar className="h-4 w-4 text-primary transition-all group-hover:drop-shadow-[0_0_10px_rgba(0,255,60,0.8)]" />
                         <span className="text-sm">Bookings</span>
                       </Button>
                     </Link>

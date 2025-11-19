@@ -1,23 +1,11 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter } from 'next/navigation'
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import {
-  Home,
-  Car,
-  Building2,
-  Calendar,
-  TrendingUp,
-  Users,
-  Settings,
-  LogIn,
-  LogOut,
-  MoreHorizontal,
-  Phone,
-} from "lucide-react"
+import { Home, Car, Building2, Calendar, TrendingUp, Users, Settings, LogIn, LogOut, MoreHorizontal, Phone } from 'lucide-react'
 import { useRole } from "@/hooks/use-role"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth"
@@ -151,14 +139,19 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
                   "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary/10 text-foreground"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon 
+                  className={cn(
+                    "h-5 w-5 transition-all nav-icon-glow",
+                    isActive ? "text-primary active-glow" : "group-hover:text-primary"
+                  )} 
+                />
                 {item.label}
               </Link>
             )
@@ -227,13 +220,23 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 relative",
+                  "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 relative transition-all group",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isActive ? "text-primary" : "text-muted-foreground",
+                  isActive 
+                    ? "text-foreground" 
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="h-6 w-6" />
-                <span className="text-sm font-medium">{item.label}</span>
+                <Icon 
+                  className={cn(
+                    "h-6 w-6 transition-all nav-icon-glow",
+                    isActive ? "text-primary active-glow" : "group-hover:text-primary"
+                  )} 
+                />
+                <span className={cn(
+                  "text-xs font-medium transition-colors",
+                  isActive && "text-primary"
+                )}>{item.label}</span>
               </Link>
             )
           })}
@@ -243,13 +246,13 @@ export function AppShell({ children, header, actions }: AppShellProps) {
               <SheetTrigger asChild>
                 <button
                   className={cn(
-                    "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2",
+                    "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 transition-all group",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    "text-muted-foreground",
+                    "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <MoreHorizontal className="h-6 w-6" />
-                  <span className="text-sm font-medium">More</span>
+                  <MoreHorizontal className="h-6 w-6 transition-all nav-icon-glow group-hover:text-primary" />
+                  <span className="text-xs font-medium">More</span>
                 </button>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-auto max-h-[80vh]">
@@ -266,14 +269,19 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                         href={item.href}
                         onClick={() => setMoreMenuOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+                          "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
                           "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           isActive
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-primary/10 text-foreground"
                             : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                         )}
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon 
+                          className={cn(
+                            "h-5 w-5 transition-all nav-icon-glow",
+                            isActive ? "text-primary active-glow" : "group-hover:text-primary"
+                          )} 
+                        />
                         {item.label}
                       </Link>
                     )
