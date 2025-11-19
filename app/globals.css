@@ -175,3 +175,18 @@
   border-color: rgba(0, 255, 60, 0.6);
   transform: translateY(-4px) scale(1.02);
 }
+
+/* Added icon glow effect on card hover */
+@keyframes icon-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(0, 255, 60, 0.9)) drop-shadow(0 0 24px rgba(0, 255, 60, 0.6));
+  }
+}
+
+.card-hover-glow:hover .icon-glow-hover {
+  animation: icon-glow 1.5s ease-in-out infinite;
+}
