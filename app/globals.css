@@ -153,3 +153,25 @@
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
+
+/* Adding hover glow effect for homepage cards */
+@keyframes card-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(0, 255, 60, 0.4), 0 0 40px rgba(0, 255, 60, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 255, 60, 0.6), 0 0 60px rgba(0, 255, 60, 0.3);
+  }
+}
+
+.card-hover-glow {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 255, 60, 0.3);
+}
+
+.card-hover-glow:hover {
+  animation: card-glow 1.5s ease-in-out infinite;
+  border-color: rgba(0, 255, 60, 0.6);
+  transform: translateY(-4px) scale(1.02);
+}

@@ -9,7 +9,7 @@ import { BookingWizard } from "@/components/booking-wizard"
 import { RemindersCard } from "@/components/reminders-card"
 import { NotificationSettings } from "@/components/notification-settings"
 import { DatabaseSetupBanner } from "@/components/database-setup-banner"
-import { Car, Building2, Users, Calendar, Plus, Bike } from "lucide-react"
+import { Car, Building2, Users, Calendar, Plus, Bike } from 'lucide-react'
 import Link from "next/link"
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
@@ -141,22 +141,20 @@ export default function HomePage() {
             </div>
           </div>
 
-          {isOwner && <RemindersCard />}
-
           {!isOwner && (
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <Link href="/vehicles?type=bike" className="w-full">
-                <Card className="rounded-xl sm:rounded-2xl border-border bg-card shadow-lg hover:shadow-xl transition-all hover:scale-105 cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
+                <Card className="card-hover-glow rounded-xl sm:rounded-2xl bg-card shadow-lg cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
                   <CardContent className="flex flex-col items-center justify-center p-3 sm:p-8 gap-2 sm:gap-4 h-full">
-                    <div className="rounded-full bg-primary/10 p-3 sm:p-6">
-                      <Bike className="h-8 w-8 sm:h-12 sm:w-12 text-primary" />
+                    <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-3 sm:p-6 shadow-lg">
+                      <Bike className="h-8 w-8 sm:h-12 sm:w-12 text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.6)]" />
                     </div>
                     <div className="text-center">
                       <p className="text-xs sm:text-base text-muted-foreground">Rent a</p>
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Bike</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary">{stats.availableBikes}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableBikes}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -164,17 +162,17 @@ export default function HomePage() {
               </Link>
 
               <Link href="/vehicles?type=car" className="w-full">
-                <Card className="rounded-xl sm:rounded-2xl border-border bg-card shadow-lg hover:shadow-xl transition-all hover:scale-105 cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
+                <Card className="card-hover-glow rounded-xl sm:rounded-2xl bg-card shadow-lg cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
                   <CardContent className="flex flex-col items-center justify-center p-3 sm:p-8 gap-2 sm:gap-4 h-full">
-                    <div className="rounded-full bg-primary/10 p-3 sm:p-6">
-                      <Car className="h-8 w-8 sm:h-12 sm:w-12 text-primary" />
+                    <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-3 sm:p-6 shadow-lg">
+                      <Car className="h-8 w-8 sm:h-12 sm:w-12 text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.6)]" />
                     </div>
                     <div className="text-center">
                       <p className="text-xs sm:text-base text-muted-foreground">Rent a</p>
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Car</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary">{stats.availableCars}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCars}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -182,17 +180,17 @@ export default function HomePage() {
               </Link>
 
               <Link href="/condos" className="w-full">
-                <Card className="rounded-xl sm:rounded-2xl border-border bg-card shadow-lg hover:shadow-xl transition-all hover:scale-105 cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
+                <Card className="card-hover-glow rounded-xl sm:rounded-2xl bg-card shadow-lg cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
                   <CardContent className="flex flex-col items-center justify-center p-3 sm:p-8 gap-2 sm:gap-4 h-full">
-                    <div className="rounded-full bg-primary/10 p-3 sm:p-6">
-                      <Building2 className="h-8 w-8 sm:h-12 sm:w-12 text-primary" />
+                    <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-3 sm:p-6 shadow-lg">
+                      <Building2 className="h-8 w-8 sm:h-12 sm:w-12 text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.6)]" />
                     </div>
                     <div className="text-center">
                       <p className="text-xs sm:text-base text-muted-foreground">Rent a</p>
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Condo</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary">{stats.availableCondos}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCondos}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -202,15 +200,15 @@ export default function HomePage() {
           )}
 
           <div className="flex justify-center">
-            <Card className="rounded-2xl border-border bg-card shadow-lg w-full max-w-4xl">
+            <Card className="rounded-2xl border-primary/20 bg-card shadow-lg w-full max-w-4xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground text-center">Fleet Overview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-primary/10 p-2">
-                      <Car className="h-5 w-5 text-primary" />
+                    <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-2 shadow-md">
+                      <Car className="h-5 w-5 text-primary drop-shadow-[0_0_6px_rgba(0,255,60,0.5)]" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">Vehicles</p>
@@ -218,15 +216,15 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{stats.availableVehicles}</p>
+                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableVehicles}</p>
                     <p className="text-xs text-muted-foreground">available</p>
                   </div>
                 </div>
                 <div className="h-px bg-border" />
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-primary/10 p-2">
-                      <Building2 className="h-5 w-5 text-primary" />
+                    <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-2 shadow-md">
+                      <Building2 className="h-5 w-5 text-primary drop-shadow-[0_0_6px_rgba(0,255,60,0.5)]" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">Condos</p>
@@ -234,7 +232,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{stats.availableCondos}</p>
+                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCondos}</p>
                     <p className="text-xs text-muted-foreground">available</p>
                   </div>
                 </div>
