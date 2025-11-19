@@ -209,7 +209,7 @@
   animation: logo-glow 1.5s ease-in-out infinite;
 }
 
-/* Navigation icon glow effects */
+/* Navigation icon and text glow effects - enhanced for all white elements */
 .nav-icon-glow {
   transition: all 0.3s ease;
 }
@@ -218,11 +218,16 @@
   filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 16px rgba(0, 255, 60, 0.4));
 }
 
-.group:hover .nav-icon-glow {
-  filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 16px rgba(0, 255, 60, 0.3));
+/* Enhanced hover states to apply green glow via CSS */
+.group:hover .nav-icon-glow,
+.group:hover span {
+  color: var(--primary);
+  filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.7)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4));
 }
 
 /* Ensure hover glow works on touch devices too */
-.group:active .nav-icon-glow {
-  filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 16px rgba(0, 255, 60, 0.3));
+.group:active .nav-icon-glow,
+.group:active span {
+  color: var(--primary);
+  filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.7)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4));
 }

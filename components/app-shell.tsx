@@ -142,17 +142,39 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                   "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
                   "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive
-                    ? "bg-primary/10 text-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                    ? "bg-primary/10"
+                    : "hover:bg-secondary",
                 )}
+                style={{
+                  filter: isActive 
+                    ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" 
+                    : undefined
+                }}
               >
                 <Icon 
                   className={cn(
-                    "h-5 w-5 transition-all nav-icon-glow",
-                    isActive ? "text-primary active-glow" : "group-hover:text-primary"
-                  )} 
+                    "h-5 w-5 transition-all",
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                  )}
+                  style={{
+                    filter: isActive 
+                      ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))"
+                      : undefined
+                  }}
                 />
-                {item.label}
+                <span 
+                  className={cn(
+                    "transition-all",
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                  )}
+                  style={{
+                    filter: isActive 
+                      ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))"
+                      : undefined
+                  }}
+                >
+                  {item.label}
+                </span>
               </Link>
             )
           })}
@@ -222,21 +244,37 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                 className={cn(
                   "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 relative transition-all group",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isActive 
-                    ? "text-foreground" 
-                    : "text-muted-foreground hover:text-foreground",
                 )}
+                style={{
+                  filter: isActive 
+                    ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" 
+                    : undefined
+                }}
               >
                 <Icon 
                   className={cn(
-                    "h-6 w-6 transition-all nav-icon-glow",
-                    isActive ? "text-primary active-glow" : "group-hover:text-primary"
-                  )} 
+                    "h-6 w-6 transition-all",
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary"
+                  )}
+                  style={{
+                    filter: isActive 
+                      ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9))"
+                      : undefined
+                  }}
                 />
-                <span className={cn(
-                  "text-xs font-medium transition-colors",
-                  isActive && "text-primary"
-                )}>{item.label}</span>
+                <span 
+                  className={cn(
+                    "text-xs font-medium transition-all",
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary"
+                  )}
+                  style={{
+                    filter: isActive 
+                      ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))"
+                      : undefined
+                  }}
+                >
+                  {item.label}
+                </span>
               </Link>
             )
           })}
@@ -248,11 +286,10 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                   className={cn(
                     "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 transition-all group",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <MoreHorizontal className="h-6 w-6 transition-all nav-icon-glow group-hover:text-primary" />
-                  <span className="text-xs font-medium">More</span>
+                  <MoreHorizontal className="h-6 w-6 transition-all text-foreground group-hover:text-primary group-active:text-primary" />
+                  <span className="text-xs font-medium text-foreground group-hover:text-primary group-active:text-primary">More</span>
                 </button>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-auto max-h-[80vh]">
@@ -272,17 +309,39 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                           "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
                           "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           isActive
-                            ? "bg-primary/10 text-foreground"
-                            : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                            ? "bg-primary/10"
+                            : "hover:bg-secondary",
                         )}
+                        style={{
+                          filter: isActive 
+                            ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" 
+                            : undefined
+                        }}
                       >
                         <Icon 
                           className={cn(
-                            "h-5 w-5 transition-all nav-icon-glow",
-                            isActive ? "text-primary active-glow" : "group-hover:text-primary"
-                          )} 
+                            "h-5 w-5 transition-all",
+                            isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                          )}
+                          style={{
+                            filter: isActive 
+                              ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))"
+                              : undefined
+                          }}
                         />
-                        {item.label}
+                        <span 
+                          className={cn(
+                            "transition-all",
+                            isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                          )}
+                          style={{
+                            filter: isActive 
+                              ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))"
+                              : undefined
+                          }}
+                        >
+                          {item.label}
+                        </span>
                       </Link>
                     )
                   })}
