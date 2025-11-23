@@ -24,7 +24,6 @@ export function ParticleBackground() {
   const animationFrameRef = useRef<number>()
   const [logoLoaded, setLogoLoaded] = useState(false)
   const logoRef = useRef<HTMLImageElement>()
-  const lastMousePosRef = useRef<{ x: number; y: number; time: number } | null>(null)
 
   useEffect(() => {
     const canvasBack = canvasBackRef.current
@@ -121,60 +120,61 @@ export function ParticleBackground() {
       console.log("[v0] Created", particleCount, "evenly distributed particles")
     }
 
-    const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+    const handleClick = (e: MouseEvent | TouchEvent) => {
       const x = e instanceof MouseEvent ? e.clientX : e.touches[0]?.clientX
       const y = e instanceof MouseEvent ? e.clientY : e.touches[0]?.clientY
 
       if (!x || !y) return
 
-      const now = Date.now()
+      particlesRef.current.forEach((particle) => {
+        const dx = particle.x - x
+        const dy = particle.y - y
+        const distance = Math.sqrt(dx * dx + dy * dy)
 
-      if (lastMousePosRef.current) {
-        const dt = now - lastMousePosRef.current.time
-        if (dt > 0 && dt < 100) {
-          const velocityX = (x - lastMousePosRef.current.x) / dt
-          const velocityY = (y - lastMousePosRef.current.y) / dt
-          const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY)
+        if (distance < 60 && distance > 0) {
+          // Push particle away from click
+          const pushAngle = Math.atan2(dy, dx)
+          particle.speedX = Math.cos(pushAngle) * particle.baseSpeed * 3
+          particle.speedY = Math.sin(pushAngle) * particle.baseSpeed * 3
+          particle.angle = pushAngle
 
-          if (speed > 0.5) {
-            particlesRef.current.forEach((particle) => {
-              const dx = particle.x - x
-              const dy = particle.y - y
-              const distance = Math.sqrt(dx * dx + dy * dy)
-
-              if (distance < 80) {
-                const kickStrength = Math.min(speed * 2, 3)
-                particle.speedX = velocityX * kickStrength * 20
-                particle.speedY = velocityY * kickStrength * 20
-                particle.angle = Math.atan2(particle.speedY, particle.speedX)
-
-                setTimeout(() => {
-                  particle.speedX = Math.cos(particle.angle) * particle.baseSpeed
-                  particle.speedY = Math.sin(particle.angle) * particle.baseSpeed
-                }, 500)
-              }
-            })
-          }
+          // Gradually return to base speed
+          setTimeout(() => {
+            particle.speedX = Math.cos(particle.angle) * particle.baseSpeed
+            particle.speedY = Math.sin(particle.angle) * particle.baseSpeed
+          }, 800)
         }
-      }
-
-      lastMousePosRef.current = { x, y, time: now }
+      })
     }
 
-    document.addEventListener("mousemove", handleMouseMove)
-    document.addEventListener("touchmove", handleMouseMove, { passive: true })
+    document.addEventListener("click", handleClick)
+    document.addEventListener("touchstart", handleClick, { passive: true })
 
     const getMainLogoRect = (): { x: number; y: number; radius: number } | null => {
-      const logoElements = document.querySelectorAll('img[alt*="1-2 DRIVE Logo"]')
-      for (const logoEl of Array.from(logoElements)) {
-        const rect = logoEl.getBoundingClientRect()
-        if (rect.width > 200) {
+      const animatedDiv = document.querySelector(".animate-wheel-spin")
+      if (animatedDiv) {
+        const logoImg = animatedDiv.querySelector('img[alt*="1-2 DRIVE Logo"]') as HTMLImageElement
+        if (logoImg && logoImg.complete) {
+          const rect = logoImg.getBoundingClientRect()
+          // The logo image actual size is in the rect, add 60px barrier for glow
+          const radius = Math.min(rect.width, rect.height) / 2 + 60
+          console.log("[v0] Main logo detected:", {
+            width: rect.width,
+            height: rect.height,
+            radius,
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          })
           return {
             x: rect.left + rect.width / 2,
             y: rect.top + rect.height / 2,
-            radius: rect.width / 2 + 90,
+            radius,
           }
+        } else {
+          console.log("[v0] Logo img found but not loaded yet")
         }
+      } else {
+        console.log("[v0] Could not find .animate-wheel-spin div")
       }
       return null
     }
@@ -204,6 +204,7 @@ export function ParticleBackground() {
           const p2 = particlesRef.current[j]
 
           if (checkCollision(p1, p2)) {
+            // Swap velocities and angles completely
             const tempSpeedX = p1.speedX
             const tempSpeedY = p1.speedY
             const tempAngle = p1.angle
@@ -216,6 +217,7 @@ export function ParticleBackground() {
             p2.speedY = tempSpeedY
             p2.angle = tempAngle
 
+            // Separate overlapping particles
             const dx = p2.x - p1.x
             const dy = p2.y - p1.y
             const dist = Math.sqrt(dx * dx + dy * dy)
@@ -243,6 +245,7 @@ export function ParticleBackground() {
 
           if (distance < barrierDistance) {
             if (!particle.justBouncedOffLogo) {
+              // Reflect particle off the logo using simple reflection
               const normalAngle = Math.atan2(dy, dx)
               const incidentAngle = Math.atan2(particle.speedY, particle.speedX)
               const reflectionAngle = 2 * normalAngle - incidentAngle
@@ -253,6 +256,7 @@ export function ParticleBackground() {
               particle.justBouncedOffLogo = true
             }
 
+            // Push particle outside the barrier
             const pushDistance = barrierDistance - distance + 2
             particle.x += (dx / distance) * pushDistance
             particle.y += (dy / distance) * pushDistance
@@ -271,6 +275,7 @@ export function ParticleBackground() {
         if (particle.y < -padding) particle.y = window.innerHeight + padding
         if (particle.y > window.innerHeight + padding) particle.y = -padding
 
+        // Draw particle
         const ctx = particle.layer === "behind" ? ctxBack : ctxFront
 
         ctx.save()
@@ -300,8 +305,8 @@ export function ParticleBackground() {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas)
-      document.removeEventListener("mousemove", handleMouseMove)
-      document.removeEventListener("touchmove", handleMouseMove)
+      document.removeEventListener("click", handleClick)
+      document.removeEventListener("touchstart", handleClick)
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
