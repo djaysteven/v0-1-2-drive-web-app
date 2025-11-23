@@ -19,7 +19,6 @@ interface Particle {
 
 export function ParticleBackground() {
   const canvasBackRef = useRef<HTMLCanvasElement>(null)
-  const canvasFrontRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const animationFrameRef = useRef<number>()
   const [logoLoaded, setLogoLoaded] = useState(false)
@@ -27,12 +26,10 @@ export function ParticleBackground() {
 
   useEffect(() => {
     const canvasBack = canvasBackRef.current
-    const canvasFront = canvasFrontRef.current
-    if (!canvasBack || !canvasFront) return
+    if (!canvasBack) return
 
     const ctxBack = canvasBack.getContext("2d", { alpha: true })
-    const ctxFront = canvasFront.getContext("2d", { alpha: true })
-    if (!ctxBack || !ctxFront) return
+    if (!ctxBack) return
 
     const resizeCanvas = () => {
       const dpr = window.devicePixelRatio || 1
@@ -44,12 +41,6 @@ export function ParticleBackground() {
       canvasBack.style.width = `${window.innerWidth}px`
       canvasBack.style.height = `${window.innerHeight}px`
       ctxBack.scale(dpr, dpr)
-
-      canvasFront.width = width
-      canvasFront.height = height
-      canvasFront.style.width = `${window.innerWidth}px`
-      canvasFront.style.height = `${window.innerHeight}px`
-      ctxFront.scale(dpr, dpr)
     }
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
@@ -179,15 +170,12 @@ export function ParticleBackground() {
 
     const animate = () => {
       const canvasBack = canvasBackRef.current
-      const canvasFront = canvasFrontRef.current
-      if (!canvasBack || !canvasFront) return
+      if (!canvasBack) return
 
       const ctxBack = canvasBack.getContext("2d", { alpha: true })
-      const ctxFront = canvasFront.getContext("2d", { alpha: true })
-      if (!ctxBack || !ctxFront) return
+      if (!ctxBack) return
 
       ctxBack.clearRect(0, 0, canvasBack.width, canvasBack.height)
-      ctxFront.clearRect(0, 0, canvasFront.width, canvasFront.height)
 
       for (let i = 0; i < particlesRef.current.length; i++) {
         for (let j = i + 1; j < particlesRef.current.length; j++) {
@@ -267,22 +255,22 @@ export function ParticleBackground() {
         if (particle.y > window.innerHeight + padding) particle.y = -padding
 
         // Draw particle
-        const ctx = particle.layer === "behind" ? ctxBack : ctxFront
+        const ctx = ctxBack
 
         ctx.save()
         ctx.translate(particle.x, particle.y)
         ctx.rotate((particle.rotation * Math.PI) / 180)
         ctx.globalAlpha = particle.opacity
 
-        ctx.shadowColor = particle.layer === "behind" ? "rgba(0, 255, 60, 0.6)" : "rgba(0, 255, 60, 0.3)"
-        ctx.shadowBlur = particle.layer === "behind" ? 25 : 15
+        ctx.shadowColor = "rgba(0, 255, 60, 0.6)"
+        ctx.shadowBlur = 25
 
         if (logoLoaded && logoRef.current) {
           ctx.drawImage(logoRef.current, -particle.size / 2, -particle.size / 2, particle.size, particle.size)
         } else {
           ctx.beginPath()
           ctx.arc(0, 0, particle.size / 2, 0, Math.PI * 2)
-          ctx.fillStyle = particle.layer === "behind" ? "rgba(0, 255, 60, 0.4)" : "rgba(0, 255, 60, 0.15)"
+          ctx.fillStyle = "rgba(0, 255, 60, 0.4)"
           ctx.fill()
         }
 
@@ -311,13 +299,6 @@ export function ParticleBackground() {
         className="fixed inset-0 pointer-events-none"
         style={{
           zIndex: 1,
-        }}
-      />
-      <canvas
-        ref={canvasFrontRef}
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          zIndex: 11,
         }}
       />
     </>

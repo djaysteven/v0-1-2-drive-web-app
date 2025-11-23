@@ -230,7 +230,10 @@ export function AppShell({ children, header, actions }: AppShellProps) {
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto pb-48 lg:pb-6 min-h-0" style={{ zIndex: 10 }}>
+        <main
+          className="flex-1 overflow-y-auto pb-32 lg:pb-6 min-h-0"
+          style={{ zIndex: 10, paddingBottom: "max(128px, calc(80px + env(safe-area-inset-bottom) + 48px))" }}
+        >
           <PageTransition>{children}</PageTransition>
         </main>
 
