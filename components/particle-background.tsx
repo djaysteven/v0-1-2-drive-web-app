@@ -11,8 +11,10 @@ interface Particle {
   rotation: number
   rotationSpeed: number
   opacity: number
-  baseOpacity: number // Added base opacity for dynamic adjustment
   layer: "behind" | "front"
+  angle: number
+  baseSpeed: number
+  justBouncedOffLogo: boolean
 }
 
 export function ParticleBackground() {
@@ -20,9 +22,9 @@ export function ParticleBackground() {
   const canvasFrontRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const animationFrameRef = useRef<number>()
-  const mouseRef = useRef({ x: 0, y: 0, active: false })
   const [logoLoaded, setLogoLoaded] = useState(false)
   const logoRef = useRef<HTMLImageElement>()
+  const lastMousePosRef = useRef<{ x: number; y: number; time: number } | null>(null)
 
   useEffect(() => {
     const canvasBack = canvasBackRef.current
@@ -66,76 +68,196 @@ export function ParticleBackground() {
       logo.src = "/logo.png"
     }
 
-    const particleCount = 25
+    const particleCount = 45
     if (particlesRef.current.length === 0) {
       const particles: Particle[] = []
+      let seed = 12345
+      const seededRandom = () => {
+        seed = (seed * 9301 + 49297) % 233280
+        return seed / 233280
+      }
+
+      const cols = 9
+      const rows = 5
+      const cellWidth = window.innerWidth / cols
+      const cellHeight = window.innerHeight / rows
+
       for (let i = 0; i < particleCount; i++) {
-        const isFront = Math.random() < 0.3
-        const baseOpacity = isFront ? 0.08 + Math.random() * 0.1 : 0.25 + Math.random() * 0.25
+        const isFront = seededRandom() < 0.3
+        const opacity = isFront ? 0.15 : 0.4
+
+        let size: number
+        if (seededRandom() < 0.6) {
+          size = 15 + seededRandom() * 15
+        } else {
+          size = 35 + seededRandom() * 30
+        }
+
+        const angle = seededRandom() * Math.PI * 2
+        const baseSpeed = 0.5 + seededRandom() * 0.8
+
+        const cellIndex = i % (cols * rows)
+        const col = cellIndex % cols
+        const row = Math.floor(cellIndex / cols)
+        const x = col * cellWidth + seededRandom() * cellWidth
+        const y = row * cellHeight + seededRandom() * cellHeight
+
         particles.push({
-          x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight,
-          size: 25 + Math.random() * 35,
-          speedX: (Math.random() - 0.5) * 2.5, // Increased from 0.8 to 2.5
-          speedY: (Math.random() - 0.5) * 2.5, // Increased from 0.8 to 2.5
-          rotation: Math.random() * 360,
-          rotationSpeed: (Math.random() - 0.5) * 5, // Increased from 3 to 5
-          opacity: baseOpacity,
-          baseOpacity: baseOpacity,
+          x,
+          y,
+          size,
+          speedX: Math.cos(angle) * baseSpeed,
+          speedY: Math.sin(angle) * baseSpeed,
+          rotation: seededRandom() * 360,
+          rotationSpeed: (seededRandom() - 0.5) * 12,
+          opacity,
           layer: isFront ? "front" : "behind",
+          angle,
+          baseSpeed,
+          justBouncedOffLogo: false,
         })
       }
       particlesRef.current = particles
-      console.log("[v0] Created", particleCount, "particles with dual-layer system")
+      console.log("[v0] Created", particleCount, "evenly distributed particles")
     }
 
-    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
-      if (e instanceof MouseEvent) {
-        mouseRef.current = { x: e.clientX, y: e.clientY, active: true }
-      } else if (e.touches.length > 0) {
-        mouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, active: true }
+    const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+      const x = e instanceof MouseEvent ? e.clientX : e.touches[0]?.clientX
+      const y = e instanceof MouseEvent ? e.clientY : e.touches[0]?.clientY
+
+      if (!x || !y) return
+
+      const now = Date.now()
+
+      if (lastMousePosRef.current) {
+        const dt = now - lastMousePosRef.current.time
+        if (dt > 0 && dt < 100) {
+          const velocityX = (x - lastMousePosRef.current.x) / dt
+          const velocityY = (y - lastMousePosRef.current.y) / dt
+          const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY)
+
+          if (speed > 0.5) {
+            particlesRef.current.forEach((particle) => {
+              const dx = particle.x - x
+              const dy = particle.y - y
+              const distance = Math.sqrt(dx * dx + dy * dy)
+
+              if (distance < 80) {
+                const kickStrength = Math.min(speed * 2, 3)
+                particle.speedX = velocityX * kickStrength * 20
+                particle.speedY = velocityY * kickStrength * 20
+                particle.angle = Math.atan2(particle.speedY, particle.speedX)
+
+                setTimeout(() => {
+                  particle.speedX = Math.cos(particle.angle) * particle.baseSpeed
+                  particle.speedY = Math.sin(particle.angle) * particle.baseSpeed
+                }, 500)
+              }
+            })
+          }
+        }
       }
+
+      lastMousePosRef.current = { x, y, time: now }
     }
 
-    const handlePointerEnd = () => {
-      mouseRef.current.active = false
+    document.addEventListener("mousemove", handleMouseMove)
+    document.addEventListener("touchmove", handleMouseMove, { passive: true })
+
+    const getMainLogoRect = (): { x: number; y: number; radius: number } | null => {
+      const logoElements = document.querySelectorAll('img[alt*="1-2 DRIVE Logo"]')
+      for (const logoEl of Array.from(logoElements)) {
+        const rect = logoEl.getBoundingClientRect()
+        if (rect.width > 200) {
+          return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+            radius: rect.width / 2 + 90,
+          }
+        }
+      }
+      return null
     }
 
-    document.addEventListener("mousemove", handlePointerMove, { passive: true })
-    document.addEventListener("touchmove", handlePointerMove, { passive: true })
-    document.addEventListener("mouseleave", handlePointerEnd)
-    document.addEventListener("touchend", handlePointerEnd)
-    document.addEventListener("touchcancel", handlePointerEnd)
-
-    const isOverElement = (x: number, y: number): boolean => {
-      const elements = document.elementsFromPoint(x, y)
-      // Check if any element is a card, dialog, or main content window
-      return elements.some(
-        (el) =>
-          el.classList.contains("card-with-glow") ||
-          el.classList.contains("group") ||
-          el.tagName === "DIALOG" ||
-          el.getAttribute("role") === "dialog" ||
-          el.classList.contains("sheet") ||
-          el.closest("[data-radix-dialog-content]") !== null,
-      )
+    const checkCollision = (p1: Particle, p2: Particle): boolean => {
+      const dx = p1.x - p2.x
+      const dy = p1.y - p2.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      return distance < (p1.size + p2.size) / 2
     }
 
     const animate = () => {
-      ctxBack.clearRect(0, 0, window.innerWidth, window.innerHeight)
-      ctxFront.clearRect(0, 0, window.innerWidth, window.innerHeight)
+      const canvasBack = canvasBackRef.current
+      const canvasFront = canvasFrontRef.current
+      if (!canvasBack || !canvasFront) return
+
+      const ctxBack = canvasBack.getContext("2d", { alpha: true })
+      const ctxFront = canvasFront.getContext("2d", { alpha: true })
+      if (!ctxBack || !ctxFront) return
+
+      ctxBack.clearRect(0, 0, canvasBack.width, canvasBack.height)
+      ctxFront.clearRect(0, 0, canvasFront.width, canvasFront.height)
+
+      for (let i = 0; i < particlesRef.current.length; i++) {
+        for (let j = i + 1; j < particlesRef.current.length; j++) {
+          const p1 = particlesRef.current[i]
+          const p2 = particlesRef.current[j]
+
+          if (checkCollision(p1, p2)) {
+            const tempSpeedX = p1.speedX
+            const tempSpeedY = p1.speedY
+            const tempAngle = p1.angle
+
+            p1.speedX = p2.speedX
+            p1.speedY = p2.speedY
+            p1.angle = p2.angle
+
+            p2.speedX = tempSpeedX
+            p2.speedY = tempSpeedY
+            p2.angle = tempAngle
+
+            const dx = p2.x - p1.x
+            const dy = p2.y - p1.y
+            const dist = Math.sqrt(dx * dx + dy * dy)
+            const overlap = (p1.size + p2.size) / 2 - dist
+            if (overlap > 0) {
+              const nx = dx / dist
+              const ny = dy / dist
+              p1.x -= (nx * overlap) / 2
+              p1.y -= (ny * overlap) / 2
+              p2.x += (nx * overlap) / 2
+              p2.y += (ny * overlap) / 2
+            }
+          }
+        }
+      }
+
+      const mainLogo = getMainLogoRect()
 
       particlesRef.current.forEach((particle) => {
-        if (mouseRef.current.active) {
-          const dx = particle.x - mouseRef.current.x
-          const dy = particle.y - mouseRef.current.y
+        if (mainLogo) {
+          const dx = particle.x - mainLogo.x
+          const dy = particle.y - mainLogo.y
           const distance = Math.sqrt(dx * dx + dy * dy)
-          const maxDistance = 150
+          const barrierDistance = particle.size / 2 + mainLogo.radius
 
-          if (distance < maxDistance && distance > 0) {
-            const force = (maxDistance - distance) / maxDistance
-            particle.speedX += (dx / distance) * force * 1.5
-            particle.speedY += (dy / distance) * force * 1.5
+          if (distance < barrierDistance) {
+            if (!particle.justBouncedOffLogo) {
+              const normalAngle = Math.atan2(dy, dx)
+              const incidentAngle = Math.atan2(particle.speedY, particle.speedX)
+              const reflectionAngle = 2 * normalAngle - incidentAngle
+
+              particle.angle = reflectionAngle
+              particle.speedX = Math.cos(reflectionAngle) * particle.baseSpeed
+              particle.speedY = Math.sin(reflectionAngle) * particle.baseSpeed
+              particle.justBouncedOffLogo = true
+            }
+
+            const pushDistance = barrierDistance - distance + 2
+            particle.x += (dx / distance) * pushDistance
+            particle.y += (dy / distance) * pushDistance
+          } else if (distance > barrierDistance + 10) {
+            particle.justBouncedOffLogo = false
           }
         }
 
@@ -143,34 +265,11 @@ export function ParticleBackground() {
         particle.y += particle.speedY
         particle.rotation += particle.rotationSpeed
 
-        particle.speedX *= 0.99 // Was 0.98
-        particle.speedY *= 0.99
-
-        const minSpeed = 0.6 // Was 0.3
-        if (Math.abs(particle.speedX) < minSpeed) {
-          particle.speedX = (Math.random() - 0.5) * 2.5
-        }
-        if (Math.abs(particle.speedY) < minSpeed) {
-          particle.speedY = (Math.random() - 0.5) * 2.5
-        }
-
-        const padding = particle.size * 2
+        const padding = particle.size
         if (particle.x < -padding) particle.x = window.innerWidth + padding
         if (particle.x > window.innerWidth + padding) particle.x = -padding
         if (particle.y < -padding) particle.y = window.innerHeight + padding
         if (particle.y > window.innerHeight + padding) particle.y = -padding
-
-        const overElement = isOverElement(particle.x, particle.y)
-        if (overElement) {
-          // Over an element - use base opacity (more transparent)
-          particle.opacity = particle.baseOpacity
-        } else {
-          // In open space between windows - increase opacity (less transparent)
-          particle.opacity =
-            particle.layer === "behind"
-              ? Math.min(particle.baseOpacity * 2.2, 0.8) // Behind layer: up to 80% opacity in gaps
-              : Math.min(particle.baseOpacity * 3, 0.4) // Front layer: up to 40% opacity in gaps
-        }
 
         const ctx = particle.layer === "behind" ? ctxBack : ctxFront
 
@@ -179,13 +278,8 @@ export function ParticleBackground() {
         ctx.rotate((particle.rotation * Math.PI) / 180)
         ctx.globalAlpha = particle.opacity
 
-        if (particle.layer === "behind") {
-          ctx.shadowColor = overElement ? "rgba(0, 255, 60, 0.5)" : "rgba(0, 255, 60, 0.9)" // Stronger glow in gaps
-          ctx.shadowBlur = overElement ? 20 : 35 // More blur in gaps
-        } else {
-          ctx.shadowColor = overElement ? "rgba(0, 255, 60, 0.2)" : "rgba(0, 255, 60, 0.5)"
-          ctx.shadowBlur = overElement ? 12 : 25
-        }
+        ctx.shadowColor = particle.layer === "behind" ? "rgba(0, 255, 60, 0.6)" : "rgba(0, 255, 60, 0.3)"
+        ctx.shadowBlur = particle.layer === "behind" ? 25 : 15
 
         if (logoLoaded && logoRef.current) {
           ctx.drawImage(logoRef.current, -particle.size / 2, -particle.size / 2, particle.size, particle.size)
@@ -206,11 +300,8 @@ export function ParticleBackground() {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas)
-      document.removeEventListener("mousemove", handlePointerMove)
-      document.removeEventListener("touchmove", handlePointerMove)
-      document.removeEventListener("mouseleave", handlePointerEnd)
-      document.removeEventListener("touchend", handlePointerEnd)
-      document.removeEventListener("touchcancel", handlePointerEnd)
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("touchmove", handleMouseMove)
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }

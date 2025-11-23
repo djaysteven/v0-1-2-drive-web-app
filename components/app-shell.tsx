@@ -53,7 +53,6 @@ export function AppShell({ children, header, actions }: AppShellProps) {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
 
   useEffect(() => {
-    // Prevent wheel events with horizontal delta (trackpad swipe)
     const preventHorizontalScroll = (e: WheelEvent) => {
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault()
@@ -62,7 +61,6 @@ export function AppShell({ children, header, actions }: AppShellProps) {
       }
     }
 
-    // Prevent touch gestures that might trigger navigation
     let touchStartX = 0
     const preventSwipeNavigation = (e: TouchEvent) => {
       touchStartX = e.touches[0].clientX
@@ -72,23 +70,18 @@ export function AppShell({ children, header, actions }: AppShellProps) {
       const touchEndX = e.touches[0].clientX
       const diff = touchStartX - touchEndX
 
-      // If swiping horizontally near the edge, prevent it
       if (Math.abs(diff) > 10 && (touchStartX < 50 || touchStartX > window.innerWidth - 50)) {
         e.preventDefault()
       }
     }
 
-    // Prevent browser back/forward navigation
     const preventPopState = (e: PopStateEvent) => {
       e.preventDefault()
-      // Push the current state back to prevent navigation
       window.history.pushState(null, "", window.location.href)
     }
 
-    // Add a dummy history state to prevent going back
     window.history.pushState(null, "", window.location.href)
 
-    // Add all event listeners
     document.addEventListener("wheel", preventHorizontalScroll, { passive: false })
     document.addEventListener("touchstart", preventSwipeNavigation, { passive: false })
     document.addEventListener("touchmove", preventSwipeNavigationMove, { passive: false })
@@ -237,7 +230,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+        <main className="flex-1 overflow-y-auto pb-40 lg:pb-6">
           <PageTransition>{children}</PageTransition>
         </main>
 

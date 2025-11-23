@@ -235,10 +235,13 @@
 /* Ensure body and main content don't cover particles */
 body {
   position: relative;
+  /* Removed overflow hidden to allow proper scrolling */
 }
 
 /* Ensure main content is positioned above particles but doesn't block them */
 main {
   position: relative;
   z-index: 10;
+  /* Added min-height to ensure content can scroll properly */
+  min-height: 100%;
 }
