@@ -231,3 +231,14 @@
   color: var(--primary);
   filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.7)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4));
 }
+
+/* Ensure body and main content don't cover particles */
+body {
+  position: relative;
+}
+
+/* Ensure main content is positioned above particles but doesn't block them */
+main {
+  position: relative;
+  z-index: 10;
+}

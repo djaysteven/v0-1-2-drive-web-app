@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { SplashScreen } from "@/components/splash-screen"
+import { ParticleBackground } from "@/components/particle-background"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -43,6 +44,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`font-sans ${poppins.variable} antialiased`}>
         <SplashScreen />
+        <ParticleBackground />
         <Suspense>{children}</Suspense>
         <Toaster />
         <Analytics />

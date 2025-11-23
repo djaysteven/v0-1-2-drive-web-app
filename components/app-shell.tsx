@@ -1,16 +1,29 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { Home, Car, Building2, Calendar, TrendingUp, Users, Settings, LogIn, LogOut, MoreHorizontal, Phone } from 'lucide-react'
+import {
+  Home,
+  Car,
+  Building2,
+  Calendar,
+  TrendingUp,
+  Users,
+  Settings,
+  LogIn,
+  LogOut,
+  MoreHorizontal,
+  Phone,
+} from "lucide-react"
 import { useRole } from "@/hooks/use-role"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useState, useEffect } from "react"
+import { PageTransition } from "@/components/page-transition"
 
 interface AppShellProps {
   children: ReactNode
@@ -110,6 +123,8 @@ export function AppShell({ children, header, actions }: AppShellProps) {
         overscrollBehaviorX: "none",
         overflowX: "hidden",
         WebkitOverflowScrolling: "touch",
+        position: "relative",
+        zIndex: 1,
       }}
     >
       {/* Desktop Sidebar */}
@@ -141,36 +156,28 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
                   "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isActive
-                    ? "bg-primary/10"
-                    : "hover:bg-secondary",
+                  isActive ? "bg-primary/10" : "hover:bg-secondary",
                 )}
                 style={{
-                  filter: isActive 
-                    ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" 
-                    : undefined
+                  filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" : undefined,
                 }}
               >
-                <Icon 
+                <Icon
                   className={cn(
                     "h-5 w-5 transition-all",
-                    isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                   )}
                   style={{
-                    filter: isActive 
-                      ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))"
-                      : undefined
+                    filter: isActive ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))" : undefined,
                   }}
                 />
-                <span 
+                <span
                   className={cn(
                     "transition-all",
-                    isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                   )}
                   style={{
-                    filter: isActive 
-                      ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))"
-                      : undefined
+                    filter: isActive ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))" : undefined,
                   }}
                 >
                   {item.label}
@@ -230,7 +237,9 @@ export function AppShell({ children, header, actions }: AppShellProps) {
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">{children}</main>
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+          <PageTransition>{children}</PageTransition>
+        </main>
 
         {/* Mobile Bottom Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-around border-t border-border bg-card lg:hidden pb-safe">
@@ -246,31 +255,25 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 )}
                 style={{
-                  filter: isActive 
-                    ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" 
-                    : undefined
+                  filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" : undefined,
                 }}
               >
-                <Icon 
+                <Icon
                   className={cn(
                     "h-6 w-6 transition-all",
-                    isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary"
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary",
                   )}
                   style={{
-                    filter: isActive 
-                      ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9))"
-                      : undefined
+                    filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9))" : undefined,
                   }}
                 />
-                <span 
+                <span
                   className={cn(
                     "text-xs font-medium transition-all",
-                    isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary"
+                    isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary",
                   )}
                   style={{
-                    filter: isActive 
-                      ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))"
-                      : undefined
+                    filter: isActive ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))" : undefined,
                   }}
                 >
                   {item.label}
@@ -289,7 +292,9 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                   )}
                 >
                   <MoreHorizontal className="h-6 w-6 transition-all text-foreground group-hover:text-primary group-active:text-primary" />
-                  <span className="text-xs font-medium text-foreground group-hover:text-primary group-active:text-primary">More</span>
+                  <span className="text-xs font-medium text-foreground group-hover:text-primary group-active:text-primary">
+                    More
+                  </span>
                 </button>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-auto max-h-[80vh]">
@@ -308,36 +313,28 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                         className={cn(
                           "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
                           "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          isActive
-                            ? "bg-primary/10"
-                            : "hover:bg-secondary",
+                          isActive ? "bg-primary/10" : "hover:bg-secondary",
                         )}
                         style={{
-                          filter: isActive 
-                            ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" 
-                            : undefined
+                          filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" : undefined,
                         }}
                       >
-                        <Icon 
+                        <Icon
                           className={cn(
                             "h-5 w-5 transition-all",
-                            isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                            isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                           )}
                           style={{
-                            filter: isActive 
-                              ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))"
-                              : undefined
+                            filter: isActive ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))" : undefined,
                           }}
                         />
-                        <span 
+                        <span
                           className={cn(
                             "transition-all",
-                            isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                            isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                           )}
                           style={{
-                            filter: isActive 
-                              ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))"
-                              : undefined
+                            filter: isActive ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))" : undefined,
                           }}
                         >
                           {item.label}
