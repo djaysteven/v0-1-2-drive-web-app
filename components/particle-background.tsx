@@ -156,25 +156,16 @@ export function ParticleBackground() {
         const logoImg = animatedDiv.querySelector('img[alt*="1-2 DRIVE Logo"]') as HTMLImageElement
         if (logoImg && logoImg.complete) {
           const rect = logoImg.getBoundingClientRect()
-          // The logo image actual size is in the rect, add 60px barrier for glow
-          const radius = Math.min(rect.width, rect.height) / 2 + 60
-          console.log("[v0] Main logo detected:", {
-            width: rect.width,
-            height: rect.height,
-            radius,
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-          })
+          const baseLogoSize = 150 // Fixed base size regardless of animation scale
+          const barrierPadding = 40 // Padding for the glow effect
+          const radius = baseLogoSize / 2 + barrierPadding // 75 + 40 = 115px total radius
+
           return {
             x: rect.left + rect.width / 2,
             y: rect.top + rect.height / 2,
             radius,
           }
-        } else {
-          console.log("[v0] Logo img found but not loaded yet")
         }
-      } else {
-        console.log("[v0] Could not find .animate-wheel-spin div")
       }
       return null
     }
