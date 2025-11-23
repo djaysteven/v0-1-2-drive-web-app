@@ -317,7 +317,7 @@ export function ParticleBackground() {
         ref={canvasFrontRef}
         className="fixed inset-0 pointer-events-none"
         style={{
-          zIndex: 50,
+          zIndex: 11,
         }}
       />
     </>
