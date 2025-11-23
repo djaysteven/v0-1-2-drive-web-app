@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { SplashScreen } from "@/components/splash-screen"
 import { ParticleBackground } from "@/components/particle-background"
+import { ImagePreloader } from "@/components/image-preloader"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body className={`font-sans ${poppins.variable} antialiased`}>
         <SplashScreen />
         <ParticleBackground />
+        <ImagePreloader />
         <Suspense>{children}</Suspense>
         <Toaster />
         <Analytics />
