@@ -6,9 +6,10 @@ import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookingWizard } from "@/components/booking-wizard"
+import { RemindersCard } from "@/components/reminders-card"
 import { NotificationSettings } from "@/components/notification-settings"
 import { DatabaseSetupBanner } from "@/components/database-setup-banner"
-import { Car, Building2, Users, Calendar, Plus, Bike } from "lucide-react"
+import { Car, Building2, Users, Calendar, Plus, Bike } from 'lucide-react'
 import Link from "next/link"
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
@@ -109,7 +110,7 @@ export default function HomePage() {
       }
     >
       <div className="animate-in fade-in duration-1000">
-        <div className="container mx-auto p-4 lg:p-6 space-y-6 md:space-y-8">
+        <div className="container mx-auto p-4 lg:p-6 space-y-6">
           {isOwner && <DatabaseSetupBanner />}
 
           <div className="card-hover-glow-logo rounded-2xl bg-background p-2 sm:p-4 border border-primary/30 flex items-center justify-center group">
@@ -141,7 +142,7 @@ export default function HomePage() {
           </div>
 
           {!isOwner && (
-            <div className="grid grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <Link href="/vehicles?type=bike" className="w-full group">
                 <Card className="card-hover-glow rounded-xl sm:rounded-2xl bg-card shadow-lg cursor-pointer h-full min-h-[180px] sm:min-h-[240px]">
                   <CardContent className="flex flex-col items-center justify-center p-3 sm:p-8 gap-2 sm:gap-4 h-full">
@@ -153,9 +154,7 @@ export default function HomePage() {
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Bike</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
-                        {stats.availableBikes}
-                      </p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableBikes}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -173,9 +172,7 @@ export default function HomePage() {
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Car</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
-                        {stats.availableCars}
-                      </p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCars}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -193,9 +190,7 @@ export default function HomePage() {
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Condo</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
-                        {stats.availableCondos}
-                      </p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCondos}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -221,9 +216,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
-                      {stats.availableVehicles}
-                    </p>
+                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableVehicles}</p>
                     <p className="text-xs text-muted-foreground">available</p>
                   </div>
                 </div>
@@ -239,9 +232,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
-                      {stats.availableCondos}
-                    </p>
+                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCondos}</p>
                     <p className="text-xs text-muted-foreground">available</p>
                   </div>
                 </div>
@@ -250,7 +241,7 @@ export default function HomePage() {
           </div>
 
           {isOwner && (
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Card className="card-hover-glow rounded-2xl border-border bg-card shadow-lg group">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Active Customers</CardTitle>

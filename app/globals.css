@@ -232,16 +232,24 @@
   filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.7)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4));
 }
 
-/* Ensure body and main content don't cover particles */
-body {
-  position: relative;
-  /* Removed overflow hidden to allow proper scrolling */
-}
-
-/* Ensure main content is positioned above particles but doesn't block them */
+/* Ensure proper z-index layering for particle system */
 main {
   position: relative;
   z-index: 10;
-  /* Added min-height to ensure content can scroll properly */
-  min-height: 100%;
+}
+
+/* Add smooth page transition styles */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition-enter {
+  animation: page-fade-in 0.3s ease-out;
 }
