@@ -218,18 +218,36 @@
   filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 16px rgba(0, 255, 60, 0.4));
 }
 
-/* Enhanced hover states to apply green glow via CSS */
+/* Enhanced hover states to apply green glow via CSS with smooth transitions */
 .group:hover .nav-icon-glow,
 .group:hover span {
   color: var(--primary);
-  filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.7)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4));
+  filter: drop-shadow(0 0 10px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5));
+  transition: all 0.3s ease;
 }
 
 /* Ensure hover glow works on touch devices too */
 .group:active .nav-icon-glow,
 .group:active span {
   color: var(--primary);
-  filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.7)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4));
+  filter: drop-shadow(0 0 10px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5));
+  transition: all 0.3s ease;
+}
+
+/* Add pulsing animation for active navigation items */
+@keyframes nav-glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(0, 255, 60, 1)) drop-shadow(0 0 25px rgba(0, 255, 60, 0.6));
+  }
+}
+
+/* Add background glow for navigation items on hover */
+.group:hover {
+  background: radial-gradient(circle at center, rgba(0, 255, 60, 0.08) 0%, transparent 70%);
 }
 
 /* Ensure proper z-index layering for particle system */

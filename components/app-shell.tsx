@@ -152,30 +152,36 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 group",
                   "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isActive ? "bg-primary/10" : "hover:bg-secondary",
+                  isActive ? "bg-primary/10" : "hover:bg-primary/5",
                 )}
                 style={{
-                  filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" : undefined,
+                  filter: isActive
+                    ? "drop-shadow(0 0 12px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 20px rgba(0, 255, 60, 0.3))"
+                    : undefined,
                 }}
               >
                 <Icon
                   className={cn(
-                    "h-5 w-5 transition-all",
+                    "h-5 w-5 transition-all duration-300",
                     isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                   )}
                   style={{
-                    filter: isActive ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))" : undefined,
+                    filter: isActive
+                      ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5))"
+                      : undefined,
                   }}
                 />
                 <span
                   className={cn(
-                    "transition-all",
+                    "transition-all duration-300",
                     isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                   )}
                   style={{
-                    filter: isActive ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))" : undefined,
+                    filter: isActive
+                      ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4))"
+                      : undefined,
                   }}
                 >
                   {item.label}
@@ -249,29 +255,35 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 relative transition-all group",
+                  "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 relative transition-all duration-300 group",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 )}
                 style={{
-                  filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" : undefined,
+                  filter: isActive
+                    ? "drop-shadow(0 0 12px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 20px rgba(0, 255, 60, 0.3))"
+                    : undefined,
                 }}
               >
                 <Icon
                   className={cn(
-                    "h-6 w-6 transition-all",
+                    "h-6 w-6 transition-all duration-300",
                     isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary",
                   )}
                   style={{
-                    filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9))" : undefined,
+                    filter: isActive
+                      ? "drop-shadow(0 0 12px rgba(0, 255, 60, 1)) drop-shadow(0 0 18px rgba(0, 255, 60, 0.6))"
+                      : undefined,
                   }}
                 />
                 <span
                   className={cn(
-                    "text-xs font-medium transition-all",
+                    "text-xs font-medium transition-all duration-300",
                     isActive ? "text-primary" : "text-foreground group-hover:text-primary group-active:text-primary",
                   )}
                   style={{
-                    filter: isActive ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))" : undefined,
+                    filter: isActive
+                      ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5))"
+                      : undefined,
                   }}
                 >
                   {item.label}
@@ -285,7 +297,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
               <SheetTrigger asChild>
                 <button
                   className={cn(
-                    "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 transition-all group",
+                    "flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 transition-all duration-300 group",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   )}
                 >
@@ -309,30 +321,36 @@ export function AppShell({ children, header, actions }: AppShellProps) {
                         href={item.href}
                         onClick={() => setMoreMenuOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
+                          "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 group",
                           "min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           isActive ? "bg-primary/10" : "hover:bg-secondary",
                         )}
                         style={{
-                          filter: isActive ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.5))" : undefined,
+                          filter: isActive
+                            ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5))"
+                            : undefined,
                         }}
                       >
                         <Icon
                           className={cn(
-                            "h-5 w-5 transition-all",
+                            "h-5 w-5 transition-all duration-300",
                             isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                           )}
                           style={{
-                            filter: isActive ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8))" : undefined,
+                            filter: isActive
+                              ? "drop-shadow(0 0 10px rgba(0, 255, 60, 0.9)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5))"
+                              : undefined,
                           }}
                         />
                         <span
                           className={cn(
-                            "transition-all",
+                            "transition-all duration-300",
                             isActive ? "text-primary" : "text-foreground group-hover:text-primary",
                           )}
                           style={{
-                            filter: isActive ? "drop-shadow(0 0 6px rgba(0, 255, 60, 0.7))" : undefined,
+                            filter: isActive
+                              ? "drop-shadow(0 0 8px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 12px rgba(0, 255, 60, 0.4))"
+                              : undefined,
                           }}
                         >
                           {item.label}
