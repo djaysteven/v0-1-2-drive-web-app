@@ -44,9 +44,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${poppins.variable} antialiased`}>
+        <ImagePreloader />
         <SplashScreen />
         <ParticleBackground />
-        <ImagePreloader />
         <Suspense>{children}</Suspense>
         <Toaster />
         <Analytics />
