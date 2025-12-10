@@ -12,6 +12,8 @@ import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SalesHistoryViewer } from "@/components/sales-history-viewer"
 import { loadSalesHistory } from "@/lib/sales-history"
+import { SimpleSalesInput } from "@/components/simple-sales-input"
+import { SalesComparisonChart } from "@/components/sales-comparison-chart"
 
 export default function SalesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -292,6 +294,40 @@ export default function SalesPage() {
         }
       >
         <div className="container mx-auto p-4 lg:p-6 space-y-6">
+          <div className="grid gap-4 lg:grid-cols-3">
+            <SimpleSalesInput />
+
+            <Card className="rounded-2xl border-border bg-card shadow-lg lg:col-span-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Revenue This Month</CardTitle>
+                <DollarSign className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                {latestMonthData ? (
+                  <>
+                    <div className="text-2xl font-bold text-foreground">
+                      ฿{((latestMonthData.totalVehicles || 0) + (latestMonthData.totalCondos || 0)).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                      <div>Bikes + Cars: ฿{(latestMonthData.totalVehicles || 0).toLocaleString()}</div>
+                      <div>Condos: ฿{(latestMonthData.totalCondos || 0).toLocaleString()}</div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {latestMonthData.month} {latestMonthData.year}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold text-foreground">฿0</div>
+                    <p className="text-xs text-muted-foreground mt-2">No sales data yet</p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <SalesComparisonChart />
+
           {loading || historyLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4].map((i) => (
@@ -308,38 +344,6 @@ export default function SalesPage() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Card className="rounded-2xl border-border bg-card shadow-lg">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Revenue This Month</CardTitle>
-                  <DollarSign className="h-4 w-4 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  {latestMonthData ? (
-                    <>
-                      <div className="text-2xl font-bold text-foreground">
-                        ฿{((latestMonthData.totalVehicles || 0) + (latestMonthData.totalCondos || 0)).toLocaleString()}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                        <div>Vehicles: ฿{(latestMonthData.totalVehicles || 0).toLocaleString()}</div>
-                        <div>Condos: ฿{(latestMonthData.totalCondos || 0).toLocaleString()}</div>
-                        <div className="font-semibold pt-1 border-t border-border">
-                          Total: ฿
-                          {((latestMonthData.totalVehicles || 0) + (latestMonthData.totalCondos || 0)).toLocaleString()}
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {latestMonthData.month} {latestMonthData.year}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold text-foreground">฿0</div>
-                      <p className="text-xs text-muted-foreground mt-2">No sales history data</p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
               <Card className="rounded-2xl border-border bg-card shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Sales History</CardTitle>
