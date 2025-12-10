@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useRole } from "@/hooks/use-role"
 
 export default function CondosPage() {
-  const [condos, setCondos] = useState<Condo[]>([])
+  const [condos, setCondos] = useState<(Condo & { isCurrentlyBooked?: boolean })[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [bedroomFilter, setBedroomFilter] = useState<"all" | "studio" | "1">("all")
@@ -33,7 +33,7 @@ export default function CondosPage() {
   const loadCondos = async () => {
     setLoading(true)
     try {
-      const data = await condosApi.getAll()
+      const data = await condosApi.getAllWithBookingStatus()
       setCondos(data)
     } catch (error) {
       console.error("[v0] Failed to load condos:", error)
@@ -122,12 +122,14 @@ export default function CondosPage() {
     const matchesBedrooms =
       bedroomFilter === "all" ||
       (bedroomFilter === "studio" ? condo.bedrooms === 0 : condo.bedrooms === Number.parseInt(bedroomFilter))
-    const matchesStatus = statusFilter === "all" || condo.status === statusFilter
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "rented" ? condo.status === "rented" || condo.isCurrentlyBooked : condo.status === statusFilter)
     return matchesSearch && matchesBedrooms && matchesStatus
   })
 
-  const availableCount = condos.filter((c) => c.status === "available").length
-  const rentedCount = condos.filter((c) => c.status === "rented").length
+  const availableCount = condos.filter((c) => c.status === "available" && !c.isCurrentlyBooked).length
+  const rentedCount = condos.filter((c) => c.status === "rented" || c.isCurrentlyBooked).length
 
   return (
     <AppShell
@@ -225,7 +227,11 @@ export default function CondosPage() {
               const matchesBedrooms =
                 bedroomFilter === "all" ||
                 (bedroomFilter === "studio" ? condo.bedrooms === 0 : condo.bedrooms === Number.parseInt(bedroomFilter))
-              const matchesStatus = statusFilter === "all" || condo.status === statusFilter
+              const matchesStatus =
+                statusFilter === "all" ||
+                (statusFilter === "rented"
+                  ? condo.status === "rented" || condo.isCurrentlyBooked
+                  : condo.status === statusFilter)
 
               if (!matchesSearch || !matchesBedrooms || !matchesStatus) return null
 

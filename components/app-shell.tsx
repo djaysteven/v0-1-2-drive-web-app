@@ -23,8 +23,7 @@ import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useState, useEffect } from "react"
-// import { PageTransition } from "@/components/page-transition"
-// import { NotificationCenter } from "@/components/notification-center"
+import { NotificationCenter } from "@/components/notification-center"
 
 interface AppShellProps {
   children: ReactNode
@@ -187,7 +186,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
               {header}
             </div>
             <div className="flex items-center gap-2">
-              {/* {(isAuthenticated || userEmail) && <NotificationCenter userEmail={userEmail} />} */}
+              {(isAuthenticated || userEmail) && <NotificationCenter userEmail={userEmail} />}
               {actions}
               {!isAuthenticated && (
                 <Link href="/sign-in" className="lg:hidden">
@@ -201,11 +200,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto pb-24 lg:pb-0">
-          {/* PageTransition */}
-          {/* <PageTransition>{children}</PageTransition> */}
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto pb-24 lg:pb-0">{children}</main>
 
         {/* Mobile Bottom Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-around border-t border-border bg-card lg:hidden pb-safe">

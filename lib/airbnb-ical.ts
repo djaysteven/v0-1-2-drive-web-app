@@ -140,44 +140,94 @@ export function parseICalText(icalText: string): ICalEvent[] {
 }
 
 /**
+ * Safely extract value from iCal line, handling special characters
+ */
+function safeExtractValue(line: string, prefix: string): string {
+  try {
+    // Find the last colon to handle lines like DTSTART;TZID=...:value
+    const colonIndex = line.lastIndexOf(":")
+    if (colonIndex > prefix.length) {
+      // Extract and sanitize the value - remove any characters that could cause template parsing issues
+      const value = line.substring(colonIndex + 1).trim()
+      // Replace any curly braces or backticks that might trigger template parsing
+      return value.replace(/[{}$`]/g, "")
+    }
+    return ""
+  } catch (error) {
+    console.warn("[v0] Error extracting value from line:", line, error)
+    return ""
+  }
+}
+
+/**
  * Parse iCal events from text and return in API-compatible format
+ * Handles multi-line properties and malformed data gracefully
  */
 export function parseICalEvents(icalText: string): Array<{ summary: string; start: string; end: string; uid: string }> {
-  console.log("[v0] Parsing iCal text, length:", icalText.length)
   const events: Array<{ summary: string; start: string; end: string; uid: string }> = []
-  const eventBlocks = icalText.split("BEGIN:VEVENT")
-  console.log("[v0] Found event blocks:", eventBlocks.length - 1)
 
-  for (const block of eventBlocks.slice(1)) {
-    const lines = block.split(/\r?\n/)
-    let summary = ""
-    let start = ""
-    let end = ""
-    let uid = ""
+  try {
+    console.log("[v0] Parsing iCal text, length:", icalText.length)
 
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed.startsWith("SUMMARY:")) {
-        summary = trimmed.replace("SUMMARY:", "").trim()
-      } else if (trimmed.startsWith("DTSTART")) {
-        const parts = trimmed.split(":")
-        start = parts[parts.length - 1]?.trim() || ""
-      } else if (trimmed.startsWith("DTEND")) {
-        const parts = trimmed.split(":")
-        end = parts[parts.length - 1]?.trim() || ""
-      } else if (trimmed.startsWith("UID:")) {
-        uid = trimmed.replace("UID:", "").trim()
+    // Sanitize input to prevent template string parsing issues
+    // Replace any characters that might trigger template parsing
+    const sanitizedText = icalText.replace(/\${/g, "DOLLAR_BRACE").replace(/`/g, "BACKTICK")
+
+    // Unfold multi-line properties (lines starting with space are continuations)
+    const unfoldedText = sanitizedText.replace(/\r?\n[\s\t]/g, "")
+
+    const eventBlocks = unfoldedText.split("BEGIN:VEVENT")
+    console.log("[v0] Found event blocks:", eventBlocks.length - 1)
+
+    for (const block of eventBlocks.slice(1)) {
+      try {
+        const lines = block.split(/\r?\n/)
+        let summary = ""
+        let start = ""
+        let end = ""
+        let uid = ""
+
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed || trimmed === "END:VEVENT") continue
+
+          try {
+            if (trimmed.startsWith("SUMMARY:")) {
+              summary = safeExtractValue(trimmed, "SUMMARY:")
+            } else if (trimmed.startsWith("DTSTART")) {
+              start = safeExtractValue(trimmed, "DTSTART")
+            } else if (trimmed.startsWith("DTEND")) {
+              end = safeExtractValue(trimmed, "DTEND")
+            } else if (trimmed.startsWith("UID:")) {
+              uid = safeExtractValue(trimmed, "UID:")
+            }
+          } catch (lineError) {
+            // Silently skip problematic lines
+            continue
+          }
+        }
+
+        if (start && end) {
+          events.push({
+            summary: summary || "Airbnb Reservation",
+            start,
+            end,
+            uid: uid || `generated-${Date.now()}-${Math.random()}`,
+          })
+        }
+      } catch (blockError) {
+        // Silently skip problematic blocks
+        continue
       }
     }
 
-    if (start && end) {
-      events.push({ summary: summary || "Airbnb Reservation", start, end, uid })
-      console.log("[v0] Parsed event:", { summary, start, end, uid })
-    }
+    console.log("[v0] Total events parsed:", events.length)
+    return events
+  } catch (error) {
+    console.error("[v0] Fatal error parsing iCal:", error)
+    // Return empty array instead of throwing
+    return []
   }
-
-  console.log("[v0] Total events parsed:", events.length)
-  return events
 }
 
 /**

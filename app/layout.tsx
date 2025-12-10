@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { SplashScreen } from "@/components/splash-screen"
 import { ParticleBackground } from "@/components/particle-background"
 import { ImagePreloader } from "@/components/image-preloader"
+import { GlobalErrorHandler } from "@/components/global-error-handler"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -44,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${poppins.variable} antialiased`}>
+        <GlobalErrorHandler />
         <ImagePreloader />
         <SplashScreen />
         <ParticleBackground />

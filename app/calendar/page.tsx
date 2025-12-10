@@ -5,15 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BookingWizard } from "@/components/booking-wizard"
 import { vehiclesApi, condosApi, bookingsApi, customersApi } from "@/lib/api"
 import type { Vehicle, Condo, Booking, Customer } from "@/lib/types"
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, ChevronLeft, ChevronRight, Calendar, Clock } from "lucide-react"
 import { useEffect, useState } from "react"
 import { AuthGuard } from "@/components/auth-guard"
 
 export default function CalendarPage() {
-  const [view, setView] = useState<"timeline" | "agenda">("timeline")
+  const [view, setView] = useState<"month" | "week" | "list">("week")
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [condos, setCondos] = useState<Condo[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -21,6 +22,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [selectedAsset, setSelectedAsset] = useState<string>("all")
 
   useEffect(() => {
     loadData()
@@ -35,26 +37,6 @@ export default function CalendarPage() {
         bookingsApi.getAll(),
         customersApi.getAll(),
       ])
-
-      console.log("[v0] ===== CALENDAR DATA LOADED =====")
-      console.log("[v0] Vehicles:", vehiclesData.length, vehiclesData)
-      console.log("[v0] Condos:", condosData.length, condosData)
-      console.log("[v0] Bookings:", bookingsData.length, bookingsData)
-      console.log("[v0] Customers:", customersData.length)
-
-      bookingsData.forEach((b, i) => {
-        console.log(`[v0] Booking ${i + 1}:`, {
-          id: b.id,
-          assetType: b.assetType,
-          assetId: b.assetId,
-          vehicleId: b.vehicleId,
-          condoId: b.condoId,
-          startDate: b.startDate,
-          endDate: b.endDate,
-          status: b.status,
-          customerName: b.customerName,
-        })
-      })
 
       setVehicles(vehiclesData)
       setCondos(condosData)
@@ -72,45 +54,28 @@ export default function CalendarPage() {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
 
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
-
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      days.push(new Date(year, month, day))
+    if (view === "week") {
+      // Show current week (7 days starting from Monday)
+      const curr = new Date(currentDate)
+      const first = curr.getDate() - curr.getDay() + 1
+      for (let i = 0; i < 7; i++) {
+        days.push(new Date(year, month, first + i))
+      }
+    } else {
+      // Show current month
+      const lastDay = new Date(year, month + 1, 0)
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        days.push(new Date(year, month, day))
+      }
     }
 
     return days
   }
 
   const getBookingsForAsset = (assetId: string, assetType: "vehicle" | "condo") => {
-    console.log(`[v0] Looking for bookings for ${assetType} ${assetId}`)
-
-    const filtered = bookings.filter((b) => {
-      const idMatch = b.assetId === assetId
-      const typeMatch = b.assetType === assetType
-      const notCancelled = b.status !== "cancelled"
-      const matches = idMatch && typeMatch && notCancelled
-
-      console.log(`[v0] Checking booking ${b.id}:`, {
-        bookingAssetId: b.assetId,
-        bookingAssetType: b.assetType,
-        targetAssetId: assetId,
-        targetAssetType: assetType,
-        idMatch,
-        typeMatch,
-        notCancelled,
-        matches,
-      })
-
-      return matches
+    return bookings.filter((b) => {
+      return b.assetId === assetId && b.assetType === assetType && b.status !== "cancelled"
     })
-
-    console.log(`[v0] Found ${filtered.length} bookings for ${assetType} ${assetId}`)
-    return filtered
-  }
-
-  const getCustomerName = (customerId: string) => {
-    return customers.find((c) => c.id === customerId)?.name || "Unknown"
   }
 
   const statusColors = {
@@ -135,16 +100,28 @@ export default function CalendarPage() {
     ...condos.map((c) => ({ ...c, type: "condo" as const, displayName: `${c.building} ${c.unitNo}` })),
   ]
 
+  const filteredAssets =
+    selectedAsset === "all" ? allAssets : allAssets.filter((a) => `${a.type}-${a.id}` === selectedAsset)
+
   const monthYear = currentDate.toLocaleDateString("en-GB", { month: "long", year: "numeric" })
-  const todayFormatted = today.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+
+  const navigateDate = (direction: "prev" | "next") => {
+    const newDate = new Date(currentDate)
+    if (view === "week") {
+      newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : -7))
+    } else {
+      newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1))
+    }
+    setCurrentDate(newDate)
+  }
 
   if (loading) {
     return (
       <AuthGuard allowedRoles={["owner"]}>
-        <AppShell header={<h1 className="text-xl font-bold text-foreground">Calendar</h1>}>
+        <AppShell header={<h1 className="text-2xl font-bold text-foreground">Calendar</h1>}>
           <div className="container mx-auto p-4 lg:p-6 flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
               <p className="text-muted-foreground">Loading calendar...</p>
             </div>
           </div>
@@ -157,196 +134,79 @@ export default function CalendarPage() {
     <AuthGuard allowedRoles={["owner"]}>
       <AppShell
         header={
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-foreground">Calendar</h1>
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                Today: {todayFormatted}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const newDate = new Date(currentDate)
-                  newDate.setMonth(newDate.getMonth() - 1)
-                  setCurrentDate(newDate)
-                }}
-                className="rounded-xl bg-transparent"
-              >
+          <div className="flex items-center justify-between flex-1 gap-4">
+            <h1 className="text-2xl font-bold text-foreground">Calendar</h1>
+            <Button size="sm" className="gap-2" onClick={() => setBookingWizardOpen(true)}>
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Booking</span>
+            </Button>
+          </div>
+        }
+      >
+        <div className="container mx-auto p-4 lg:p-6 space-y-6 max-w-7xl">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button variant="outline" size="icon" onClick={() => navigateDate("prev")} className="rounded-full">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => setCurrentDate(new Date())}
-                className="rounded-xl bg-transparent min-w-[120px]"
+                className="rounded-full min-w-[140px] font-semibold"
               >
                 {monthYear}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const newDate = new Date(currentDate)
-                  newDate.setMonth(newDate.getMonth() + 1)
-                  setCurrentDate(newDate)
-                }}
-                className="rounded-xl bg-transparent"
-              >
+              <Button variant="outline" size="icon" onClick={() => navigateDate("next")} className="rounded-full">
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-        }
-        actions={
-          <Button size="sm" className="gap-2" onClick={() => setBookingWizardOpen(true)}>
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Booking</span>
-          </Button>
-        }
-      >
-        <div className="container mx-auto p-4 lg:p-6 space-y-6">
-          <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
-            <TabsList className="bg-secondary">
-              <TabsTrigger value="timeline">Timeline</TabsTrigger>
-              <TabsTrigger value="agenda">Agenda</TabsTrigger>
-            </TabsList>
-          </Tabs>
 
-          {view === "timeline" ? (
-            <div className="overflow-x-auto">
-              <div className="min-w-[1200px]">
-                {/* Header with dates */}
-                <div
-                  className="grid gap-1 mb-4 sticky top-0 bg-background z-10 pb-2"
-                  style={{ gridTemplateColumns: `150px repeat(${days.length}, minmax(30px, 1fr))` }}
-                >
-                  <div className="font-semibold text-xs text-muted-foreground">Asset</div>
-                  {days.map((day) => {
-                    const isToday = day.getTime() === today.getTime()
-                    return (
-                      <div
-                        key={day.toISOString()}
-                        className={`text-center text-xs ${isToday ? "text-primary font-bold bg-primary/10 rounded-md py-1" : "text-muted-foreground"}`}
-                      >
-                        <div className="hidden sm:block">
-                          {day.toLocaleDateString("en-GB", { weekday: "short" }).slice(0, 1)}
-                        </div>
-                        <div className={isToday ? "text-primary" : ""}>{day.getDate()}</div>
-                      </div>
-                    )
-                  })}
-                </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Select value={selectedAsset} onValueChange={setSelectedAsset}>
+                <SelectTrigger className="w-[180px] rounded-full">
+                  <SelectValue placeholder="Filter assets" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Assets</SelectItem>
+                  {vehicles.map((v) => (
+                    <SelectItem key={`vehicle-${v.id}`} value={`vehicle-${v.id}`}>
+                      {v.name} {v.plate ? `(${v.plate})` : ""}
+                    </SelectItem>
+                  ))}
+                  {condos.map((c) => (
+                    <SelectItem key={`condo-${c.id}`} value={`condo-${c.id}`}>
+                      {c.building} {c.unitNo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-                {/* Asset rows */}
-                <div className="space-y-1">
-                  {allAssets.map((asset) => {
-                    const assetBookings = getBookingsForAsset(asset.id, asset.type)
-
-                    return (
-                      <Card key={`${asset.type}-${asset.id}`} className="rounded-xl border-border bg-card">
-                        <CardContent className="p-2">
-                          <div
-                            className="grid gap-1 items-center"
-                            style={{ gridTemplateColumns: `150px repeat(${days.length}, minmax(30px, 1fr))` }}
-                          >
-                            <div className="text-xs font-medium text-foreground truncate pr-2">{asset.displayName}</div>
-                            {days.map((day) => {
-                              const dayStart = new Date(day)
-                              dayStart.setHours(0, 0, 0, 0)
-                              const dayEnd = new Date(day)
-                              dayEnd.setHours(23, 59, 59, 999)
-
-                              const dayBookings = assetBookings.filter((b) => {
-                                const bookingStart = new Date(b.startDate)
-                                bookingStart.setHours(0, 0, 0, 0)
-                                const bookingEnd = new Date(b.endDate)
-                                bookingEnd.setHours(23, 59, 59, 999)
-
-                                const overlaps = dayStart <= bookingEnd && dayEnd >= bookingStart
-
-                                if (overlaps) {
-                                  console.log(`[v0] Day ${day.toLocaleDateString("en-GB")} overlaps with booking:`, {
-                                    bookingId: b.id,
-                                    bookingStart: bookingStart.toLocaleDateString("en-GB"),
-                                    bookingEnd: bookingEnd.toLocaleDateString("en-GB"),
-                                    dayStart: dayStart.toLocaleDateString("en-GB"),
-                                    dayEnd: dayEnd.toLocaleDateString("en-GB"),
-                                  })
-                                }
-
-                                return overlaps
-                              })
-
-                              const longTermFutureBooking = dayBookings.find((b) => {
-                                if (!b.isLongTerm) return false
-
-                                const bookingEnd = new Date(b.endDate)
-                                bookingEnd.setHours(0, 0, 0, 0)
-
-                                // Check if day is after the original booking end date
-                                return dayStart > bookingEnd
-                              })
-
-                              // Check if day is within the original booking period
-                              const isInOriginalPeriod = dayBookings.some((b) => {
-                                const bookingStart = new Date(b.startDate)
-                                bookingStart.setHours(0, 0, 0, 0)
-                                const bookingEnd = new Date(b.endDate)
-                                bookingEnd.setHours(23, 59, 59, 999)
-
-                                return dayStart >= bookingStart && dayStart <= bookingEnd
-                              })
-
-                              return (
-                                <div
-                                  key={day.toISOString()}
-                                  className={`min-h-[40px] rounded border ${
-                                    day.getTime() === today.getTime()
-                                      ? "border-primary/20 bg-primary/5"
-                                      : "border-border bg-secondary/50"
-                                  } p-0.5 flex flex-col gap-0.5 items-center justify-center relative`}
-                                >
-                                  {isInOriginalPeriod && dayBookings.length > 0 && (
-                                    <div
-                                      className={`absolute inset-0.5 rounded ${
-                                        dayBookings[0].source === "airbnb"
-                                          ? "bg-[#FF5A5F]/70"
-                                          : dayBookings[0].status === "confirmed"
-                                            ? "bg-primary/70"
-                                            : dayBookings[0].status === "pending"
-                                              ? "bg-yellow-500/70"
-                                              : "bg-blue-500/70"
-                                      }`}
-                                      title={`${dayBookings[0].customerName} - ${dayBookings[0].status}${dayBookings[0].source === "airbnb" ? " (Airbnb)" : ""}${dayBookings[0].isLongTerm ? " (Long-term)" : ""}`}
-                                    />
-                                  )}
-
-                                  {!isInOriginalPeriod && longTermFutureBooking && (
-                                    <div
-                                      className="absolute inset-0.5 rounded border-2 border-primary/70"
-                                      title={`${longTermFutureBooking.customerName} - Long-term booking (auto-renewed)`}
-                                    />
-                                  )}
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
-              </div>
+              <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} className="rounded-full">
+                <TabsList className="bg-secondary/50 rounded-full">
+                  <TabsTrigger value="week" className="rounded-full gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden sm:inline">Week</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="month" className="rounded-full gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden sm:inline">Month</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="list" className="rounded-full gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span className="hidden sm:inline">List</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-          ) : (
-            <div className="space-y-4">
+          </div>
+
+          {view === "list" ? (
+            <div className="space-y-3">
               {bookings.length === 0 ? (
-                <Card className="rounded-2xl border-border bg-card">
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">No bookings found</p>
+                <Card className="rounded-2xl border-border/50 bg-card/50">
+                  <CardContent className="p-12 text-center">
+                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground">No bookings scheduled</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -367,31 +227,48 @@ export default function CalendarPage() {
                         : `${(asset as Condo)?.building} Unit ${(asset as Condo)?.unitNo}`
 
                     return (
-                      <Card key={booking.id} className="rounded-2xl border-border bg-card shadow-lg">
-                        <CardContent className="p-4">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-semibold text-foreground">{assetName}</h3>
+                      <Card
+                        key={booking.id}
+                        className="rounded-2xl border-border/50 bg-card/50 hover:shadow-lg transition-shadow"
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="space-y-2 flex-1">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <h3 className="font-semibold text-lg text-foreground">{assetName}</h3>
                                 {booking.source === "airbnb" ? (
-                                  <Badge className="bg-[#FF5A5F]/20 text-[#FF5A5F] border-[#FF5A5F]/30">Airbnb</Badge>
+                                  <Badge className="bg-[#FF5A5F]/20 text-[#FF5A5F] border-[#FF5A5F]/30 rounded-full">
+                                    Airbnb
+                                  </Badge>
                                 ) : (
-                                  <Badge className={statusColors[booking.status] || statusColors.confirmed}>
+                                  <Badge
+                                    className={`${statusColors[booking.status] || statusColors.confirmed} rounded-full`}
+                                  >
                                     {booking.status}
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-sm text-muted-foreground">{booking.customerName}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {new Date(booking.startDate).toLocaleDateString("en-GB")} -{" "}
-                                {new Date(booking.endDate).toLocaleDateString("en-GB")}
-                              </p>
+                              <p className="text-sm text-muted-foreground font-medium">{booking.customerName}</p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(booking.startDate).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                                {" → "}
+                                {new Date(booking.endDate).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-lg font-bold text-primary">
+                              <div className="text-2xl font-bold text-primary">
                                 ฿{booking.totalPrice.toLocaleString()}
                               </div>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-muted-foreground mt-1">
                                 {booking.depositPaid ? "Deposit Paid" : "Payment Required"}
                               </p>
                             </div>
@@ -401,6 +278,109 @@ export default function CalendarPage() {
                     )
                   })
               )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Date header row */}
+              <div
+                className="grid gap-2 mb-3"
+                style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
+              >
+                {days.map((day) => {
+                  const isToday = day.getTime() === today.getTime()
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={`text-center p-3 rounded-2xl transition-colors ${
+                        isToday
+                          ? "bg-primary text-primary-foreground font-bold"
+                          : "bg-secondary/30 text-muted-foreground"
+                      }`}
+                    >
+                      <div className="text-xs font-medium mb-1">
+                        {day.toLocaleDateString("en-GB", { weekday: "short" })}
+                      </div>
+                      <div className="text-lg font-bold">{day.getDate()}</div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Asset rows */}
+              {filteredAssets.map((asset) => {
+                const assetBookings = getBookingsForAsset(asset.id, asset.type)
+
+                return (
+                  <Card key={`${asset.type}-${asset.id}`} className="rounded-2xl border-border/50 bg-card/50">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col gap-3">
+                        <div className="font-medium text-sm text-foreground px-2">{asset.displayName}</div>
+                        <div
+                          className="grid gap-2"
+                          style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
+                        >
+                          {days.map((day) => {
+                            const dayStart = new Date(day)
+                            dayStart.setHours(0, 0, 0, 0)
+                            const dayEnd = new Date(day)
+                            dayEnd.setHours(23, 59, 59, 999)
+
+                            const dayBookings = assetBookings.filter((b) => {
+                              const bookingStart = new Date(b.startDate)
+                              bookingStart.setHours(0, 0, 0, 0)
+                              const bookingEnd = new Date(b.endDate)
+                              bookingEnd.setHours(23, 59, 59, 999)
+
+                              return dayStart <= bookingEnd && dayEnd >= bookingStart
+                            })
+
+                            const isInOriginalPeriod = dayBookings.some((b) => {
+                              const bookingStart = new Date(b.startDate)
+                              bookingStart.setHours(0, 0, 0, 0)
+                              const bookingEnd = new Date(b.endDate)
+                              bookingEnd.setHours(23, 59, 59, 999)
+
+                              return dayStart >= bookingStart && dayStart <= bookingEnd
+                            })
+
+                            const booking = dayBookings[0]
+
+                            return (
+                              <div
+                                key={day.toISOString()}
+                                className={`aspect-square rounded-xl border transition-all ${
+                                  day.getTime() === today.getTime()
+                                    ? "border-primary/30 bg-primary/5"
+                                    : "border-border/30 bg-secondary/20"
+                                } relative overflow-hidden`}
+                                title={
+                                  booking
+                                    ? `${booking.customerName} - ${booking.status}${booking.source === "airbnb" ? " (Airbnb)" : ""}`
+                                    : undefined
+                                }
+                              >
+                                {isInOriginalPeriod && booking && (
+                                  <div
+                                    className={`absolute inset-1 rounded-lg ${
+                                      booking.source === "airbnb"
+                                        ? "bg-[#FF5A5F]"
+                                        : booking.status === "confirmed"
+                                          ? "bg-primary"
+                                          : booking.status === "pending"
+                                            ? "bg-yellow-500"
+                                            : "bg-blue-500"
+                                    }`}
+                                  />
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           )}
         </div>

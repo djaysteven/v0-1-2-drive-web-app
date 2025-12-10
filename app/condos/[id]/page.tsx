@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Calendar, CheckCircle2, Loader2, TestTube2, RefreshCw } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { createClient } from "@/lib/supabase/client"
+import { parseICalEvents } from "@/lib/airbnb-ical"
 
 export default function CondoDetailPage() {
   const params = useParams()
@@ -97,24 +98,53 @@ export default function CondoDetailPage() {
 
       const icalText = await response.text()
 
-      // Parse the iCal text manually (simplified version)
-      const events = icalText
-        .split("BEGIN:VEVENT")
-        .slice(1)
-        .map((eventText) => {
-          const summaryMatch = eventText.match(/SUMMARY:(.+)/)
-          const startMatch = eventText.match(/DTSTART[;:](.+)/)
-          const endMatch = eventText.match(/DTEND[;:](.+)/)
+      let events
+      try {
+        const parsedEvents = parseICalEvents(icalText)
 
-          return {
-            summary: summaryMatch?.[1]?.trim() || "Reservation",
-            startDate: startMatch?.[1]
-              ? new Date(startMatch[1].replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"))
-              : new Date(),
-            endDate: endMatch?.[1] ? new Date(endMatch[1].replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")) : new Date(),
-          }
-        })
-        .filter((e) => e.endDate > new Date())
+        // Convert to the expected format with date objects
+        events = parsedEvents
+          .map((e) => {
+            try {
+              // Parse YYYYMMDD or YYYYMMDDTHHMMSSZ format
+              const parseDate = (dateStr: string) => {
+                if (!dateStr) return null
+                if (/^\d{8}$/.test(dateStr)) {
+                  // YYYYMMDD format
+                  return new Date(`${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`)
+                }
+                if (/^\d{8}T\d{6}Z?$/.test(dateStr)) {
+                  // YYYYMMDDTHHMMSSZ format
+                  const clean = dateStr.replace("Z", "")
+                  return new Date(
+                    `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}T${clean.slice(9, 11)}:${clean.slice(11, 13)}:${clean.slice(13, 15)}Z`,
+                  )
+                }
+                return new Date(dateStr)
+              }
+
+              const startDate = parseDate(e.start)
+              const endDate = parseDate(e.end)
+
+              if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                return null
+              }
+
+              return {
+                summary: e.summary || "Reservation",
+                startDate,
+                endDate,
+              }
+            } catch (err) {
+              console.warn("[v0] Error parsing event dates:", err)
+              return null
+            }
+          })
+          .filter((e): e is NonNullable<typeof e> => e !== null && e.endDate > new Date())
+      } catch (parseError) {
+        console.error("[v0] iCal parsing error:", parseError)
+        throw new Error("Failed to parse calendar data. The calendar format may be invalid.")
+      }
 
       setTestResult({
         count: events.length,
@@ -156,6 +186,10 @@ export default function CondoDetailPage() {
 
     try {
       const result = await condosApi.syncAirbnbCalendar(condo.id)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
 
       toast({
         title: "Sync complete",

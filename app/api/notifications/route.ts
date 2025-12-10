@@ -2,6 +2,47 @@ import { neon } from "@neondatabase/serverless"
 import { createClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
+async function ensureTableExists(sql: any) {
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_email TEXT NOT NULL,
+        user_role TEXT NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        related_id UUID,
+        related_type TEXT,
+        is_read BOOLEAN DEFAULT FALSE,
+        is_sent BOOLEAN DEFAULT FALSE,
+        send_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        read_at TIMESTAMP WITH TIME ZONE
+      )
+    `
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_notifications_user_email ON notifications(user_email)
+    `
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read)
+    `
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at DESC)
+    `
+
+    console.log("[v0] Notifications table ensured")
+  } catch (error: any) {
+    if (error.message?.includes("already exists")) {
+      console.log("[v0] Notifications table already exists")
+    } else {
+      console.error("[v0] Error ensuring notifications table:", error.message)
+      throw error
+    }
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     console.log("[v0] Notifications GET called")
@@ -27,9 +68,9 @@ export async function GET(request: NextRequest) {
     }
 
     const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_POSTGRES_URL
-    console.log("[v0] Using connection string:", connectionString ? "present" : "missing")
-
     const sql = neon(connectionString!)
+
+    await ensureTableExists(sql)
 
     if (action === "count") {
       console.log("[v0] Counting unread notifications")
@@ -51,7 +92,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ notification: result[0] || null })
     }
 
-    // Get all notifications
     console.log("[v0] Getting all notifications for:", user.email)
     const result = await sql`
       SELECT * FROM notifications 
@@ -82,13 +122,13 @@ export async function POST(request: NextRequest) {
     const { action, id, notification } = body
 
     const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_POSTGRES_URL
-    console.log("[v0] Using connection string:", connectionString ? "present" : "missing")
-
     const sql = neon(connectionString!)
+
+    await ensureTableExists(sql)
 
     if (action === "create" && notification) {
       const result = await sql`
-        INSERT INTO notifications (user_email, user_role, type, title, message, is_read, scheduled_for)
+        INSERT INTO notifications (user_email, user_role, type, title, message, is_read, send_at)
         VALUES (
           ${notification.user_email},
           ${notification.user_role},
@@ -96,7 +136,7 @@ export async function POST(request: NextRequest) {
           ${notification.title},
           ${notification.message},
           ${notification.is_read || false},
-          ${notification.scheduled_for || null}
+          ${notification.send_at || null}
         )
         RETURNING *
       `
@@ -106,7 +146,7 @@ export async function POST(request: NextRequest) {
     if (action === "markRead" && id) {
       const result = await sql`
         UPDATE notifications 
-        SET is_read = true 
+        SET is_read = true, read_at = NOW()
         WHERE id = ${id} AND user_email = ${user.email}
         RETURNING *
       `
@@ -116,7 +156,7 @@ export async function POST(request: NextRequest) {
     if (action === "markUnread" && id) {
       const result = await sql`
         UPDATE notifications 
-        SET is_read = false 
+        SET is_read = false, read_at = NULL
         WHERE id = ${id} AND user_email = ${user.email}
         RETURNING *
       `

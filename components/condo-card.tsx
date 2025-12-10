@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface CondoCardProps {
-  condo: Condo
+  condo: Condo & { isCurrentlyBooked?: boolean }
   isAuthenticated?: boolean
   onEdit?: () => void
   onDelete?: () => void
@@ -32,6 +32,9 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
     rented: "bg-blue-500/70 text-white border-blue-500",
     maintenance: "bg-destructive/20 text-destructive border-destructive/30",
   }
+
+  const displayStatus = condo.isCurrentlyBooked ? "rented" : condo.status
+  const displayStatusText = condo.isCurrentlyBooked ? "rented" : condo.status
 
   return (
     <Card className="rounded-2xl border-border bg-card shadow-lg overflow-hidden group hover:border-primary/50 transition-colors">
@@ -46,7 +49,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
           quality={85}
         />
         <div className="absolute top-3 right-3">
-          <Badge className={`${statusColors[condo.status]} font-semibold shadow-lg`}>{condo.status}</Badge>
+          <Badge className={`${statusColors[displayStatus]} font-semibold shadow-lg`}>{displayStatusText}</Badge>
         </div>
         <div className="absolute top-3 left-3 flex gap-2">
           <Badge variant="secondary" className="gap-1 bg-secondary/90 font-semibold shadow-lg">

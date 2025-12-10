@@ -527,52 +527,36 @@ export async function updateCondo(id: string, updates: Partial<Condo>): Promise<
   return mapCondoFromDB(data)
 }
 
-export async function moveCondoUp(condoId: string): Promise<void> {
-  const condos = await getCondos()
-  const currentIndex = condos.findIndex((c) => c.id === condoId)
+export async function moveEntity(tableName: string, id: string, direction: "up" | "down"): Promise<void> {
+  const supabase = createClient()
+  const { data, error } = await supabase.from(tableName).select("*").order("display_order").single()
 
-  if (currentIndex <= 0) return // Already at top
-
-  const currentCondo = condos[currentIndex]
-  const previousCondo = condos[currentIndex - 1]
-
-  // Swap display orders
-  const currentOrder = currentCondo.displayOrder ?? currentIndex + 1
-  const previousOrder = previousCondo.displayOrder ?? currentIndex
-
-  try {
-    await updateCondo(currentCondo.id, { displayOrder: previousOrder })
-    await updateCondo(previousCondo.id, { displayOrder: currentOrder })
-  } catch (error: any) {
-    // If display_order column doesn't exist, silently fail
-    if (error.message?.includes("display_order")) {
-      console.log("[v0] display_order column not found, skipping condo reordering")
-      return
-    }
-    throw error
+  if (error || !data) {
+    console.error("[v0] Error fetching entity for reordering:", error)
+    return
   }
-}
 
-export async function moveCondoDown(condoId: string): Promise<void> {
-  const condos = await getCondos()
-  const currentIndex = condos.findIndex((c) => c.id === condoId)
+  const currentIndex = data.findIndex((item: any) => item.id === id)
 
-  if (currentIndex >= condos.length - 1) return // Already at bottom
+  if (currentIndex === -1) {
+    console.error("[v0] Entity not found for reordering")
+    return
+  }
 
-  const currentCondo = condos[currentIndex]
-  const nextCondo = condos[currentIndex + 1]
+  if (direction === "up" && currentIndex <= 0) return // Already at top
+  if (direction === "down" && currentIndex >= data.length - 1) return // Already at bottom
 
-  // Swap display orders
-  const currentOrder = currentCondo.displayOrder ?? currentIndex + 1
-  const nextOrder = nextCondo.displayOrder ?? currentIndex + 2
+  const swapIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1
+  const currentOrder = data[currentIndex].display_order
+  const swapOrder = data[swapIndex].display_order
 
   try {
-    await updateCondo(currentCondo.id, { displayOrder: nextOrder })
-    await updateCondo(nextCondo.id, { displayOrder: currentOrder })
+    await supabase.from(tableName).update({ display_order: swapOrder }).eq("id", id)
+    await supabase.from(tableName).update({ display_order: currentOrder }).eq("id", data[swapIndex].id)
   } catch (error: any) {
     // If display_order column doesn't exist, silently fail
     if (error.message?.includes("display_order")) {
-      console.log("[v0] display_order column not found, skipping condo reordering")
+      console.log("[v0] display_order column not found, skipping reordering")
       return
     }
     throw error
@@ -602,14 +586,40 @@ export async function reorderCondos(condoIds: string[]): Promise<void> {
   }
 }
 
+export async function getCondosWithBookingStatus(): Promise<(Condo & { isCurrentlyBooked: boolean })[]> {
+  const condos = await getCondos()
+  const today = new Date().toISOString().split("T")[0]
+
+  const supabase = createClient()
+  const { data: activeBookings, error } = await supabase
+    .from("bookings")
+    .select("condo_id")
+    .in("status", ["active", "confirmed"])
+    .lte("start_date", today)
+    .gte("end_date", today)
+
+  if (error) {
+    console.error("[v0] Error fetching active condo bookings:", error)
+    return condos.map((c) => ({ ...c, isCurrentlyBooked: false }))
+  }
+
+  const bookedCondoIds = new Set(activeBookings?.map((b) => b.condo_id).filter(Boolean) || [])
+
+  return condos.map((condo) => ({
+    ...condo,
+    isCurrentlyBooked: bookedCondoIds.has(condo.id),
+  }))
+}
+
 export const condosApi = {
   getAll: getCondos,
-  getById: getCondo,
+  getAllWithBookingStatus: getCondosWithBookingStatus, // Added function to get condos with booking status
+  getOne: getCondo,
   create: createCondo,
   update: updateCondo,
   delete: deleteCondo,
-  moveUp: moveCondoUp,
-  moveDown: moveCondoDown,
+  moveUp: (id: string) => moveEntity("condos", id, "up"),
+  moveDown: (id: string) => moveEntity("condos", id, "down"),
   async syncAirbnbCalendar(condoId: string) {
     console.log("[v0] ========== AIRBNB SYNC START ==========")
     console.log("[v0] Condo ID:", condoId)
@@ -640,12 +650,27 @@ export const condosApi = {
       const icsText = await response.text()
       console.log("[v0] iCal fetched, length:", icsText.length)
 
-      // Step 3: Parse events
-      const events = parseICalEvents(icsText)
-      console.log("[v0] Events parsed:", events.length)
+      // Step 3: Parse events with error handling
+      let events
+      try {
+        events = parseICalEvents(icsText)
+        console.log("[v0] Events parsed:", events.length)
+      } catch (parseError) {
+        console.error("[v0] iCal parsing error:", parseError)
+        return {
+          bookingsCreated: 0,
+          total: 0,
+          error: `Failed to parse calendar data: ${parseError instanceof Error ? parseError.message : "Unknown error"}`,
+        }
+      }
 
       if (events.length === 0) {
-        throw new Error("No events found in calendar")
+        console.log("[v0] No events found in calendar")
+        return {
+          bookingsCreated: 0,
+          total: 0,
+          error: "No events found in calendar",
+        }
       }
 
       // Step 4: Convert dates and build rows
@@ -1277,8 +1302,8 @@ export const vehiclesApi = {
   create: createVehicle,
   update: updateVehicle,
   delete: deleteVehicle,
-  moveUp: moveVehicleUp,
-  moveDown: moveVehicleDown,
+  moveUp: (id: string) => moveEntity("vehicles", id, "up"),
+  moveDown: (id: string) => moveEntity("vehicles", id, "down"),
   reorder: reorderVehicles, // Added reorder function
   isCurrentlyBooked: isVehicleCurrentlyBooked, // Added function to check if vehicle is currently booked
 }

@@ -21,7 +21,14 @@ export async function GET(req: NextRequest) {
     if (!r.ok) return NextResponse.json({ error: `Upstream ${r.status}` }, { status: r.status })
 
     const text = await r.text()
-    return new NextResponse(text, {
+
+    // Replace characters that might trigger template string parsing
+    const sanitizedText = text
+      .replace(/\${/g, "DOLLAR_BRACE_PLACEHOLDER")
+      .replace(/`/g, "BACKTICK_PLACEHOLDER")
+      .replace(/\\`/g, "ESCAPED_BACKTICK_PLACEHOLDER")
+
+    return new NextResponse(sanitizedText, {
       status: 200,
       headers: {
         "Content-Type": "text/calendar; charset=utf-8",
@@ -29,6 +36,8 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Fetch failed" }, { status: 500 })
+    console.error("[v0] iCal proxy error:", e?.message || "Unknown error")
+    // Return a safe error response
+    return NextResponse.json({ error: "Fetch failed" }, { status: 500 })
   }
 }
