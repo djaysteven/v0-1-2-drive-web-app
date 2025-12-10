@@ -54,9 +54,9 @@ export async function createNotification(params: CreateNotificationParams): Prom
 }
 
 export async function getNotifications(userEmail: string, unreadOnly = false): Promise<Notification[]> {
-  const supabase = createClient()
-
   try {
+    const supabase = createClient()
+
     let query = supabase
       .from("notifications")
       .select("*")
@@ -71,7 +71,6 @@ export async function getNotifications(userEmail: string, unreadOnly = false): P
     const { data, error } = await query
 
     if (error) {
-      // Check if it's a missing table error
       if (error.message?.includes("Could not find the table")) {
         console.log("[Notifications] Table not yet created. Please run the database migration script.")
         return []
@@ -81,8 +80,14 @@ export async function getNotifications(userEmail: string, unreadOnly = false): P
     }
 
     return data.map(mapNotificationFromDB)
-  } catch (err) {
-    console.error("[Notifications] Unexpected error:", err)
+  } catch (err: any) {
+    if (err?.message?.includes("Failed to fetch") || err?.name === "TypeError") {
+      console.log(
+        "[Notifications] Network error or table not ready. Notifications will be available once setup is complete.",
+      )
+    } else {
+      console.error("[Notifications] Unexpected error:", err)
+    }
     return []
   }
 }
@@ -140,9 +145,9 @@ export async function deleteNotification(notificationId: string): Promise<boolea
 }
 
 export async function getUnreadCount(userEmail: string): Promise<number> {
-  const supabase = createClient()
-
   try {
+    const supabase = createClient()
+
     const { count, error } = await supabase
       .from("notifications")
       .select("*", { count: "exact", head: true })
@@ -150,7 +155,6 @@ export async function getUnreadCount(userEmail: string): Promise<number> {
       .eq("is_read", false)
 
     if (error) {
-      // Check if it's a missing table error
       if (error.message?.includes("Could not find the table")) {
         return 0
       }
@@ -159,8 +163,11 @@ export async function getUnreadCount(userEmail: string): Promise<number> {
     }
 
     return count || 0
-  } catch (err) {
-    console.error("[Notifications] Unexpected error:", err)
+  } catch (err: any) {
+    if (err?.message?.includes("Failed to fetch") || err?.name === "TypeError") {
+    } else {
+      console.error("[Notifications] Unexpected error:", err)
+    }
     return 0
   }
 }

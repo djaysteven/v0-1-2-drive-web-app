@@ -18,6 +18,9 @@ CREATE INDEX IF NOT EXISTS idx_sales_history_year_month ON sales_history(year, m
 -- Enable Row Level Security
 ALTER TABLE sales_history ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policy if it exists
+DROP POLICY IF EXISTS "Allow all operations on sales_history" ON sales_history;
+
 -- Create policy to allow all operations (since this is owner-only data)
 CREATE POLICY "Allow all operations on sales_history" ON sales_history
   FOR ALL
