@@ -89,6 +89,41 @@ export async function showLocalNotification(title: string, body: string, tag?: s
   }
 }
 
+import { createNotification } from "./notification-system"
+import { showLocalNotification as showBrowserNotification } from "./notifications"
+
+export async function sendNotification(params: {
+  userEmail: string
+  userRole: "owner" | "customer"
+  type: "tax_expiry" | "booking_start" | "booking_end" | "booking_created" | "booking_cancelled" | "general"
+  title: string
+  message: string
+  relatedId?: string
+  relatedType?: "vehicle" | "condo" | "booking"
+  sendImmediately?: boolean
+}) {
+  // Save to database
+  const notification = await createNotification({
+    userEmail: params.userEmail,
+    userRole: params.userRole,
+    type: params.type,
+    title: params.title,
+    message: params.message,
+    relatedId: params.relatedId,
+    relatedType: params.relatedType,
+  })
+
+  // If user has notifications enabled and we should send immediately, show browser notification
+  if (params.sendImmediately !== false) {
+    const state = getNotificationPermissionState()
+    if (state.granted) {
+      showBrowserNotification(params.title, params.message, params.relatedId)
+    }
+  }
+
+  return notification
+}
+
 export function checkAndNotifyReminders(reminders: any[]) {
   const now = new Date()
   const today = now.toISOString().split("T")[0]

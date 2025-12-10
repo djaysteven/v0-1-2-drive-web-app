@@ -9,7 +9,7 @@ import { BookingWizard } from "@/components/booking-wizard"
 import { RemindersCard } from "@/components/reminders-card"
 import { NotificationSettings } from "@/components/notification-settings"
 import { DatabaseSetupBanner } from "@/components/database-setup-banner"
-import { Car, Building2, Users, Calendar, Plus, Bike } from 'lucide-react'
+import { Car, Building2, Users, Calendar, Plus, Bike } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
@@ -154,7 +154,9 @@ export default function HomePage() {
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Bike</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableBikes}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
+                        {stats.availableBikes}
+                      </p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -172,7 +174,9 @@ export default function HomePage() {
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Car</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCars}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
+                        {stats.availableCars}
+                      </p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -190,7 +194,9 @@ export default function HomePage() {
                       <h3 className="text-base sm:text-2xl font-bold text-foreground">Condo</h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCondos}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
+                        {stats.availableCondos}
+                      </p>
                       <p className="text-xs sm:text-sm text-muted-foreground">available</p>
                     </div>
                   </CardContent>
@@ -216,7 +222,9 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableVehicles}</p>
+                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
+                      {stats.availableVehicles}
+                    </p>
                     <p className="text-xs text-muted-foreground">available</p>
                   </div>
                 </div>
@@ -232,7 +240,9 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">{stats.availableCondos}</p>
+                    <p className="text-2xl font-bold text-primary drop-shadow-[0_0_8px_rgba(0,255,60,0.4)]">
+                      {stats.availableCondos}
+                    </p>
                     <p className="text-xs text-muted-foreground">available</p>
                   </div>
                 </div>
@@ -284,6 +294,8 @@ export default function HomePage() {
               </Card>
             </div>
           )}
+
+          {isOwner && <RemindersCard />}
 
           {isOwner && <NotificationSettings />}
         </div>

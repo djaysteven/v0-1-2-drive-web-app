@@ -24,6 +24,7 @@ import { signOut } from "@/lib/auth"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useState, useEffect } from "react"
 import { PageTransition } from "@/components/page-transition"
+import { NotificationCenter } from "@/components/notification-center"
 
 interface AppShellProps {
   children: ReactNode
@@ -51,54 +52,12 @@ export function AppShell({ children, header, actions }: AppShellProps) {
   const router = useRouter()
   const { role, isAuthenticated } = useRole()
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const [userEmail, setUserEmail] = useState<string>("")
 
   useEffect(() => {
-    // Prevent wheel events with horizontal delta (trackpad swipe)
-    const preventHorizontalScroll = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        e.preventDefault()
-        e.stopPropagation()
-        return false
-      }
-    }
-
-    // Prevent touch gestures that might trigger navigation
-    let touchStartX = 0
-    const preventSwipeNavigation = (e: TouchEvent) => {
-      touchStartX = e.touches[0].clientX
-    }
-
-    const preventSwipeNavigationMove = (e: TouchEvent) => {
-      const touchEndX = e.touches[0].clientX
-      const diff = touchStartX - touchEndX
-
-      // If swiping horizontally near the edge, prevent it
-      if (Math.abs(diff) > 10 && (touchStartX < 50 || touchStartX > window.innerWidth - 50)) {
-        e.preventDefault()
-      }
-    }
-
-    // Prevent browser back/forward navigation
-    const preventPopState = (e: PopStateEvent) => {
-      e.preventDefault()
-      // Push the current state back to prevent navigation
-      window.history.pushState(null, "", window.location.href)
-    }
-
-    // Add a dummy history state to prevent going back
-    window.history.pushState(null, "", window.location.href)
-
-    // Add all event listeners
-    document.addEventListener("wheel", preventHorizontalScroll, { passive: false })
-    document.addEventListener("touchstart", preventSwipeNavigation, { passive: false })
-    document.addEventListener("touchmove", preventSwipeNavigationMove, { passive: false })
-    window.addEventListener("popstate", preventPopState)
-
-    return () => {
-      document.removeEventListener("wheel", preventHorizontalScroll)
-      document.removeEventListener("touchstart", preventSwipeNavigation)
-      document.removeEventListener("touchmove", preventSwipeNavigationMove)
-      window.removeEventListener("popstate", preventPopState)
+    const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
+    if (ownerEmail) {
+      setUserEmail(ownerEmail)
     }
   }, [])
 
@@ -228,6 +187,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
               {header}
             </div>
             <div className="flex items-center gap-2">
+              {(isAuthenticated || userEmail) && <NotificationCenter userEmail={userEmail} />}
               {actions}
               {!isAuthenticated && (
                 <Link href="/sign-in" className="lg:hidden">

@@ -1,6 +1,11 @@
 import { createClient } from "./supabase/client"
 import type { Vehicle, Condo, Customer, Booking } from "./types"
 import { parseICalEvents } from "./airbnb-ical"
+import {
+  notifyBookingCreated,
+  notifyBookingCancelled,
+  scheduleUpcomingBookingNotifications,
+} from "@/lib/booking-notifications"
 
 const MOCK_VEHICLES: Vehicle[] = [
   {
@@ -926,7 +931,17 @@ export async function createBooking(booking: Omit<Booking, "id">): Promise<Booki
   }
 
   console.log("[v0] Booking created successfully:", data)
-  return mapBookingFromDB(data)
+  const createdBooking = mapBookingFromDB(data)
+
+  try {
+    await notifyBookingCreated(createdBooking)
+    await scheduleUpcomingBookingNotifications(createdBooking)
+  } catch (error) {
+    console.error("[v0] Error sending booking notifications:", error)
+    // Don't fail the booking creation if notifications fail
+  }
+
+  return createdBooking
 }
 
 export async function updateBooking(id: string, updates: Partial<Booking>): Promise<Booking> {
@@ -1044,9 +1059,20 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
 }
 
 export async function deleteBooking(id: string): Promise<void> {
+  const booking = await getBooking(id)
+
   const supabase = createClient()
   const { error } = await supabase.from("bookings").delete().eq("id", id)
   if (error) throw error
+
+  if (booking) {
+    try {
+      await notifyBookingCancelled(booking)
+    } catch (error) {
+      console.error("[v0] Error sending cancellation notification:", error)
+      // Don't fail the deletion if notification fails
+    }
+  }
 }
 
 export async function checkConflicts(assetId: string, startDate: string, endDate: string): Promise<Booking[]> {
