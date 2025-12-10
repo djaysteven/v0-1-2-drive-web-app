@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { Bell, CheckCircle } from "lucide-react"
+import { Bell, CheckCircle, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import {
   requestNotificationPermission,
@@ -17,9 +17,23 @@ export function NotificationSettings() {
   const [permissionState, setPermissionState] = useState({ granted: false, denied: false, prompt: false })
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [requesting, setRequesting] = useState(false)
+  const [browserSupported, setBrowserSupported] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
+    const isSupported =
+      typeof window !== "undefined" &&
+      "serviceWorker" in navigator &&
+      "Notification" in window &&
+      "PushManager" in window
+
+    setBrowserSupported(isSupported)
+
+    if (!isSupported) {
+      console.log("[Notifications] Browser does not support push notifications (this is normal for iOS Safari)")
+      return
+    }
+
     // Check current permission state
     const state = getNotificationPermissionState()
     setPermissionState(state)
@@ -99,61 +113,86 @@ export function NotificationSettings() {
           <div>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              Push Notifications
+              Notifications
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               Get notified about upcoming bookings and tax renewals
             </CardDescription>
           </div>
-          {permissionState.granted && <CheckCircle className="h-5 w-5 text-green-500" />}
+          {permissionState.granted && browserSupported && <CheckCircle className="h-5 w-5 text-green-500" />}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {permissionState.denied && (
-          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-            <p className="text-sm text-destructive">
-              Notifications are blocked. Please enable them in your browser settings.
-            </p>
-          </div>
-        )}
-
-        {!permissionState.granted && !permissionState.denied && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Enable push notifications to receive reminders for:</p>
-            <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-              <li>• Upcoming bookings (1 day before)</li>
-              <li>• Vehicle returns (same day)</li>
-              <li>• Tax renewals (7 days before)</li>
-            </ul>
-            <Button onClick={handleEnableNotifications} disabled={requesting} className="w-full">
-              <Bell className="h-4 w-4 mr-2" />
-              {requesting ? "Requesting..." : "Enable Notifications"}
-            </Button>
-          </div>
-        )}
-
-        {permissionState.granted && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium text-foreground">Notifications Active</span>
-              </div>
-              <Switch
-                checked={notificationsEnabled}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    handleEnableNotifications()
-                  } else {
-                    handleDisableNotifications()
-                  }
-                }}
-              />
+        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-foreground">
+              <p className="font-medium mb-1">In-App Notifications Active</p>
+              <p className="text-muted-foreground">
+                You'll see notifications in the bell icon at the top of the page. They update automatically every 30
+                seconds.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              You'll receive notifications for upcoming bookings, returns, and tax renewals
+          </div>
+        </div>
+
+        {!browserSupported ? (
+          <div className="p-3 rounded-lg bg-muted border border-border">
+            <p className="text-sm text-muted-foreground">
+              <strong>Browser Push Notifications:</strong> Not available on this browser (iOS Safari, some mobile
+              browsers). You'll still receive in-app notifications.
             </p>
           </div>
+        ) : (
+          <>
+            {permissionState.denied && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                <p className="text-sm text-destructive">
+                  Browser notifications are blocked. Please enable them in your browser settings to receive push alerts.
+                </p>
+              </div>
+            )}
+
+            {!permissionState.granted && !permissionState.denied && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-foreground">Optional: Enable Browser Push Notifications</p>
+                <p className="text-sm text-muted-foreground">Get push alerts even when the app is closed for:</p>
+                <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                  <li>• Upcoming bookings (1 day before)</li>
+                  <li>• Vehicle returns (same day)</li>
+                  <li>• Tax renewals (7 days before)</li>
+                </ul>
+                <Button onClick={handleEnableNotifications} disabled={requesting} className="w-full">
+                  <Bell className="h-4 w-4 mr-2" />
+                  {requesting ? "Requesting..." : "Enable Push Notifications"}
+                </Button>
+              </div>
+            )}
+
+            {permissionState.granted && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-foreground">Push Notifications Active</span>
+                  </div>
+                  <Switch
+                    checked={notificationsEnabled}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        handleEnableNotifications()
+                      } else {
+                        handleDisableNotifications()
+                      }
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  You'll receive push notifications for upcoming bookings, returns, and tax renewals
+                </p>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
