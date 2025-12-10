@@ -84,7 +84,6 @@ async function checkTableExists(): Promise<boolean> {
     const { error } = await supabase.from("sales_history").select("id").limit(1)
 
     if (error) {
-      // Table doesn't exist or other error
       console.log("[v0] Table check failed:", error.message)
       return false
     }
@@ -98,39 +97,28 @@ async function checkTableExists(): Promise<boolean> {
 }
 
 /**
- * Load sales history from database
+ * Load sales history from database via API
  */
 export async function loadSalesHistory(): Promise<SavedHistory> {
   try {
-    const tableExists = await checkTableExists()
-    if (!tableExists) {
-      console.log("[v0] Table doesn't exist, using localStorage")
-      return loadFromLocalStorage()
-    }
+    console.log("[v0] Loading sales data from API...")
+    const response = await fetch("/api/sales")
 
-    const supabase = createBrowserClient()
-
-    console.log("[v0] Loading sales history from database...")
-
-    const { data, error } = await supabase
-      .from("sales_history")
-      .select("*")
-      .order("year", { ascending: false })
-      .order("month", { ascending: false })
-
-    if (error) {
-      console.error("[v0] Database error:", error)
+    if (!response.ok) {
+      console.error("[v0] API error:", response.statusText)
       console.log("[v0] Falling back to localStorage")
       return loadFromLocalStorage()
     }
 
+    const data = await response.json()
+
     if (!data || data.length === 0) {
-      console.log("[v0] No data in database, checking localStorage")
-      return loadFromLocalStorage()
+      console.log("[v0] No localStorage data found")
+      return {}
     }
 
     const history: SavedHistory = {}
-    data.forEach((row) => {
+    data.forEach((row: any) => {
       const key = `${row.year}-${row.month}`
       history[key] = {
         year: row.year,
@@ -142,10 +130,11 @@ export async function loadSalesHistory(): Promise<SavedHistory> {
       }
     })
 
-    console.log("[v0] Loaded from database:", Object.keys(history).length, "months")
+    console.log("[v0] Loaded sales history:", Object.keys(history).length, "entries")
     return history
   } catch (error) {
     console.error("[v0] Error loading sales history:", error)
+    console.log("[v0] Falling back to localStorage")
     return loadFromLocalStorage()
   }
 }
@@ -173,67 +162,37 @@ function loadFromLocalStorage(): SavedHistory {
 }
 
 /**
- * Save sales history to database
+ * Save sales history to database via API
  */
 export async function saveSalesHistory(history: SavedHistory): Promise<void> {
   try {
     console.log("[v0] ===== SAVE TO DATABASE STARTED =====")
     console.log("[v0] Attempting to save", Object.keys(history).length, "months")
 
-    const tableExists = await checkTableExists()
-    console.log("[v0] Table exists check result:", tableExists)
-
-    if (!tableExists) {
-      const errorMsg =
-        "❌ DATABASE NOT SET UP! The sales_history table doesn't exist. Click 'Auto Setup Database' button at the top of the homepage to create tables."
-      console.error("[v0]", errorMsg)
-      alert(errorMsg)
-      throw new Error("Database tables not created. Please run database setup first.")
-    }
-
-    const supabase = createBrowserClient()
-
-    console.log("[v0] Saving", Object.keys(history).length, "months to database...")
-
-    let successCount = 0
-    let failCount = 0
-
     for (const [key, data] of Object.entries(history)) {
       console.log(`[v0] Saving month: ${key}`)
-      console.log(`[v0] Data:`, {
-        year: data.year,
-        month: data.month,
-        vehicleCount: data.vehicles.length,
-        condoCount: data.condos.length,
-        totalVehicles: data.totalVehicles,
-        totalCondos: data.totalCondos,
-      })
 
-      const { data: result, error } = await supabase.from("sales_history").upsert(
-        {
+      const response = await fetch("/api/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           year: data.year,
           month: data.month,
-          vehicles: data.vehicles,
-          condos: data.condos,
           total_vehicles: data.totalVehicles,
           total_condos: data.totalCondos,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "year,month" },
-      )
+        }),
+      })
 
-      if (error) {
+      if (!response.ok) {
+        const error = await response.text()
         console.error(`[v0] ❌ Failed to save month ${key}:`, error)
-        failCount++
-        throw error
+        throw new Error(error)
       }
 
       console.log(`[v0] ✅ Successfully saved ${key}`)
-      successCount++
     }
 
     console.log(`[v0] ===== SAVE COMPLETE =====`)
-    console.log(`[v0] Success: ${successCount}, Failed: ${failCount}`)
 
     // Also save to localStorage as backup
     saveToLocalStorage(history)
@@ -243,12 +202,10 @@ export async function saveSalesHistory(history: SavedHistory): Promise<void> {
       window.dispatchEvent(new CustomEvent("salesHistoryUpdated", { detail: history }))
     }
 
-    alert(`✅ Successfully saved ${successCount} month(s) to database!`)
+    alert(`✅ Successfully saved sales data!`)
   } catch (error) {
     console.error("[v0] ===== SAVE FAILED =====")
     console.error("[v0] Error:", error)
-
-    // Don't fallback to localStorage - force user to fix database
     throw error
   }
 }

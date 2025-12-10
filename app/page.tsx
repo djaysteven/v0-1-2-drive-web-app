@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookingWizard } from "@/components/booking-wizard"
 import { RemindersCard } from "@/components/reminders-card"
 import { NotificationSettings } from "@/components/notification-settings"
-import { AdminNotificationSender } from "@/components/admin-notification-sender"
+// import { AdminNotificationSender } from "@/components/admin-notification-sender"
 import { DatabaseSetupBanner } from "@/components/database-setup-banner"
 import { Car, Building2, Users, Calendar, Plus, Bike } from "lucide-react"
 import Link from "next/link"
@@ -298,7 +298,7 @@ export default function HomePage() {
 
           {isOwner && <RemindersCard />}
 
-          {isOwner && <AdminNotificationSender />}
+          {/* {isOwner && <AdminNotificationSender />} */}
 
           {isOwner && <NotificationSettings />}
         </div>

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { createBrowserClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { DollarSign, Save } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -14,8 +13,8 @@ interface MonthlySales {
   id?: string
   year: string
   month: string
-  vehicles_total: number
-  condos_total: number
+  total_vehicles: number
+  total_condos: number
   created_at?: string
   updated_at?: string
 }
@@ -40,24 +39,19 @@ export function SimpleSalesInput() {
 
   const loadExistingData = async () => {
     try {
-      const supabase = createBrowserClient()
-      const { data, error } = await supabase
-        .from("sales_history")
-        .select("*")
-        .eq("year", selectedYear)
-        .eq("month", selectedMonth)
-        .single()
+      const response = await fetch(`/api/sales?year=${selectedYear}&month=${selectedMonth}`)
 
-      if (error && error.code !== "PGRST116") {
-        // PGRST116 means no rows found, which is fine
-        console.error("[v0] Error loading sales data:", error)
-        return
+      if (!response.ok) {
+        throw new Error("Failed to load data")
       }
 
-      if (data) {
-        setExistingData(data)
-        setVehiclesTotal(data.total_vehicles?.toString() || "0")
-        setCondosTotal(data.total_condos?.toString() || "0")
+      const data = await response.json()
+
+      if (data && data.length > 0) {
+        const salesData = data[0]
+        setExistingData(salesData)
+        setVehiclesTotal(salesData.total_vehicles?.toString() || "")
+        setCondosTotal(salesData.total_condos?.toString() || "")
       } else {
         setExistingData(null)
         setVehiclesTotal("")
@@ -69,32 +63,50 @@ export function SimpleSalesInput() {
   }
 
   const handleSave = async () => {
+    console.log("[v0] SAVE BUTTON CLICKED")
+
     const vehiclesAmount = Number.parseFloat(vehiclesTotal) || 0
     const condosAmount = Number.parseFloat(condosTotal) || 0
 
+    console.log("[v0] Parsed values:", { vehiclesAmount, condosAmount, selectedYear, selectedMonth })
+
     if (vehiclesAmount === 0 && condosAmount === 0) {
+      console.log("[v0] Both amounts are zero, showing error")
       toast.error("Please enter at least one amount")
       return
     }
 
     setSaving(true)
+    console.log("[v0] Starting save request...")
+
     try {
-      const supabase = createBrowserClient()
+      const payload = {
+        year: selectedYear,
+        month: selectedMonth,
+        total_vehicles: vehiclesAmount,
+        total_condos: condosAmount,
+      }
 
-      const { error } = await supabase.from("sales_history").upsert(
-        {
-          year: selectedYear,
-          month: selectedMonth,
-          vehicles: [], // Keep empty for simple input
-          condos: [], // Keep empty for simple input
-          total_vehicles: vehiclesAmount,
-          total_condos: condosAmount,
-          updated_at: new Date().toISOString(),
+      console.log("[v0] Sending payload:", payload)
+
+      const response = await fetch("/api/sales", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        { onConflict: "year,month" },
-      )
+        body: JSON.stringify(payload),
+      })
 
-      if (error) throw error
+      console.log("[v0] Response status:", response.status)
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error("[v0] Server error:", error)
+        throw new Error(error.error || "Failed to save")
+      }
+
+      const savedData = await response.json()
+      console.log("[v0] Saved successfully:", savedData)
 
       toast.success(`Saved sales for ${selectedMonth} ${selectedYear}`)
 
@@ -104,10 +116,11 @@ export function SimpleSalesInput() {
 
       await loadExistingData()
     } catch (error: any) {
-      console.error("[v0] Failed to save:", error)
+      console.error("[v0] Save failed:", error)
       toast.error(error.message || "Failed to save sales data")
     } finally {
       setSaving(false)
+      console.log("[v0] Save process complete")
     }
   }
 

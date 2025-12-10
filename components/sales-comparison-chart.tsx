@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { createBrowserClient } from "@/lib/supabase/client"
 import {
   BarChart,
   Bar,
@@ -46,26 +45,37 @@ export function SalesComparisonChart() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const supabase = createBrowserClient()
-      const { data: salesData, error } = await supabase
-        .from("sales_history")
-        .select("*")
-        .order("year", { ascending: true })
-        .order("month", { ascending: true })
+      console.log("[v0] Loading sales data from API...")
 
-      if (error) throw error
+      const response = await fetch("/api/sales")
 
-      const formattedData: SalesData[] = (salesData || []).map((row) => ({
-        year: row.year,
-        month: row.month,
+      if (!response.ok) {
+        throw new Error("Failed to fetch sales data")
+      }
+
+      const salesData = await response.json()
+
+      console.log("[v0] Loaded sales data:", salesData?.length || 0, "rows")
+
+      const formattedData: SalesData[] = (salesData || []).map((row: any) => ({
+        year: String(row.year || ""),
+        month: String(row.month || ""),
         vehicles: Number(row.total_vehicles) || 0,
         condos: Number(row.total_condos) || 0,
         total: (Number(row.total_vehicles) || 0) + (Number(row.total_condos) || 0),
       }))
 
+      formattedData.sort((a, b) => {
+        if (a.year !== b.year) return a.year.localeCompare(b.year)
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        return months.indexOf(a.month) - months.indexOf(b.month)
+      })
+
+      console.log("[v0] Loaded sales history:", formattedData.length, "entries")
       setData(formattedData)
-    } catch (error) {
-      console.error("[v0] Failed to load sales data:", error)
+    } catch (error: any) {
+      console.error("[v0] Failed to load sales data:", error?.message || error)
+      setData([])
     } finally {
       setLoading(false)
     }

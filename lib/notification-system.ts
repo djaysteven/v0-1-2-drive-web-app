@@ -55,119 +55,72 @@ export async function createNotification(params: CreateNotificationParams): Prom
 
 export async function getNotifications(userEmail: string, unreadOnly = false): Promise<Notification[]> {
   try {
-    const supabase = createClient()
+    const url = unreadOnly ? `/api/notifications?action=getUnread` : `/api/notifications`
 
-    let query = supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_email", userEmail)
-      .order("created_at", { ascending: false })
-      .limit(50)
-
-    if (unreadOnly) {
-      query = query.eq("is_read", false)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      if (error.message?.includes("Could not find the table")) {
-        console.log("[Notifications] Table not yet created. Please run the database migration script.")
-        return []
-      }
-      console.error("[Notifications] Error fetching notifications:", error)
+    const response = await fetch(url)
+    if (!response.ok) {
+      console.log("[Notifications] API returned error, table may not be ready yet")
       return []
     }
 
-    return data.map(mapNotificationFromDB)
+    const { notifications } = await response.json()
+    return notifications || []
   } catch (err: any) {
-    if (err?.message?.includes("Failed to fetch") || err?.name === "TypeError") {
-      console.log(
-        "[Notifications] Network error or table not ready. Notifications will be available once setup is complete.",
-      )
-    } else {
-      console.error("[Notifications] Unexpected error:", err)
-    }
+    console.log("[Notifications] Error fetching notifications:", err.message)
     return []
   }
 }
 
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
-  const supabase = createClient()
-
-  const { error } = await supabase
-    .from("notifications")
-    .update({
-      is_read: true,
-      read_at: new Date().toISOString(),
+  try {
+    const response = await fetch("/api/notifications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "markRead", id: notificationId }),
     })
-    .eq("id", notificationId)
-
-  if (error) {
+    return response.ok
+  } catch (error) {
     console.error("[Notifications] Error marking notification as read:", error)
     return false
   }
-
-  return true
 }
 
 export async function markAllNotificationsAsRead(userEmail: string): Promise<boolean> {
-  const supabase = createClient()
-
-  const { error } = await supabase
-    .from("notifications")
-    .update({
-      is_read: true,
-      read_at: new Date().toISOString(),
+  try {
+    const response = await fetch("/api/notifications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "markAllRead", userEmail }),
     })
-    .eq("user_email", userEmail)
-    .eq("is_read", false)
-
-  if (error) {
+    return response.ok
+  } catch (error) {
     console.error("[Notifications] Error marking all notifications as read:", error)
     return false
   }
-
-  return true
 }
 
 export async function deleteNotification(notificationId: string): Promise<boolean> {
-  const supabase = createClient()
-
-  const { error } = await supabase.from("notifications").delete().eq("id", notificationId)
-
-  if (error) {
+  try {
+    const response = await fetch("/api/notifications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "delete", id: notificationId }),
+    })
+    return response.ok
+  } catch (error) {
     console.error("[Notifications] Error deleting notification:", error)
     return false
   }
-
-  return true
 }
 
 export async function getUnreadCount(userEmail: string): Promise<number> {
   try {
-    const supabase = createClient()
+    const response = await fetch("/api/notifications?action=count")
+    if (!response.ok) return 0
 
-    const { count, error } = await supabase
-      .from("notifications")
-      .select("*", { count: "exact", head: true })
-      .eq("user_email", userEmail)
-      .eq("is_read", false)
-
-    if (error) {
-      if (error.message?.includes("Could not find the table")) {
-        return 0
-      }
-      console.error("[Notifications] Error getting unread count:", error)
-      return 0
-    }
-
+    const { count } = await response.json()
     return count || 0
   } catch (err: any) {
-    if (err?.message?.includes("Failed to fetch") || err?.name === "TypeError") {
-    } else {
-      console.error("[Notifications] Unexpected error:", err)
-    }
     return 0
   }
 }
