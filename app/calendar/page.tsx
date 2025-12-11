@@ -14,7 +14,7 @@ import { useEffect, useState } from "react"
 import { AuthGuard } from "@/components/auth-guard"
 
 export default function CalendarPage() {
-  const [view, setView] = useState<"month" | "week" | "list">("week")
+  const [view, setView] = useState<"month" | "week" | "list">("month") // Changed default view from "week" to "month"
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [condos, setCondos] = useState<Condo[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
