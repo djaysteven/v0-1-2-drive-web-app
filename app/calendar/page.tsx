@@ -143,27 +143,37 @@ export default function CalendarPage() {
           </div>
         }
       >
-        <div className="container mx-auto p-4 lg:p-6 space-y-6 max-w-7xl">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex items-center gap-3 flex-wrap">
-              <Button variant="outline" size="icon" onClick={() => navigateDate("prev")} className="rounded-full">
-                <ChevronLeft className="h-4 w-4" />
+        <div className="container mx-auto p-3 lg:p-4 space-y-4 max-w-7xl">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigateDate("prev")}
+                className="rounded-full h-8 w-8"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setCurrentDate(new Date())}
-                className="rounded-full min-w-[140px] font-semibold"
+                className="rounded-full min-w-[120px] font-semibold text-sm h-8 px-3"
               >
                 {monthYear}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => navigateDate("next")} className="rounded-full">
-                <ChevronRight className="h-4 w-4" />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigateDate("next")}
+                className="rounded-full h-8 w-8"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               <Select value={selectedAsset} onValueChange={setSelectedAsset}>
-                <SelectTrigger className="w-[180px] rounded-full">
+                <SelectTrigger className="w-[160px] rounded-full h-8 text-sm">
                   <SelectValue placeholder="Filter assets" />
                 </SelectTrigger>
                 <SelectContent>
@@ -182,17 +192,17 @@ export default function CalendarPage() {
               </Select>
 
               <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} className="rounded-full">
-                <TabsList className="bg-secondary/50 rounded-full">
-                  <TabsTrigger value="week" className="rounded-full gap-2">
-                    <Calendar className="h-4 w-4" />
+                <TabsList className="bg-secondary/50 rounded-full h-8">
+                  <TabsTrigger value="week" className="rounded-full gap-1.5 text-xs h-7 px-3">
+                    <Calendar className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Week</span>
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="rounded-full gap-2">
-                    <Calendar className="h-4 w-4" />
+                  <TabsTrigger value="month" className="rounded-full gap-1.5 text-xs h-7 px-3">
+                    <Calendar className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Month</span>
                   </TabsTrigger>
-                  <TabsTrigger value="list" className="rounded-full gap-2">
-                    <Clock className="h-4 w-4" />
+                  <TabsTrigger value="list" className="rounded-full gap-1.5 text-xs h-7 px-3">
+                    <Clock className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">List</span>
                   </TabsTrigger>
                 </TabsList>
@@ -280,10 +290,10 @@ export default function CalendarPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {/* Date header row */}
               <div
-                className="grid gap-2 mb-3"
+                className="grid gap-1.5 mb-2"
                 style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
               >
                 {days.map((day) => {
@@ -291,16 +301,16 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={day.toISOString()}
-                      className={`text-center p-3 rounded-2xl transition-colors ${
+                      className={`text-center py-1.5 px-1 rounded-lg transition-colors ${
                         isToday
                           ? "bg-primary text-primary-foreground font-bold"
                           : "bg-secondary/30 text-muted-foreground"
                       }`}
                     >
-                      <div className="text-xs font-medium mb-1">
+                      <div className="text-[10px] font-medium mb-0.5 uppercase tracking-wide">
                         {day.toLocaleDateString("en-GB", { weekday: "short" })}
                       </div>
-                      <div className="text-lg font-bold">{day.getDate()}</div>
+                      <div className="text-sm font-bold">{day.getDate()}</div>
                     </div>
                   )
                 })}
@@ -311,12 +321,15 @@ export default function CalendarPage() {
                 const assetBookings = getBookingsForAsset(asset.id, asset.type)
 
                 return (
-                  <Card key={`${asset.type}-${asset.id}`} className="rounded-2xl border-border/50 bg-card/50">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col gap-3">
-                        <div className="font-medium text-sm text-foreground px-2">{asset.displayName}</div>
+                  <Card
+                    key={`${asset.type}-${asset.id}`}
+                    className="rounded-xl border-border/40 bg-card/30 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <CardContent className="p-2.5">
+                      <div className="flex flex-col gap-2">
+                        <div className="font-medium text-xs text-foreground/90 px-1">{asset.displayName}</div>
                         <div
-                          className="grid gap-2"
+                          className="grid gap-1.5"
                           style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
                         >
                           {days.map((day) => {
@@ -348,10 +361,10 @@ export default function CalendarPage() {
                             return (
                               <div
                                 key={day.toISOString()}
-                                className={`aspect-square rounded-xl border transition-all ${
+                                className={`aspect-square rounded-lg border transition-all hover:scale-105 cursor-pointer ${
                                   day.getTime() === today.getTime()
-                                    ? "border-primary/30 bg-primary/5"
-                                    : "border-border/30 bg-secondary/20"
+                                    ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+                                    : "border-border/20 bg-secondary/10"
                                 } relative overflow-hidden`}
                                 title={
                                   booking
@@ -361,15 +374,15 @@ export default function CalendarPage() {
                               >
                                 {isInOriginalPeriod && booking && (
                                   <div
-                                    className={`absolute inset-1 rounded-lg ${
+                                    className={`absolute inset-0.5 rounded-md ${
                                       booking.source === "airbnb"
-                                        ? "bg-[#FF5A5F]"
+                                        ? "bg-gradient-to-br from-[#FF5A5F] to-[#FF385C]"
                                         : booking.status === "confirmed"
-                                          ? "bg-primary"
+                                          ? "bg-gradient-to-br from-primary to-primary/80"
                                           : booking.status === "pending"
-                                            ? "bg-yellow-500"
-                                            : "bg-blue-500"
-                                    }`}
+                                            ? "bg-gradient-to-br from-yellow-500 to-yellow-600"
+                                            : "bg-gradient-to-br from-blue-500 to-blue-600"
+                                    } shadow-sm`}
                                   />
                                 )}
                               </div>
