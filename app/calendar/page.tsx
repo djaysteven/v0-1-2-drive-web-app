@@ -89,6 +89,24 @@ export default function CalendarPage() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  const getColumnWidth = () => {
+    if (view === "week") {
+      return "w-12 sm:w-16" // Wider columns for week view
+    }
+    // Month view: fit ~30 days on screen
+    return "w-6 sm:w-7" // Much narrower for month view
+  }
+
+  const getAssetNameWidth = () => {
+    if (view === "week") {
+      return "w-24 sm:w-32" // Wider for week view
+    }
+    return "w-20 sm:w-24" // Narrower for month view
+  }
+
+  const columnWidth = getColumnWidth()
+  const assetNameWidth = getAssetNameWidth()
+
   const allAssets = [
     ...vehicles.map((v) => ({
       ...v,
@@ -304,24 +322,21 @@ export default function CalendarPage() {
             </div>
           ) : (
             <div className="space-y-0.5 pb-2">
-              <div
-                className="grid gap-px mb-1"
-                style={{ gridTemplateColumns: `90px repeat(${days.length}, minmax(0, 1fr))` }}
-              >
-                <div className="w-[90px]" />
+              <div className="flex gap-px mb-0.5 flex-wrap">
+                <div className={`${assetNameWidth} flex-shrink-0`} />
                 {days.map((day) => {
                   const isToday = day.getTime() === today.getTime()
                   return (
                     <div
                       key={day.toISOString()}
-                      className={`text-center py-0.5 px-px rounded transition-all ${
-                        isToday ? "bg-primary text-primary-foreground" : "bg-secondary/10 text-muted-foreground"
+                      className={`${columnWidth} flex-shrink-0 text-center py-0.5 rounded transition-colors ${
+                        isToday ? "bg-primary text-primary-foreground" : "bg-secondary/20 text-muted-foreground"
                       }`}
                     >
-                      <div className="text-[8px] font-medium uppercase tracking-wide opacity-60">
+                      <div className="text-[7px] font-medium uppercase opacity-60">
                         {day.toLocaleDateString("en-GB", { weekday: "short" }).substring(0, 1)}
                       </div>
-                      <div className="text-[10px] font-bold">{day.getDate()}</div>
+                      <div className="text-[9px] font-bold">{day.getDate()}</div>
                     </div>
                   )
                 })}
@@ -333,14 +348,13 @@ export default function CalendarPage() {
                 return (
                   <Card
                     key={`${asset.type}-${asset.id}`}
-                    className="rounded border-border/20 bg-card/10 hover:bg-card/20 transition-all"
+                    className="rounded-lg border-border/30 bg-card/20 hover:bg-card/30 transition-colors"
                   >
-                    <CardContent className="p-1">
-                      <div
-                        className="grid gap-px items-center"
-                        style={{ gridTemplateColumns: `90px repeat(${days.length}, minmax(0, 1fr))` }}
-                      >
-                        <div className="font-medium text-[10px] text-foreground/70 px-1.5 truncate w-[90px]">
+                    <CardContent className="p-0.5">
+                      <div className="flex gap-px items-center flex-wrap">
+                        <div
+                          className={`${assetNameWidth} flex-shrink-0 font-medium text-[9px] text-foreground/80 px-1 truncate`}
+                        >
                           {asset.displayName}
                         </div>
                         {days.map((day) => {
@@ -372,10 +386,10 @@ export default function CalendarPage() {
                           return (
                             <div
                               key={day.toISOString()}
-                              className={`h-5 rounded-sm border transition-all hover:scale-105 hover:z-10 cursor-pointer relative overflow-hidden ${
+                              className={`${columnWidth} h-3.5 flex-shrink-0 rounded-sm border transition-all hover:scale-110 hover:z-10 cursor-pointer relative overflow-hidden ${
                                 day.getTime() === today.getTime()
-                                  ? "border-primary/20 bg-primary/5"
-                                  : "border-border/5 bg-background/50"
+                                  ? "border-primary/30 bg-primary/5"
+                                  : "border-border/10 bg-background/60"
                               }`}
                               title={
                                 booking
@@ -387,12 +401,12 @@ export default function CalendarPage() {
                                 <div
                                   className={`absolute inset-0 ${
                                     booking.source === "airbnb"
-                                      ? "bg-gradient-to-r from-[#FF5A5F] to-[#FF385C]"
+                                      ? "bg-gradient-to-br from-[#FF5A5F] to-[#FF385C]"
                                       : booking.status === "confirmed"
-                                        ? "bg-gradient-to-r from-primary to-primary/80"
+                                        ? "bg-gradient-to-br from-primary via-primary to-primary/70"
                                         : booking.status === "pending"
-                                          ? "bg-gradient-to-r from-yellow-500 to-yellow-600"
-                                          : "bg-gradient-to-r from-blue-500 to-blue-600"
+                                          ? "bg-gradient-to-br from-yellow-500 to-yellow-600"
+                                          : "bg-gradient-to-br from-blue-500 to-blue-600"
                                   }`}
                                 />
                               )}
