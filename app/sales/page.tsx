@@ -88,6 +88,7 @@ export default function SalesPage() {
   )
 
   const now = new Date()
+  const currentYear = now.getFullYear().toString()
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
@@ -279,6 +280,13 @@ export default function SalesPage() {
     return { vehicleRevenue, condoRevenue, totalRevenue }
   })()
 
+  const currentYearData = Object.entries(savedHistory)
+    .filter(([key]) => key.startsWith(`${currentYear}-`))
+    .map(([_, data]) => (data.totalVehicles || 0) + (data.totalCondos || 0))
+
+  const averageMonthlySales =
+    currentYearData.length > 0 ? currentYearData.reduce((sum, val) => sum + val, 0) / currentYearData.length : 0
+
   return (
     <AuthGuard allowedRoles={["owner"]}>
       <AppShell
@@ -311,6 +319,12 @@ export default function SalesPage() {
                     <div className="text-xs text-muted-foreground mt-2 space-y-1">
                       <div>Bikes + Cars: ฿{(latestMonthData.totalVehicles || 0).toLocaleString()}</div>
                       <div>Condos: ฿{(latestMonthData.totalCondos || 0).toLocaleString()}</div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <div className="text-xs text-muted-foreground">Avg Monthly ({currentYear})</div>
+                      <div className="text-sm font-semibold text-primary mt-1">
+                        ฿{averageMonthlySales.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
                       {latestMonthData.month} {latestMonthData.year}
@@ -525,11 +539,11 @@ export default function SalesPage() {
                     {yearOverYearData.monthlyComparison.map((monthData) => (
                       <div
                         key={monthData.month}
-                        className={`p-3 rounded-lg border ${
+                        className={`p-3 rounded-lg border transition-colors ${
                           monthData.isFutureMonth
                             ? "border-dashed border-muted-foreground/20 bg-muted/10 opacity-40"
                             : monthData.hasCurrentData || monthData.hasPreviousData
-                              ? "border-border bg-card"
+                              ? "border-border bg-card hover:bg-primary/5 hover:border-primary/30"
                               : "border-dashed border-muted-foreground/30 bg-muted/20"
                         }`}
                       >
