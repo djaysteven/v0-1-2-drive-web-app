@@ -22,8 +22,8 @@ import { useRole } from "@/hooks/use-role"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useState } from "react"
-// import { NotificationCenter } from "@/components/notification-center"
+import { useState, useEffect } from "react"
+import { NotificationCenter } from "@/components/notification-center"
 
 interface AppShellProps {
   children: ReactNode
@@ -51,6 +51,14 @@ export function AppShell({ children, header, actions }: AppShellProps) {
   const router = useRouter()
   const { role, isAuthenticated } = useRole()
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const [userEmail, setUserEmail] = useState<string>("")
+
+  useEffect(() => {
+    const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
+    if (ownerEmail) {
+      setUserEmail(ownerEmail)
+    }
+  }, [])
 
   const visibleNavItems = [
     ...customerNavItems,
@@ -178,9 +186,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
               {header}
             </div>
             <div className="flex items-center gap-2">
-              {/* {isAuthenticated && process.env.NEXT_PUBLIC_OWNER_EMAIL && (
-                <NotificationCenter userEmail={process.env.NEXT_PUBLIC_OWNER_EMAIL} />
-              )} */}
+              {(isAuthenticated || userEmail) && <NotificationCenter userEmail={userEmail} />}
               {actions}
               {!isAuthenticated && (
                 <Link href="/sign-in" className="lg:hidden">
