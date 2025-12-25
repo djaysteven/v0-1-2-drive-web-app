@@ -1,5 +1,7 @@
 "use client"
 
+import { useCallback } from "react"
+
 import type React from "react"
 
 import { AppShell } from "@/components/app-shell"
@@ -12,20 +14,15 @@ import { AdminNotificationSender } from "@/components/admin-notification-sender"
 import { DatabaseSetupBanner } from "@/components/database-setup-banner"
 import { Car, Building2, Users, Calendar, Plus, Bike } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { vehiclesApi, condosApi, customersApi } from "@/lib/api"
 import { useRole } from "@/hooks/use-role"
 
-export default function HomePage() {
+const HomePage = () => {
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
-  const [showContent, setShowContent] = useState(() => {
-    if (typeof window !== "undefined") {
-      return sessionStorage.getItem("splashShown") === "true"
-    }
-    return false
-  })
+  const [showContent, setShowContent] = useState(true)
   const [stats, setStats] = useState({
     totalVehicles: 0,
     availableVehicles: 0,
@@ -37,21 +34,6 @@ export default function HomePage() {
   })
 
   const { isOwner, loading: roleLoading } = useRole()
-
-  useEffect(() => {
-    if (!showContent) {
-      const fallbackTimer = setTimeout(() => {
-        setShowContent(true)
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("splashShown", "true")
-        }
-      }, 2000)
-
-      return () => {
-        clearTimeout(fallbackTimer)
-      }
-    }
-  }, [showContent])
 
   const fetchStats = useCallback(async () => {
     try {
@@ -65,7 +47,7 @@ export default function HomePage() {
       const availableBikes = availableVehicles.filter((v) => v.type === "bike").length
       const availableCars = availableVehicles.filter((v) => v.type === "car").length
 
-      setStats({
+      return {
         totalVehicles: vehiclesWithStatus.length,
         availableVehicles: availableVehicles.length,
         availableBikes,
@@ -73,21 +55,28 @@ export default function HomePage() {
         totalCondos: condos.length,
         availableCondos: condos.filter((c) => c.status === "available").length,
         totalCustomers: customers.length,
-      })
+      }
     } catch (error) {
       console.error("[v0] Error fetching stats:", error)
+      return {
+        totalVehicles: 0,
+        availableVehicles: 0,
+        availableBikes: 0,
+        availableCars: 0,
+        totalCondos: 0,
+        availableCondos: 0,
+        totalCustomers: 0,
+      }
     }
   }, [])
 
   useEffect(() => {
-    if (showContent) {
-      fetchStats()
+    const fetchData = async () => {
+      const statsData = await fetchStats()
+      setStats(statsData)
     }
-  }, [showContent, fetchStats])
-
-  if (!showContent) {
-    return null
-  }
+    fetchData()
+  }, [fetchStats])
 
   const handlePress = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
@@ -308,3 +297,5 @@ export default function HomePage() {
     </AppShell>
   )
 }
+
+export default HomePage

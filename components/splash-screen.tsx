@@ -5,32 +5,53 @@ import Image from "next/image"
 
 export function SplashScreen() {
   const [isVisible, setIsVisible] = useState(true)
-  const [isRolling, setIsRolling] = useState(false)
+  const [isRollingIn, setIsRollingIn] = useState(false)
+  const [isRollingOut, setIsRollingOut] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
-      setIsVisible(false)
-      return
+    try {
+      if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
+        setIsVisible(false)
+        return
+      }
+    } catch (error) {
+      console.log("[v0] SessionStorage not available, showing splash anyway")
     }
 
-    const rollTimer = setTimeout(() => {
-      setIsRolling(true)
+    const rollInTimer = setTimeout(() => {
+      setIsRollingIn(true)
     }, 100)
+
+    const rollOutTimer = setTimeout(() => {
+      setIsRollingOut(true)
+    }, 6100)
 
     const removeTimer = setTimeout(() => {
       setIsVisible(false)
+      try {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("splashShown", "true")
+        }
+      } catch (error) {
+        console.log("[v0] Could not save splash state to sessionStorage")
+      }
     }, 8100)
 
     return () => {
-      clearTimeout(rollTimer)
+      clearTimeout(rollInTimer)
+      clearTimeout(rollOutTimer)
       clearTimeout(removeTimer)
     }
   }, [])
 
   const handleSkip = () => {
     setIsVisible(false)
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("splashShown", "true")
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("splashShown", "true")
+      }
+    } catch (error) {
+      console.log("[v0] Could not save splash state to sessionStorage")
     }
   }
 
@@ -75,13 +96,13 @@ export function SplashScreen() {
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0B0B0B] overflow-hidden cursor-pointer"
       onClick={handleSkip}
     >
-      {isRolling && (
+      {isRollingOut && (
         <div
           className="absolute pointer-events-none"
           style={{
             top: "50%",
-            animation: "rollDust 8s ease-in-out forwards",
-            transform: "translateX(-120vw) translateY(-50%)",
+            animation: "rollDust 2s ease-in-out forwards",
+            transform: "translateY(-50%)",
             zIndex: 5,
           }}
         >
@@ -110,8 +131,12 @@ export function SplashScreen() {
         className="absolute"
         style={{
           top: "50%",
-          animation: isRolling ? "rollGlow 8s ease-in-out forwards" : "none",
-          transform: isRolling ? undefined : "translateX(-120vw) translateY(-50%)",
+          animation: isRollingOut
+            ? "rollGlow 2s ease-in-out forwards"
+            : isRollingIn
+              ? "rollInGlow 1s ease-out forwards"
+              : "none",
+          transform: "translateX(-120vw) translateY(-50%)",
           zIndex: 10,
         }}
       >
@@ -127,8 +152,12 @@ export function SplashScreen() {
       <div
         className="relative"
         style={{
-          animation: isRolling ? "roll 8s ease-in-out forwards" : "none",
-          transform: isRolling ? undefined : "translateX(-120vw)",
+          animation: isRollingOut
+            ? "rollOut 2s ease-in-out forwards"
+            : isRollingIn
+              ? "rollIn 1s ease-out forwards"
+              : "none",
+          transform: "translateX(-120vw)",
           zIndex: 10,
         }}
       >
@@ -152,17 +181,36 @@ export function SplashScreen() {
       </div>
 
       <style jsx>{`
-        @keyframes roll {
+        @keyframes rollIn {
           from {
-            transform: translateX(-120vw) rotate(0deg);
+            transform: translateX(-120vw) rotate(-360deg);
+          }
+          to {
+            transform: translateX(0) rotate(0deg);
+          }
+        }
+        
+        @keyframes rollInGlow {
+          from {
+            transform: translateX(-120vw) translateY(-50%);
+          }
+          to {
+            transform: translateX(0) translateY(-50%);
+          }
+        }
+        
+        @keyframes rollOut {
+          from {
+            transform: translateX(0) rotate(0deg);
           }
           to {
             transform: translateX(120vw) rotate(720deg);
           }
         }
+        
         @keyframes rollGlow {
           from {
-            transform: translateX(-120vw) translateY(-50%);
+            transform: translateX(0) translateY(-50%);
           }
           to {
             transform: translateX(120vw) translateY(-50%);
@@ -171,15 +219,13 @@ export function SplashScreen() {
         
         @keyframes rollDust {
           from {
-            transform: translateX(-120vw) translateY(-50%);
+            transform: translateY(-50%);
           }
           to {
             transform: translateX(120vw) translateY(-50%);
           }
         }
         
-        /* Realistic smoke trail animations with turbulent, billowing motion */
-        /* Curved paths with rotation and dramatic expansion for organic smoke effect */
         @keyframes smokeTrail0 {
           0% {
             transform: translate(0, 0) scale(1) rotate(0deg);
