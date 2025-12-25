@@ -587,16 +587,20 @@ export async function reorderCondos(condoIds: string[]): Promise<void> {
 }
 
 export async function getCondosWithBookingStatus(): Promise<(Condo & { isCurrentlyBooked: boolean })[]> {
+  console.log("[v0] getCondosWithBookingStatus called")
   const condos = await getCondos()
   const today = new Date().toISOString().split("T")[0]
+  console.log("[v0] Checking bookings for date:", today)
 
   const supabase = createClient()
   const { data: activeBookings, error } = await supabase
     .from("bookings")
-    .select("condo_id")
+    .select("condo_id, start_date, end_date, status, source")
     .in("status", ["active", "confirmed"])
     .lte("start_date", today)
     .gte("end_date", today)
+
+  console.log("[v0] Active condo bookings found:", activeBookings?.length || 0, activeBookings)
 
   if (error) {
     console.error("[v0] Error fetching active condo bookings:", error)
@@ -604,6 +608,7 @@ export async function getCondosWithBookingStatus(): Promise<(Condo & { isCurrent
   }
 
   const bookedCondoIds = new Set(activeBookings?.map((b) => b.condo_id).filter(Boolean) || [])
+  console.log("[v0] Booked condo IDs:", Array.from(bookedCondoIds))
 
   return condos.map((condo) => ({
     ...condo,
@@ -740,7 +745,13 @@ export const condosApi = {
       // Step 5: Insert into database
       const supabaseClient = createClient()
       console.log("[v0] Inserting bookings...")
-      const { data: insertedData, error: insertError } = await supabaseClient.from("bookings").insert(rows).select("id")
+      const { data: insertedData, error: insertError } = await supabaseClient
+        .from("bookings")
+        .upsert(rows, {
+          onConflict: "external_uid",
+          ignoreDuplicates: false,
+        })
+        .select("id")
 
       if (insertError) {
         console.error("[v0] Database error:", {
@@ -753,7 +764,7 @@ export const condosApi = {
       }
 
       const insertedCount = insertedData?.length || 0
-      console.log("[v0] Successfully inserted:", insertedCount, "bookings")
+      console.log("[v0] Successfully inserted/updated:", insertedCount, "bookings")
 
       // Step 6: Update last synced timestamp
       await supabaseClient.from("condos").update({ last_synced_at: new Date().toISOString() }).eq("id", condo.id)
