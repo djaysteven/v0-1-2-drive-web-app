@@ -54,11 +54,10 @@ export default function HomePage() {
   }, [showContent])
 
   const fetchStats = useCallback(async () => {
-    console.log("[v0] Fetching stats with booking status...")
     try {
-      const [vehiclesWithStatus, condosWithStatus, customers] = await Promise.all([
+      const [vehiclesWithStatus, condos, customers] = await Promise.all([
         vehiclesApi.getAllWithBookingStatus(),
-        condosApi.getAllWithBookingStatus(),
+        condosApi.getAll(),
         customersApi.getAll(),
       ])
 
@@ -66,21 +65,13 @@ export default function HomePage() {
       const availableBikes = availableVehicles.filter((v) => v.type === "bike").length
       const availableCars = availableVehicles.filter((v) => v.type === "car").length
 
-      const availableCondos = condosWithStatus.filter((c) => !c.isCurrentlyBooked && c.status === "available")
-
-      console.log("[v0] Stats loaded:", {
-        totalCondos: condosWithStatus.length,
-        availableCondos: availableCondos.length,
-        bookedCondos: condosWithStatus.filter((c) => c.isCurrentlyBooked).length,
-      })
-
       setStats({
         totalVehicles: vehiclesWithStatus.length,
         availableVehicles: availableVehicles.length,
         availableBikes,
         availableCars,
-        totalCondos: condosWithStatus.length,
-        availableCondos: availableCondos.length,
+        totalCondos: condos.length,
+        availableCondos: condos.filter((c) => c.status === "available").length,
         totalCustomers: customers.length,
       })
     } catch (error) {
