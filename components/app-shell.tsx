@@ -54,13 +54,11 @@ export function AppShell({ children, header, actions }: AppShellProps) {
   const [userEmail, setUserEmail] = useState<string>("")
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
-      if (ownerEmail) {
-        setUserEmail(ownerEmail)
-      }
+    const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL
+    if (ownerEmail) {
+      setUserEmail(ownerEmail)
     }
-  }, [isAuthenticated])
+  }, [])
 
   const visibleNavItems = [
     ...customerNavItems,
@@ -188,7 +186,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
               {header}
             </div>
             <div className="flex items-center gap-2">
-              {isAuthenticated && userEmail && <NotificationCenter userEmail={userEmail} />}
+              {(isAuthenticated || userEmail) && <NotificationCenter userEmail={userEmail} />}
               {actions}
               {!isAuthenticated && (
                 <Link href="/sign-in" className="lg:hidden">
