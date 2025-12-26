@@ -21,6 +21,7 @@ import { useState } from "react"
 import { vehiclesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { ReserveVehicleModal } from "./reserve-vehicle-modal"
+import { ShareButton } from "./share-button"
 
 interface VehicleCardProps {
   vehicle: Vehicle
@@ -142,8 +143,17 @@ export function VehicleCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             quality={85}
           />
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 flex gap-2">
             <Badge className={statusColors[displayStatus]}>{displayStatusText}</Badge>
+            <ShareButton
+              url={`/vehicles?id=${vehicle.id}`}
+              title={`${vehicle.name} - ${vehicle.type}`}
+              description={`Rent this ${vehicle.type} for ฿${vehicle.dailyPrice}/day. ${vehicle.plate} • ${vehicle.cc}cc`}
+              variant="secondary"
+              size="icon"
+              className="bg-card/90 hover:bg-card shadow-lg"
+              showText={false}
+            />
           </div>
           <div className="absolute top-3 left-3">
             <Badge variant="secondary" className="gap-1">
