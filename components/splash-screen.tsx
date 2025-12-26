@@ -18,6 +18,9 @@ export function SplashScreen() {
     }, 100)
 
     const removeTimer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("splashShown", "true")
+      }
       setIsVisible(false)
     }, 8100)
 
