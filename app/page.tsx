@@ -18,8 +18,6 @@ import { vehiclesApi, condosApi, customersApi } from "@/lib/api"
 import { useRole } from "@/hooks/use-role"
 
 export default function HomePage() {
-  console.log("[v0] HomePage rendering")
-
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
   const [stats, setStats] = useState({
@@ -34,22 +32,13 @@ export default function HomePage() {
 
   const { isOwner, loading: roleLoading } = useRole()
 
-  console.log("[v0] HomePage - isOwner:", isOwner, "roleLoading:", roleLoading)
-
   const fetchStats = useCallback(async () => {
-    console.log("[v0] fetchStats starting")
     try {
       const [vehicles, condos, customers] = await Promise.all([
         vehiclesApi.getAll(),
         condosApi.getAll(),
         customersApi.getAll(),
       ])
-
-      console.log("[v0] fetchStats got data:", {
-        vehicles: vehicles.length,
-        condos: condos.length,
-        customers: customers.length,
-      })
 
       const availableVehicles = vehicles.filter((v) => v.status === "available")
       const availableBikes = availableVehicles.filter((v) => v.type === "bike").length
@@ -64,15 +53,12 @@ export default function HomePage() {
         availableCondos: condos.filter((c) => c.status === "available").length,
         totalCustomers: customers.length,
       })
-
-      console.log("[v0] fetchStats complete")
     } catch (error) {
-      console.error("[v0] Error fetching stats:", error)
+      console.error("Error fetching stats:", error)
     }
   }, [])
 
   useEffect(() => {
-    console.log("[v0] fetchStats useEffect triggered")
     fetchStats()
   }, [fetchStats])
 
