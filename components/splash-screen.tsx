@@ -4,22 +4,40 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 
 export function SplashScreen() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === "undefined") return true
+    try {
+      const hasShown = sessionStorage.getItem("splashShown")
+      if (!hasShown) {
+        return true
+      }
+      const isPageRefresh =
+        performance.navigation?.type === 1 || performance.getEntriesByType("navigation")[0]?.type === "reload"
+      if (isPageRefresh) {
+        sessionStorage.removeItem("splashShown")
+        return true
+      }
+      return false
+    } catch {
+      return true
+    }
+  })
   const [isRolling, setIsRolling] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
-      setIsVisible(false)
-      return
-    }
+    if (!isVisible) return
 
     const rollTimer = setTimeout(() => {
       setIsRolling(true)
     }, 100)
 
     const removeTimer = setTimeout(() => {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("splashShown", "true")
+      try {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("splashShown", "true")
+        }
+      } catch (e) {
+        console.error("Failed to set sessionStorage:", e)
       }
       setIsVisible(false)
     }, 8100)
@@ -28,12 +46,16 @@ export function SplashScreen() {
       clearTimeout(rollTimer)
       clearTimeout(removeTimer)
     }
-  }, [])
+  }, [isVisible])
 
   const handleSkip = () => {
     setIsVisible(false)
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("splashShown", "true")
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("splashShown", "true")
+      }
+    } catch (e) {
+      console.error("Failed to set sessionStorage:", e)
     }
   }
 
