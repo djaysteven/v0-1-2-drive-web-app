@@ -8,16 +8,7 @@ export function SplashScreen() {
     if (typeof window === "undefined") return true
     try {
       const hasShown = sessionStorage.getItem("splashShown")
-      if (!hasShown) {
-        return true
-      }
-      const isPageRefresh =
-        performance.navigation?.type === 1 || performance.getEntriesByType("navigation")[0]?.type === "reload"
-      if (isPageRefresh) {
-        sessionStorage.removeItem("splashShown")
-        return true
-      }
-      return false
+      return hasShown !== "true"
     } catch {
       return true
     }
