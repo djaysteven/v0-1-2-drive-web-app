@@ -1,29 +1,24 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 
 export function SplashScreen() {
-  const hasShownBefore = useRef(false)
-
-  useEffect(() => {
+  const [isVisible, setIsVisible] = useState(() => {
     if (typeof window !== "undefined") {
       try {
-        hasShownBefore.current = sessionStorage.getItem("splashShown") === "true"
+        return sessionStorage.getItem("splashShown") !== "true"
       } catch {
-        hasShownBefore.current = false
+        return true
       }
     }
-  }, [])
+    return true
+  })
 
-  const [isVisible, setIsVisible] = useState(true)
   const [isRolling, setIsRolling] = useState(false)
 
   useEffect(() => {
-    if (hasShownBefore.current) {
-      setIsVisible(false)
-      return
-    }
+    if (!isVisible) return
 
     // Start rolling animation after brief delay
     const rollTimer = setTimeout(() => {
@@ -45,7 +40,7 @@ export function SplashScreen() {
       clearTimeout(rollTimer)
       clearTimeout(removeTimer)
     }
-  }, [])
+  }, [isVisible])
 
   const handleSkip = () => {
     setIsVisible(false)
