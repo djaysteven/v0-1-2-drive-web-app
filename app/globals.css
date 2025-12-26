@@ -385,3 +385,69 @@ main {
     opacity: 0;
   }
 }
+
+/* Adding missing slide-out-to-start animation utility */
+@keyframes slide-out-to-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-out-to-left-52 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - 13rem));
+  }
+}
+
+@keyframes slide-in-from-left-52 {
+  from {
+    transform: translateX(calc(-100% - 13rem));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-to-right-52 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100% + 13rem));
+  }
+}
+
+@keyframes slide-in-from-right-52 {
+  from {
+    transform: translateX(calc(100% + 13rem));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.slide-out-to-start {
+  animation: slide-out-to-left 0.15s ease-out;
+}
+
+.slide-out-to-left-52 {
+  animation: slide-out-to-left-52 0.15s ease-out;
+}
+
+.slide-in-from-left-52 {
+  animation: slide-in-from-left-52 0.15s ease-out;
+}
+
+.slide-out-to-right-52 {
+  animation: slide-out-to-right-52 0.15s ease-out;
+}
+
+.slide-in-from-right-52 {
+  animation: slide-in-from-right-52 0.15s ease-out;
+}
