@@ -7,7 +7,7 @@ export function ImagePreloader() {
   useEffect(() => {
     const preloadImages = async () => {
       try {
-        const [vehicles, condos] = await Promise.all([vehiclesApi.getAllWithBookingStatus(), condosApi.getAll()])
+        const [vehicles, condos] = await Promise.all([vehiclesApi.getAll(), condosApi.getAll()])
 
         const imageUrls: string[] = []
 
