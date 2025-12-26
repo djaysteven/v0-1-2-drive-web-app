@@ -7,7 +7,9 @@ export function SplashScreen() {
   const [isVisible, setIsVisible] = useState(() => {
     if (typeof window !== "undefined") {
       try {
-        return sessionStorage.getItem("splashShown") !== "true"
+        const splashShown = sessionStorage.getItem("splashShown")
+        console.log("[v0] SplashScreen mount - splashShown:", splashShown)
+        return splashShown !== "true"
       } catch {
         return true
       }
@@ -18,6 +20,7 @@ export function SplashScreen() {
   const [isRolling, setIsRolling] = useState(false)
 
   useEffect(() => {
+    console.log("[v0] SplashScreen useEffect - isVisible:", isVisible)
     if (!isVisible) return
 
     // Start rolling animation after brief delay
@@ -84,85 +87,218 @@ export function SplashScreen() {
   })
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0B0B0B] overflow-hidden cursor-pointer"
-      onClick={handleSkip}
-    >
-      {isRolling && (
+    <>
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0B0B0B] overflow-hidden cursor-pointer"
+        onClick={handleSkip}
+      >
+        {isRolling && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              top: "50%",
+              animation: "rollDust 8s ease-in-out forwards",
+              transform: "translateX(-120vw) translateY(-50%)",
+              zIndex: 5,
+            }}
+          >
+            {dustParticles.map((particle, index) => (
+              <div
+                key={`dust-${index}`}
+                className="absolute"
+                style={{
+                  width: `${particle.size}px`,
+                  height: `${particle.size}px`,
+                  borderRadius: "50%",
+                  background: `radial-gradient(circle at center, rgba(${particle.baseColor}, ${particle.opacity}) 0%, rgba(${particle.baseColor}, ${particle.opacity * 0.6}) 40%, rgba(${particle.baseColor}, 0) 100%)`,
+                  left: `${particle.horizontalOffset}px`,
+                  top: `${particle.verticalOffset}px`,
+                  animation: `smokeTrail${particle.animationIndex} ${particle.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite`,
+                  animationDelay: `${particle.delay}s`,
+                  filter: `blur(${particle.blur}px)`,
+                  transform: `rotate(${particle.rotation}deg)`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         <div
-          className="absolute pointer-events-none"
+          className="absolute"
           style={{
             top: "50%",
-            animation: "rollDust 8s ease-in-out forwards",
-            transform: "translateX(-120vw) translateY(-50%)",
-            zIndex: 5,
+            animation: isRolling ? "rollGlow 8s ease-in-out forwards" : "none",
+            transform: isRolling ? undefined : "translateX(-120vw) translateY(-50%)",
+            zIndex: 10,
           }}
         >
-          {dustParticles.map((particle, index) => (
-            <div
-              key={`dust-${index}`}
-              className="absolute"
-              style={{
-                width: `${particle.size}px`,
-                height: `${particle.size}px`,
-                borderRadius: "50%",
-                background: `radial-gradient(circle at center, rgba(${particle.baseColor}, ${particle.opacity}) 0%, rgba(${particle.baseColor}, ${particle.opacity * 0.6}) 40%, rgba(${particle.baseColor}, 0) 100%)`,
-                left: `${particle.horizontalOffset}px`,
-                top: `${particle.verticalOffset}px`,
-                animation: `smokeTrail${particle.animationIndex} ${particle.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite`,
-                animationDelay: `${particle.delay}s`,
-                filter: `blur(${particle.blur}px)`,
-                transform: `rotate(${particle.rotation}deg)`,
-              }}
-            />
-          ))}
+          <div
+            className="h-[320px] w-[320px] rounded-full blur-[100px] md:h-[384px] md:w-[384px] md:blur-[120px]"
+            style={{
+              background:
+                "radial-gradient(circle at center, rgba(0, 255, 60, 0.8) 0%, rgba(0, 255, 60, 0.5) 30%, rgba(0, 255, 60, 0.2) 60%, transparent 100%)",
+            }}
+          />
         </div>
-      )}
 
-      <div
-        className="absolute"
-        style={{
-          top: "50%",
-          animation: isRolling ? "rollGlow 8s ease-in-out forwards" : "none",
-          transform: isRolling ? undefined : "translateX(-120vw) translateY(-50%)",
-          zIndex: 10,
-        }}
-      >
         <div
-          className="h-[320px] w-[320px] rounded-full blur-[100px] md:h-[384px] md:w-[384px] md:blur-[120px]"
+          className="relative"
           style={{
-            background:
-              "radial-gradient(circle at center, rgba(0, 255, 60, 0.8) 0%, rgba(0, 255, 60, 0.5) 30%, rgba(0, 255, 60, 0.2) 60%, transparent 100%)",
+            animation: isRolling ? "roll 8s ease-in-out forwards" : "none",
+            transform: isRolling ? undefined : "translateX(-120vw)",
+            zIndex: 10,
           }}
-        />
+        >
+          <Image
+            src="/logo.png"
+            alt="1-2 DRIVE"
+            width={400}
+            height={400}
+            className="w-full max-w-[300px] lg:max-w-[400px] h-auto"
+            style={{
+              mixBlendMode: "screen",
+              filter:
+                "brightness(1.5) contrast(1.4) drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3))",
+            }}
+            priority
+          />
+        </div>
+
+        <div className="absolute bottom-8 text-center text-muted-foreground text-sm animate-pulse">
+          Tap anywhere to skip
+        </div>
       </div>
 
-      <div
-        className="relative"
-        style={{
-          animation: isRolling ? "roll 8s ease-in-out forwards" : "none",
-          transform: isRolling ? undefined : "translateX(-120vw)",
-          zIndex: 10,
-        }}
-      >
-        <Image
-          src="/logo.png"
-          alt="1-2 DRIVE"
-          width={400}
-          height={400}
-          className="w-full max-w-[300px] lg:max-w-[400px] h-auto"
-          style={{
-            mixBlendMode: "screen",
-            filter:
-              "brightness(1.5) contrast(1.4) drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3))",
-          }}
-          priority
-        />
-      </div>
+      <style jsx>{`
+        @keyframes roll {
+          0% {
+            transform: translateX(-120vw) rotate(0deg);
+          }
+          70% {
+            transform: translateX(0vw) rotate(720deg);
+          }
+          85% {
+            transform: translateX(0vw) rotate(720deg);
+          }
+          100% {
+            transform: translateX(120vw) rotate(1440deg);
+          }
+        }
 
-      <div className="absolute bottom-8 text-center text-muted-foreground text-sm animate-pulse">
-        Tap anywhere to skip
-      </div>
-    </div>
+        @keyframes rollGlow {
+          0% {
+            transform: translateX(-120vw) translateY(-50%);
+            opacity: 0;
+          }
+          20% {
+            opacity: 1;
+          }
+          70% {
+            transform: translateX(0vw) translateY(-50%);
+            opacity: 1;
+          }
+          85% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(120vw) translateY(-50%);
+            opacity: 0;
+          }
+        }
+
+        @keyframes rollDust {
+          0% {
+            transform: translateX(-120vw) translateY(-50%);
+            opacity: 0;
+          }
+          20% {
+            opacity: 1;
+          }
+          70% {
+            transform: translateX(0vw) translateY(-50%);
+            opacity: 1;
+          }
+          85% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(120vw) translateY(-50%);
+            opacity: 0;
+          }
+        }
+
+        @keyframes smokeTrail0 {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translate(-15px, -10px) scale(1.3);
+            opacity: 0.9;
+          }
+        }
+
+        @keyframes smokeTrail1 {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.5;
+          }
+          50% {
+            transform: translate(-20px, 5px) scale(1.4);
+            opacity: 0.8;
+          }
+        }
+
+        @keyframes smokeTrail2 {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translate(-10px, -15px) scale(1.2);
+            opacity: 1;
+          }
+        }
+
+        @keyframes smokeTrail3 {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.4;
+          }
+          50% {
+            transform: translate(-25px, 0px) scale(1.5);
+            opacity: 0.7;
+          }
+        }
+
+        @keyframes smokeTrail4 {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.5;
+          }
+          50% {
+            transform: translate(-18px, -8px) scale(1.35);
+            opacity: 0.85;
+          }
+        }
+
+        @keyframes smokeTrail5 {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.55;
+          }
+          50% {
+            transform: translate(-12px, 8px) scale(1.25);
+            opacity: 0.9;
+          }
+        }
+      `}</style>
+    </>
   )
 }
