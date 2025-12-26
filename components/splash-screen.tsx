@@ -40,24 +40,18 @@ export function SplashScreen() {
   if (!isVisible) return null
 
   const dustParticles = [...Array(35)].map((_, index) => {
-    const size = 8 + Math.random() * 12 // 8-20px for cleaner, sharper wisps
-    const horizontalOffset = -40 - Math.random() * 70 // -40 to -110px spread
-    const verticalOffset = 30 + Math.random() * 70 // 30-100px spread
-    const delay = Math.random() * 7 // Random delay throughout animation
-    const duration = 1.5 + Math.random() * 1.0 // 1.5-2.5s for slower, more realistic motion
-    const opacity = 0.3 + Math.random() * 0.3 // 0.3-0.6 for more subtle appearance
-    const blur = 1 + Math.random() * 2 // 1-3px minimal blur for sharp, clean edges
-    const animationIndex = Math.floor(Math.random() * 6) // 6 different smoke trails
-    const rotation = Math.random() * 360 // Random initial rotation
+    const size = 8 + Math.random() * 12
+    const horizontalOffset = -40 - Math.random() * 70
+    const verticalOffset = 30 + Math.random() * 70
+    const delay = Math.random() * 7
+    const duration = 1.5 + Math.random() * 1.0
+    const opacity = 0.3 + Math.random() * 0.3
+    const blur = 1 + Math.random() * 2
+    const animationIndex = Math.floor(Math.random() * 6)
+    const rotation = Math.random() * 360
 
-    // Soft gradient colors for realistic smoke/dust
     const colorVariant = Math.random()
-    const baseColor =
-      colorVariant < 0.33
-        ? "200, 190, 170" // Beige dust
-        : colorVariant < 0.66
-          ? "180, 180, 180" // Grey smoke
-          : "190, 185, 175" // Light brown dust
+    const baseColor = colorVariant < 0.33 ? "200, 190, 170" : colorVariant < 0.66 ? "180, 180, 180" : "190, 185, 175"
 
     return {
       size,
@@ -153,120 +147,6 @@ export function SplashScreen() {
       <div className="absolute bottom-8 text-center text-muted-foreground text-sm animate-pulse">
         Tap anywhere to skip
       </div>
-
-      <style jsx>{`
-        @keyframes roll {
-          from {
-            transform: translateX(-120vw) rotate(0deg);
-          }
-          to {
-            transform: translateX(120vw) rotate(720deg);
-          }
-        }
-        @keyframes rollGlow {
-          from {
-            transform: translateX(-120vw) translateY(-50%);
-          }
-          to {
-            transform: translateX(120vw) translateY(-50%);
-          }
-        }
-        
-        @keyframes rollDust {
-          from {
-            transform: translateX(-120vw) translateY(-50%);
-          }
-          to {
-            transform: translateX(120vw) translateY(-50%);
-          }
-        }
-        
-        /* Realistic smoke trail animations with turbulent, billowing motion */
-        /* Curved paths with rotation and dramatic expansion for organic smoke effect */
-        @keyframes smokeTrail0 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(-140px, -95px) scale(4.5) rotate(-45deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail1 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translate(-170px, -110px) scale(5) rotate(60deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail2 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.7;
-          }
-          100% {
-            transform: translate(-110px, -75px) scale(3.8) rotate(-30deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail3 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(-155px, -100px) scale(4.2) rotate(90deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail4 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translate(-125px, -85px) scale(4) rotate(-60deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail5 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(-160px, -105px) scale(4.8) rotate(45deg);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </div>
   )
 }
