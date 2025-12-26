@@ -20,12 +20,6 @@ import { useRole } from "@/hooks/use-role"
 export default function HomePage() {
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
-  const [showContent, setShowContent] = useState(() => {
-    if (typeof window !== "undefined") {
-      return sessionStorage.getItem("splashShown") === "true"
-    }
-    return false
-  })
   const [stats, setStats] = useState({
     totalVehicles: 0,
     availableVehicles: 0,
@@ -37,21 +31,6 @@ export default function HomePage() {
   })
 
   const { isOwner, loading: roleLoading } = useRole()
-
-  useEffect(() => {
-    if (!showContent) {
-      const fallbackTimer = setTimeout(() => {
-        setShowContent(true)
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("splashShown", "true")
-        }
-      }, 2000)
-
-      return () => {
-        clearTimeout(fallbackTimer)
-      }
-    }
-  }, [showContent])
 
   const fetchStats = useCallback(async () => {
     try {
@@ -80,14 +59,8 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    if (showContent) {
-      fetchStats()
-    }
-  }, [showContent, fetchStats])
-
-  if (!showContent) {
-    return null
-  }
+    fetchStats()
+  }, [fetchStats])
 
   const handlePress = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()

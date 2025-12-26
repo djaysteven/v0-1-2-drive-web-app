@@ -49,8 +49,10 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           quality={85}
         />
-        <div className="absolute top-3 right-3 flex gap-2">
+        <div className="absolute top-3 right-3">
           <Badge className={`${statusColors[displayStatus]} font-semibold shadow-lg`}>{displayStatusText}</Badge>
+        </div>
+        <div className="absolute bottom-3 right-3">
           <ShareButton
             url={`/condos/${condo.id}`}
             title={`${condo.building} - Unit ${condo.unitNo}`}

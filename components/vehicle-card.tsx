@@ -143,8 +143,10 @@ export function VehicleCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             quality={85}
           />
-          <div className="absolute top-3 right-3 flex gap-2">
+          <div className="absolute top-3 right-3">
             <Badge className={statusColors[displayStatus]}>{displayStatusText}</Badge>
+          </div>
+          <div className="absolute bottom-3 right-3">
             <ShareButton
               url={`/vehicles?id=${vehicle.id}`}
               title={`${vehicle.name} - ${vehicle.type}`}
