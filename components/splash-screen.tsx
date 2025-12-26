@@ -4,12 +4,16 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 
 export function SplashScreen() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("splashShown") !== "true"
+    }
+    return true
+  })
   const [isRolling, setIsRolling] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
-      setIsVisible(false)
+    if (!isVisible) {
       return
     }
 
@@ -28,7 +32,7 @@ export function SplashScreen() {
       clearTimeout(rollTimer)
       clearTimeout(removeTimer)
     }
-  }, [])
+  }, [isVisible])
 
   const handleSkip = () => {
     setIsVisible(false)
