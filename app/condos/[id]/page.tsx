@@ -16,7 +16,6 @@ import { ArrowLeft, Calendar, CheckCircle2, Loader2, TestTube2, RefreshCw } from
 import { Skeleton } from "@/components/ui/skeleton"
 import { createClient } from "@/lib/supabase/client"
 import { parseICalEvents } from "@/lib/airbnb-ical"
-import { ShareButton } from "@/components/share-button"
 
 export default function CondoDetailPage() {
   const params = useParams()
@@ -302,7 +301,7 @@ export default function CondoDetailPage() {
           <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1">
+          <div>
             <h1 className="text-xl font-bold text-foreground">
               {condo.building} - {condo.unitNo}
             </h1>
@@ -310,13 +309,6 @@ export default function CondoDetailPage() {
               {condo.bedrooms} bed • {condo.bathrooms} bath
             </p>
           </div>
-          <ShareButton
-            url={`/condos/${condo.id}`}
-            title={`${condo.building} - Unit ${condo.unitNo}`}
-            description={`${condo.bedrooms} bed • ${condo.bathrooms} bath • ฿${condo.price.toLocaleString()}/${condo.priceMode}`}
-            variant="outline"
-            className="bg-transparent"
-          />
         </div>
       }
     >

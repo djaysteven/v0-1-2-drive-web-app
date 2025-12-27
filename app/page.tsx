@@ -20,6 +20,12 @@ import { useRole } from "@/hooks/use-role"
 export default function HomePage() {
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
+  const [showContent, setShowContent] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("splashShown") === "true"
+    }
+    return false
+  })
   const [stats, setStats] = useState({
     totalVehicles: 0,
     availableVehicles: 0,
@@ -32,20 +38,35 @@ export default function HomePage() {
 
   const { isOwner, loading: roleLoading } = useRole()
 
+  useEffect(() => {
+    if (!showContent) {
+      const fallbackTimer = setTimeout(() => {
+        setShowContent(true)
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("splashShown", "true")
+        }
+      }, 2000)
+
+      return () => {
+        clearTimeout(fallbackTimer)
+      }
+    }
+  }, [showContent])
+
   const fetchStats = useCallback(async () => {
     try {
-      const [vehicles, condos, customers] = await Promise.all([
-        vehiclesApi.getAll(),
+      const [vehiclesWithStatus, condos, customers] = await Promise.all([
+        vehiclesApi.getAllWithBookingStatus(),
         condosApi.getAll(),
         customersApi.getAll(),
       ])
 
-      const availableVehicles = vehicles.filter((v) => v.status === "available")
+      const availableVehicles = vehiclesWithStatus.filter((v) => !v.isCurrentlyBooked && v.status === "available")
       const availableBikes = availableVehicles.filter((v) => v.type === "bike").length
       const availableCars = availableVehicles.filter((v) => v.type === "car").length
 
       setStats({
-        totalVehicles: vehicles.length,
+        totalVehicles: vehiclesWithStatus.length,
         availableVehicles: availableVehicles.length,
         availableBikes,
         availableCars,
@@ -54,22 +75,19 @@ export default function HomePage() {
         totalCustomers: customers.length,
       })
     } catch (error) {
-      console.error("Error fetching stats:", error)
-      setStats({
-        totalVehicles: 0,
-        availableVehicles: 0,
-        availableBikes: 0,
-        availableCars: 0,
-        totalCondos: 0,
-        availableCondos: 0,
-        totalCustomers: 0,
-      })
+      console.error("[v0] Error fetching stats:", error)
     }
   }, [])
 
   useEffect(() => {
-    fetchStats()
-  }, [fetchStats])
+    if (showContent) {
+      fetchStats()
+    }
+  }, [showContent, fetchStats])
+
+  if (!showContent) {
+    return null
+  }
 
   const handlePress = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()

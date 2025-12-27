@@ -3,11 +3,11 @@ import type { Metadata, Viewport } from "next"
 import { Poppins } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
+import { SplashScreen } from "@/components/splash-screen"
+import { ParticleBackground } from "@/components/particle-background"
 import { ImagePreloader } from "@/components/image-preloader"
 import { GlobalErrorHandler } from "@/components/global-error-handler"
 import { Suspense } from "react"
-import { SplashScreen } from "@/components/splash-screen"
-import { ParticleBackground } from "@/components/particle-background"
 import "./globals.css"
 
 const poppins = Poppins({

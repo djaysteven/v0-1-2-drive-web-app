@@ -176,10 +176,7 @@ export function SalesComparisonChart() {
             <XAxis
               dataKey="name"
               stroke="hsl(var(--muted-foreground))"
-              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
-              angle={-45}
-              textAnchor="end"
-              height={80}
+              tick={{ fill: "hsl(var(--muted-foreground))" }}
             />
             <YAxis
               stroke="hsl(var(--muted-foreground))"
@@ -188,15 +185,13 @@ export function SalesComparisonChart() {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
+                backgroundColor: "hsl(var(--card))",
                 border: "1px solid hsl(var(--border))",
                 borderRadius: "8px",
-                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
               }}
               formatter={(value) => `฿${Number(value).toLocaleString()}`}
-              cursor={{ fill: "hsl(var(--primary) / 0.1)" }}
             />
-            <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: "20px" }} />
+            <Legend />
             <Bar dataKey="Bikes+Cars" fill="#10b981" radius={[4, 4, 0, 0]} />
             <Bar dataKey="Condos" fill="#3b82f6" radius={[4, 4, 0, 0]} />
           </BarChart>
@@ -209,10 +204,7 @@ export function SalesComparisonChart() {
               <XAxis
                 dataKey="name"
                 stroke="hsl(var(--muted-foreground))"
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
               />
               <YAxis
                 stroke="hsl(var(--muted-foreground))"
@@ -221,15 +213,13 @@ export function SalesComparisonChart() {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
+                  backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
-                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
                 formatter={(value) => `฿${Number(value).toLocaleString()}`}
-                cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 2 }}
               />
-              <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: "20px" }} />
+              <Legend />
               <Line type="monotone" dataKey="Total" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>

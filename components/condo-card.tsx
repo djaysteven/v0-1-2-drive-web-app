@@ -18,7 +18,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { ShareButton } from "./share-button"
 
 interface CondoCardProps {
   condo: Condo & { isCurrentlyBooked?: boolean }
@@ -51,17 +50,6 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
         />
         <div className="absolute top-3 right-3">
           <Badge className={`${statusColors[displayStatus]} font-semibold shadow-lg`}>{displayStatusText}</Badge>
-        </div>
-        <div className="absolute bottom-3 right-3">
-          <ShareButton
-            url={`/condos/${condo.id}`}
-            title={`${condo.building} - Unit ${condo.unitNo}`}
-            description={`${condo.bedrooms} bed • ${condo.bathrooms} bath • ฿${condo.price.toLocaleString()}/${condo.priceMode}`}
-            variant="secondary"
-            size="icon"
-            className="bg-card/90 hover:bg-card shadow-lg"
-            showText={false}
-          />
         </div>
         <div className="absolute top-3 left-3 flex gap-2">
           <Badge variant="secondary" className="gap-1 bg-secondary/90 font-semibold shadow-lg">
