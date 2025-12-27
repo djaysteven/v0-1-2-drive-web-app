@@ -5,7 +5,7 @@ import Image from "next/image"
 
 export function SplashScreen() {
   const [isVisible, setIsVisible] = useState(true)
-  const [isRolling, setIsRolling] = useState(false)
+  const [isRolling, setIsRolling] = useState(true)
 
   useEffect(() => {
     if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
@@ -13,16 +13,14 @@ export function SplashScreen() {
       return
     }
 
-    const rollTimer = setTimeout(() => {
-      setIsRolling(true)
-    }, 100)
-
     const removeTimer = setTimeout(() => {
       setIsVisible(false)
-    }, 8100)
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("splashShown", "true")
+      }
+    }, 6100)
 
     return () => {
-      clearTimeout(rollTimer)
       clearTimeout(removeTimer)
     }
   }, [])
@@ -40,7 +38,7 @@ export function SplashScreen() {
     const size = 8 + Math.random() * 12 // 8-20px for cleaner, sharper wisps
     const horizontalOffset = -40 - Math.random() * 70 // -40 to -110px spread
     const verticalOffset = 30 + Math.random() * 70 // 30-100px spread
-    const delay = Math.random() * 7 // Random delay throughout animation
+    const delay = Math.random() * 5 // Adjusted delay for 6s animation
     const duration = 1.5 + Math.random() * 1.0 // 1.5-2.5s for slower, more realistic motion
     const opacity = 0.3 + Math.random() * 0.3 // 0.3-0.6 for more subtle appearance
     const blur = 1 + Math.random() * 2 // 1-3px minimal blur for sharp, clean edges
@@ -80,7 +78,7 @@ export function SplashScreen() {
           className="absolute pointer-events-none"
           style={{
             top: "50%",
-            animation: "rollDust 8s ease-in-out forwards",
+            animation: "rollDust 6s ease-in-out forwards",
             transform: "translateX(-120vw) translateY(-50%)",
             zIndex: 5,
           }}
@@ -110,7 +108,7 @@ export function SplashScreen() {
         className="absolute"
         style={{
           top: "50%",
-          animation: isRolling ? "rollGlow 8s ease-in-out forwards" : "none",
+          animation: isRolling ? "rollGlow 6s ease-in-out forwards" : "none",
           transform: isRolling ? undefined : "translateX(-120vw) translateY(-50%)",
           zIndex: 10,
         }}
@@ -127,7 +125,7 @@ export function SplashScreen() {
       <div
         className="relative"
         style={{
-          animation: isRolling ? "roll 8s ease-in-out forwards" : "none",
+          animation: isRolling ? "roll 6s ease-in-out forwards" : "none",
           transform: isRolling ? undefined : "translateX(-120vw)",
           zIndex: 10,
         }}
@@ -152,29 +150,63 @@ export function SplashScreen() {
       </div>
 
       <style jsx>{`
+        /* Animation now: 0-3s roll in, 3-4s pause in center, 4-6s roll out */
         @keyframes roll {
-          from {
+          0% {
             transform: translateX(-120vw) rotate(0deg);
+            will-change: transform;
           }
-          to {
-            transform: translateX(120vw) rotate(720deg);
+          50% {
+            transform: translateX(0) rotate(720deg);
+            will-change: transform;
           }
-        }
-        @keyframes rollGlow {
-          from {
-            transform: translateX(-120vw) translateY(-50%);
+          66.7% {
+            transform: translateX(0) rotate(720deg);
+            will-change: transform;
           }
-          to {
-            transform: translateX(120vw) translateY(-50%);
+          100% {
+            transform: translateX(120vw) rotate(1440deg);
+            will-change: transform;
           }
         }
         
-        @keyframes rollDust {
-          from {
+        /* Glow follows ball movement with pause */
+        @keyframes rollGlow {
+          0% {
             transform: translateX(-120vw) translateY(-50%);
+            will-change: transform;
           }
-          to {
+          50% {
+            transform: translateX(0) translateY(-50%);
+            will-change: transform;
+          }
+          66.7% {
+            transform: translateX(0) translateY(-50%);
+            will-change: transform;
+          }
+          100% {
             transform: translateX(120vw) translateY(-50%);
+            will-change: transform;
+          }
+        }
+        
+        /* Dust follows ball with pause */
+        @keyframes rollDust {
+          0% {
+            transform: translateX(-120vw) translateY(-50%);
+            will-change: transform;
+          }
+          50% {
+            transform: translateX(0) translateY(-50%);
+            will-change: transform;
+          }
+          66.7% {
+            transform: translateX(0) translateY(-50%);
+            will-change: transform;
+          }
+          100% {
+            transform: translateX(120vw) translateY(-50%);
+            will-change: transform;
           }
         }
         
