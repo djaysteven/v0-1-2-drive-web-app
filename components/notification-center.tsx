@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Bell, Check, CheckCheck, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -28,7 +28,12 @@ export function NotificationCenter({ userEmail }: NotificationCenterProps) {
   const [open, setOpen] = useState(false)
   const { toast } = useToast()
 
-  async function loadNotifications() {
+  const loadNotifications = useCallback(async () => {
+    if (!userEmail) {
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       const data = await getNotifications(userEmail)
@@ -41,7 +46,7 @@ export function NotificationCenter({ userEmail }: NotificationCenterProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userEmail])
 
   useEffect(() => {
     if (userEmail) {
@@ -50,7 +55,7 @@ export function NotificationCenter({ userEmail }: NotificationCenterProps) {
       const interval = setInterval(loadNotifications, 30000)
       return () => clearInterval(interval)
     }
-  }, [userEmail])
+  }, [userEmail, loadNotifications])
 
   async function handleMarkAsRead(notificationId: string) {
     const success = await markNotificationAsRead(notificationId)

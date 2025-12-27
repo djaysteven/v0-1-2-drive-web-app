@@ -14,7 +14,7 @@ import { useEffect, useState } from "react"
 import { AuthGuard } from "@/components/auth-guard"
 
 export default function CalendarPage() {
-  const [view, setView] = useState<"month" | "week" | "list">("week")
+  const [view, setView] = useState<"month" | "week" | "list">("month") // Changed default view from "week" to "month"
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [condos, setCondos] = useState<Condo[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -55,14 +55,12 @@ export default function CalendarPage() {
     const month = currentDate.getMonth()
 
     if (view === "week") {
-      // Show current week (7 days starting from Monday)
       const curr = new Date(currentDate)
       const first = curr.getDate() - curr.getDay() + 1
       for (let i = 0; i < 7; i++) {
         days.push(new Date(year, month, first + i))
       }
     } else {
-      // Show current month
       const lastDay = new Date(year, month + 1, 0)
       for (let day = 1; day <= lastDay.getDate(); day++) {
         days.push(new Date(year, month, day))
@@ -90,6 +88,24 @@ export default function CalendarPage() {
   const days = getDaysInView()
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+
+  const getColumnWidth = () => {
+    if (view === "week") {
+      return "w-12 sm:w-16" // Wider columns for week view
+    }
+    // Month view: fit ~30 days on screen
+    return "w-6 sm:w-7" // Much narrower for month view
+  }
+
+  const getAssetNameWidth = () => {
+    if (view === "week") {
+      return "w-24 sm:w-32" // Wider for week view
+    }
+    return "w-20 sm:w-24" // Narrower for month view
+  }
+
+  const columnWidth = getColumnWidth()
+  const assetNameWidth = getAssetNameWidth()
 
   const allAssets = [
     ...vehicles.map((v) => ({
@@ -143,28 +159,38 @@ export default function CalendarPage() {
           </div>
         }
       >
-        <div className="container mx-auto p-4 lg:p-6 space-y-6 max-w-7xl">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex items-center gap-3 flex-wrap">
-              <Button variant="outline" size="icon" onClick={() => navigateDate("prev")} className="rounded-full">
-                <ChevronLeft className="h-4 w-4" />
+        <div className="container mx-auto px-2 pt-2 pb-1 space-y-1.5 max-w-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row gap-1.5 items-start sm:items-center justify-between bg-card/20 backdrop-blur rounded-xl p-1.5 border border-border/30">
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigateDate("prev")}
+                className="rounded-lg h-6 w-6 hover:bg-primary/10"
+              >
+                <ChevronLeft className="h-3 w-3" />
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setCurrentDate(new Date())}
-                className="rounded-full min-w-[140px] font-semibold"
+                className="rounded-lg min-w-[90px] font-semibold text-[11px] h-6 px-2 hover:bg-primary/10"
               >
                 {monthYear}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => navigateDate("next")} className="rounded-full">
-                <ChevronRight className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigateDate("next")}
+                className="rounded-lg h-6 w-6 hover:bg-primary/10"
+              >
+                <ChevronRight className="h-3 w-3" />
               </Button>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1">
               <Select value={selectedAsset} onValueChange={setSelectedAsset}>
-                <SelectTrigger className="w-[180px] rounded-full">
-                  <SelectValue placeholder="Filter assets" />
+                <SelectTrigger className="w-[120px] rounded-lg h-6 text-[10px] border-border/30">
+                  <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Assets</SelectItem>
@@ -181,18 +207,27 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
 
-              <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} className="rounded-full">
-                <TabsList className="bg-secondary/50 rounded-full">
-                  <TabsTrigger value="week" className="rounded-full gap-2">
-                    <Calendar className="h-4 w-4" />
+              <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} className="rounded-lg">
+                <TabsList className="bg-secondary/20 rounded-lg h-6 p-0.5 gap-0.5">
+                  <TabsTrigger
+                    value="week"
+                    className="rounded-md gap-1 text-[9px] h-5 px-1.5 data-[state=active]:bg-background"
+                  >
+                    <Calendar className="h-2.5 w-2.5" />
                     <span className="hidden sm:inline">Week</span>
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="rounded-full gap-2">
-                    <Calendar className="h-4 w-4" />
+                  <TabsTrigger
+                    value="month"
+                    className="rounded-md gap-1 text-[9px] h-5 px-1.5 data-[state=active]:bg-background"
+                  >
+                    <Calendar className="h-2.5 w-2.5" />
                     <span className="hidden sm:inline">Month</span>
                   </TabsTrigger>
-                  <TabsTrigger value="list" className="rounded-full gap-2">
-                    <Clock className="h-4 w-4" />
+                  <TabsTrigger
+                    value="list"
+                    className="rounded-md gap-1 text-[9px] h-5 px-1.5 data-[state=active]:bg-background"
+                  >
+                    <Clock className="h-2.5 w-2.5" />
                     <span className="hidden sm:inline">List</span>
                   </TabsTrigger>
                 </TabsList>
@@ -242,7 +277,13 @@ export default function CalendarPage() {
                                   </Badge>
                                 ) : (
                                   <Badge
-                                    className={`${statusColors[booking.status] || statusColors.confirmed} rounded-full`}
+                                    className={`${
+                                      booking.status === "pending"
+                                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                        : booking.status === "confirmed"
+                                          ? "bg-primary/20 text-primary border-primary/30"
+                                          : "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                                    } rounded-full`}
                                   >
                                     {booking.status}
                                   </Badge>
@@ -280,102 +321,98 @@ export default function CalendarPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-2">
-              {/* Date header row */}
-              <div
-                className="grid gap-2 mb-3"
-                style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
-              >
+            <div className="space-y-0.5 pb-2">
+              <div className="flex gap-px mb-0.5 flex-wrap">
+                <div className={`${assetNameWidth} flex-shrink-0`} />
                 {days.map((day) => {
                   const isToday = day.getTime() === today.getTime()
                   return (
                     <div
                       key={day.toISOString()}
-                      className={`text-center p-3 rounded-2xl transition-colors ${
-                        isToday
-                          ? "bg-primary text-primary-foreground font-bold"
-                          : "bg-secondary/30 text-muted-foreground"
+                      className={`${columnWidth} flex-shrink-0 text-center py-0.5 rounded transition-colors ${
+                        isToday ? "bg-primary text-primary-foreground" : "bg-secondary/20 text-muted-foreground"
                       }`}
                     >
-                      <div className="text-xs font-medium mb-1">
-                        {day.toLocaleDateString("en-GB", { weekday: "short" })}
+                      <div className="text-[7px] font-medium uppercase opacity-60">
+                        {day.toLocaleDateString("en-GB", { weekday: "short" }).substring(0, 1)}
                       </div>
-                      <div className="text-lg font-bold">{day.getDate()}</div>
+                      <div className="text-[9px] font-bold">{day.getDate()}</div>
                     </div>
                   )
                 })}
               </div>
 
-              {/* Asset rows */}
               {filteredAssets.map((asset) => {
                 const assetBookings = getBookingsForAsset(asset.id, asset.type)
 
                 return (
-                  <Card key={`${asset.type}-${asset.id}`} className="rounded-2xl border-border/50 bg-card/50">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col gap-3">
-                        <div className="font-medium text-sm text-foreground px-2">{asset.displayName}</div>
+                  <Card
+                    key={`${asset.type}-${asset.id}`}
+                    className="rounded-lg border-border/30 bg-card/20 hover:bg-card/30 transition-colors"
+                  >
+                    <CardContent className="p-0.5">
+                      <div className="flex gap-px items-center flex-wrap">
                         <div
-                          className="grid gap-2"
-                          style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
+                          className={`${assetNameWidth} flex-shrink-0 font-medium text-[9px] text-foreground/80 px-1 truncate`}
                         >
-                          {days.map((day) => {
-                            const dayStart = new Date(day)
-                            dayStart.setHours(0, 0, 0, 0)
-                            const dayEnd = new Date(day)
-                            dayEnd.setHours(23, 59, 59, 999)
-
-                            const dayBookings = assetBookings.filter((b) => {
-                              const bookingStart = new Date(b.startDate)
-                              bookingStart.setHours(0, 0, 0, 0)
-                              const bookingEnd = new Date(b.endDate)
-                              bookingEnd.setHours(23, 59, 59, 999)
-
-                              return dayStart <= bookingEnd && dayEnd >= bookingStart
-                            })
-
-                            const isInOriginalPeriod = dayBookings.some((b) => {
-                              const bookingStart = new Date(b.startDate)
-                              bookingStart.setHours(0, 0, 0, 0)
-                              const bookingEnd = new Date(b.endDate)
-                              bookingEnd.setHours(23, 59, 59, 999)
-
-                              return dayStart >= bookingStart && dayStart <= bookingEnd
-                            })
-
-                            const booking = dayBookings[0]
-
-                            return (
-                              <div
-                                key={day.toISOString()}
-                                className={`aspect-square rounded-xl border transition-all ${
-                                  day.getTime() === today.getTime()
-                                    ? "border-primary/30 bg-primary/5"
-                                    : "border-border/30 bg-secondary/20"
-                                } relative overflow-hidden`}
-                                title={
-                                  booking
-                                    ? `${booking.customerName} - ${booking.status}${booking.source === "airbnb" ? " (Airbnb)" : ""}`
-                                    : undefined
-                                }
-                              >
-                                {isInOriginalPeriod && booking && (
-                                  <div
-                                    className={`absolute inset-1 rounded-lg ${
-                                      booking.source === "airbnb"
-                                        ? "bg-[#FF5A5F]"
-                                        : booking.status === "confirmed"
-                                          ? "bg-primary"
-                                          : booking.status === "pending"
-                                            ? "bg-yellow-500"
-                                            : "bg-blue-500"
-                                    }`}
-                                  />
-                                )}
-                              </div>
-                            )
-                          })}
+                          {asset.displayName}
                         </div>
+                        {days.map((day) => {
+                          const dayStart = new Date(day)
+                          dayStart.setHours(0, 0, 0, 0)
+                          const dayEnd = new Date(day)
+                          dayEnd.setHours(23, 59, 59, 999)
+
+                          const dayBookings = assetBookings.filter((b) => {
+                            const bookingStart = new Date(b.startDate)
+                            bookingStart.setHours(0, 0, 0, 0)
+                            const bookingEnd = new Date(b.endDate)
+                            bookingEnd.setHours(23, 59, 59, 999)
+
+                            return dayStart <= bookingEnd && dayEnd >= bookingStart
+                          })
+
+                          const isInOriginalPeriod = dayBookings.some((b) => {
+                            const bookingStart = new Date(b.startDate)
+                            bookingStart.setHours(0, 0, 0, 0)
+                            const bookingEnd = new Date(b.endDate)
+                            bookingEnd.setHours(23, 59, 59, 999)
+
+                            return dayStart >= bookingStart && dayStart <= bookingEnd
+                          })
+
+                          const booking = dayBookings[0]
+
+                          return (
+                            <div
+                              key={day.toISOString()}
+                              className={`${columnWidth} h-3.5 flex-shrink-0 rounded-sm border transition-all hover:scale-110 hover:z-10 cursor-pointer relative overflow-hidden ${
+                                day.getTime() === today.getTime()
+                                  ? "border-primary/30 bg-primary/5"
+                                  : "border-border/10 bg-background/60"
+                              }`}
+                              title={
+                                booking
+                                  ? `${booking.customerName} - ${booking.status}${booking.source === "airbnb" ? " (Airbnb)" : ""}`
+                                  : undefined
+                              }
+                            >
+                              {isInOriginalPeriod && booking && (
+                                <div
+                                  className={`absolute inset-0 ${
+                                    booking.source === "airbnb"
+                                      ? "bg-gradient-to-br from-[#FF5A5F] to-[#FF385C]"
+                                      : booking.status === "confirmed"
+                                        ? "bg-gradient-to-br from-primary via-primary to-primary/70"
+                                        : booking.status === "pending"
+                                          ? "bg-gradient-to-br from-yellow-500 to-yellow-600"
+                                          : "bg-gradient-to-br from-blue-500 to-blue-600"
+                                  }`}
+                                />
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
                     </CardContent>
                   </Card>

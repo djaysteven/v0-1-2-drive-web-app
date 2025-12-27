@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { ShareButton } from "./share-button"
 
 interface CondoCardProps {
   condo: Condo & { isCurrentlyBooked?: boolean }
@@ -60,6 +61,12 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
               Airbnb
             </Badge>
           )}
+        </div>
+        <div className="absolute bottom-3 right-3">
+          <ShareButton
+            title={`${condo.building} Unit ${condo.unitNo}`}
+            url={`${typeof window !== "undefined" ? window.location.origin : ""}/condos/${condo.id}`}
+          />
         </div>
       </div>
 
