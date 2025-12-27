@@ -303,6 +303,22 @@ main {
   }
 }
 
+/* Add rollDust animation to match roll animation for dust particles */
+@keyframes rollDust {
+  0% {
+    transform: translateX(-120vw) translateY(-50%);
+  }
+  50% {
+    transform: translateX(0) translateY(-50%);
+  }
+  66.67% {
+    transform: translateX(0) translateY(-50%);
+  }
+  100% {
+    transform: translateX(120vw) translateY(-50%);
+  }
+}
+
 @keyframes smokeTrail0 {
   0% {
     transform: translate(0, 0) scale(1) rotate(0deg);

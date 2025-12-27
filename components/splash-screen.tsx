@@ -86,8 +86,8 @@ export function SplashScreen() {
           className="absolute pointer-events-none"
           style={{
             top: "50%",
-            animation: "roll 6s cubic-bezier(0.65, 0, 0.35, 1) forwards",
             transform: "translateX(-120vw) translateY(-50%)",
+            animation: "rollDust 6s cubic-bezier(0.65, 0, 0.35, 1) forwards",
             zIndex: 5,
           }}
         >
@@ -117,8 +117,8 @@ export function SplashScreen() {
           className="absolute"
           style={{
             top: "50%",
-            animation: "rollGlow 6s cubic-bezier(0.65, 0, 0.35, 1) forwards",
             transform: "translateX(-120vw) translateY(-50%)",
+            animation: "rollGlow 6s cubic-bezier(0.65, 0, 0.35, 1) forwards",
             zIndex: 10,
           }}
         >
@@ -137,7 +137,6 @@ export function SplashScreen() {
           className="relative"
           style={{
             animation: "roll 6s cubic-bezier(0.65, 0, 0.35, 1) forwards",
-            transform: "translateX(-120vw)",
             zIndex: 10,
           }}
         >
