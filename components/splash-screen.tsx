@@ -8,17 +8,12 @@ export function SplashScreen() {
   const [isRolling, setIsRolling] = useState(true)
 
   useEffect(() => {
-    console.log("[v0] SplashScreen mounted, isVisible:", isVisible)
-
     if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
-      console.log("[v0] Splash already shown, hiding")
       setIsVisible(false)
       return
     }
 
-    console.log("[v0] Starting splash animation")
     const removeTimer = setTimeout(() => {
-      console.log("[v0] Splash animation complete, hiding")
       setIsVisible(false)
       if (typeof window !== "undefined") {
         sessionStorage.setItem("splashShown", "true")
@@ -31,7 +26,6 @@ export function SplashScreen() {
   }, [])
 
   const handleSkip = () => {
-    console.log("[v0] Splash skipped by user")
     setIsVisible(false)
     if (typeof window !== "undefined") {
       sessionStorage.setItem("splashShown", "true")
@@ -39,11 +33,8 @@ export function SplashScreen() {
   }
 
   if (!isVisible) {
-    console.log("[v0] Splash not visible, returning null")
     return null
   }
-
-  console.log("[v0] Rendering splash screen")
 
   const dustParticles = [...Array(35)].map((_, index) => {
     const size = 8 + Math.random() * 12 // 8-20px for cleaner, sharper wisps

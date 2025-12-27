@@ -34,18 +34,18 @@ export default function HomePage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const [vehiclesWithStatus, condos, customers] = await Promise.all([
-        vehiclesApi.getAllWithBookingStatus(),
+      const [vehicles, condos, customers] = await Promise.all([
+        vehiclesApi.getAll(),
         condosApi.getAll(),
         customersApi.getAll(),
       ])
 
-      const availableVehicles = vehiclesWithStatus.filter((v) => !v.isCurrentlyBooked && v.status === "available")
+      const availableVehicles = vehicles.filter((v) => v.status === "available")
       const availableBikes = availableVehicles.filter((v) => v.type === "bike").length
       const availableCars = availableVehicles.filter((v) => v.type === "car").length
 
       setStats({
-        totalVehicles: vehiclesWithStatus.length,
+        totalVehicles: vehicles.length,
         availableVehicles: availableVehicles.length,
         availableBikes,
         availableCars,
@@ -54,7 +54,16 @@ export default function HomePage() {
         totalCustomers: customers.length,
       })
     } catch (error) {
-      console.error("[v0] Error fetching stats:", error)
+      console.error("Error fetching stats:", error)
+      setStats({
+        totalVehicles: 0,
+        availableVehicles: 0,
+        availableBikes: 0,
+        availableCars: 0,
+        totalCondos: 0,
+        availableCondos: 0,
+        totalCustomers: 0,
+      })
     }
   }, [])
 
