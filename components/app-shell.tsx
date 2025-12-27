@@ -186,7 +186,7 @@ export function AppShell({ children, header, actions }: AppShellProps) {
               {header}
             </div>
             <div className="flex items-center gap-2">
-              {(isAuthenticated || userEmail) && <NotificationCenter userEmail={userEmail} />}
+              {isAuthenticated && <NotificationCenter userEmail={userEmail} />}
               {actions}
               {!isAuthenticated && (
                 <Link href="/sign-in" className="lg:hidden">
