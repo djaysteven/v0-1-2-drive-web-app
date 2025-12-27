@@ -4,31 +4,43 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 
 export function SplashScreen() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("splashShown") !== "true"
+    }
+    return true
+  })
   const [isRolling, setIsRolling] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
-      setIsVisible(false)
+    if (!isVisible) {
       return
     }
 
     const removeTimer = setTimeout(() => {
       setIsVisible(false)
       if (typeof window !== "undefined") {
-        sessionStorage.setItem("splashShown", "true")
+        try {
+          sessionStorage.setItem("splashShown", "true")
+        } catch (e) {
+          console.error("[v0] Failed to set sessionStorage:", e)
+        }
       }
     }, 6100)
 
     return () => {
       clearTimeout(removeTimer)
     }
-  }, [])
+  }, [isVisible])
 
   const handleSkip = () => {
     setIsVisible(false)
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("splashShown", "true")
+      try {
+        sessionStorage.setItem("splashShown", "true")
+      } catch (e) {
+        console.error("[v0] Failed to set sessionStorage:", e)
+      }
     }
   }
 
@@ -37,24 +49,18 @@ export function SplashScreen() {
   }
 
   const dustParticles = [...Array(35)].map((_, index) => {
-    const size = 8 + Math.random() * 12 // 8-20px for cleaner, sharper wisps
-    const horizontalOffset = -40 - Math.random() * 70 // -40 to -110px spread
-    const verticalOffset = 30 + Math.random() * 70 // 30-100px spread
-    const delay = Math.random() * 5 // Adjusted delay for 6s animation
-    const duration = 1.5 + Math.random() * 1.0 // 1.5-2.5s for slower, more realistic motion
-    const opacity = 0.3 + Math.random() * 0.3 // 0.3-0.6 for more subtle appearance
-    const blur = 1 + Math.random() * 2 // 1-3px minimal blur for sharp, clean edges
-    const animationIndex = Math.floor(Math.random() * 6) // 6 different smoke trails
-    const rotation = Math.random() * 360 // Random initial rotation
+    const size = 8 + Math.random() * 12
+    const horizontalOffset = -40 - Math.random() * 70
+    const verticalOffset = 30 + Math.random() * 70
+    const delay = Math.random() * 5
+    const duration = 1.5 + Math.random() * 1.0
+    const opacity = 0.3 + Math.random() * 0.3
+    const blur = 1 + Math.random() * 2
+    const animationIndex = Math.floor(Math.random() * 6)
+    const rotation = Math.random() * 360
 
-    // Soft gradient colors for realistic smoke/dust
     const colorVariant = Math.random()
-    const baseColor =
-      colorVariant < 0.33
-        ? "200, 190, 170" // Beige dust
-        : colorVariant < 0.66
-          ? "180, 180, 180" // Grey smoke
-          : "190, 185, 175" // Light brown dust
+    const baseColor = colorVariant < 0.33 ? "200, 190, 170" : colorVariant < 0.66 ? "180, 180, 180" : "190, 185, 175"
 
     return {
       size,

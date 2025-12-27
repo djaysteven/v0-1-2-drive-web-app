@@ -125,6 +125,31 @@
   }
 }
 
+/* Core animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Adding wheel spin animation for logo */
 @keyframes wheel-spin {
   from {
@@ -404,4 +429,222 @@ main {
     transform: translate(-160px, -105px) scale(4.8) rotate(45deg);
     opacity: 0;
   }
+}
+
+/* Slide animation keyframes for UI components */
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideOutToTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slideOutToLeft52 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - 13rem));
+  }
+}
+
+@keyframes slideOutToRight52 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100% + 13rem));
+  }
+}
+
+@keyframes slideOutToRightFull {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft52 {
+  from {
+    transform: translateX(calc(-100% - 13rem));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight52 {
+  from {
+    transform: translateX(calc(100% + 13rem));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromTopFull {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottomFull {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Animation utility classes for UI components */
+.animate-in {
+  animation: fadeIn 150ms ease-out;
+}
+
+.animate-out {
+  animation: fadeOut 150ms ease-in;
+}
+
+.fade-in {
+  animation: fadeIn 150ms ease-out;
+}
+
+.fade-out {
+  animation: fadeOut 150ms ease-in;
+}
+
+.fade-out-80 {
+  animation: fadeOut 150ms ease-in;
+  opacity: 0.8;
+}
+
+.slide-in-from-left {
+  animation: slideInFromLeft 150ms ease-out;
+}
+
+.slide-in-from-right {
+  animation: slideInFromRight 150ms ease-out;
+}
+
+.slide-in-from-top {
+  animation: slideInFromTop 150ms ease-out;
+}
+
+.slide-in-from-bottom {
+  animation: slideInFromBottom 150ms ease-out;
+}
+
+.slide-in-from-left-52 {
+  animation: slideInFromLeft52 150ms ease-out;
+}
+
+.slide-in-from-right-52 {
+  animation: slideInFromRight52 150ms ease-out;
+}
+
+.slide-in-from-top-full {
+  animation: slideInFromTopFull 150ms ease-out;
+}
+
+.slide-in-from-bottom-full {
+  animation: slideInFromBottomFull 150ms ease-out;
+}
+
+.slide-out-to-left {
+  animation: slideOutToLeft 150ms ease-in;
+}
+
+.slide-out-to-right {
+  animation: slideOutToRight 150ms ease-in;
+}
+
+.slide-out-to-top {
+  animation: slideOutToTop 150ms ease-in;
+}
+
+.slide-out-to-bottom {
+  animation: slideOutToBottom 150ms ease-in;
+}
+
+.slide-out-to-left-52 {
+  animation: slideOutToLeft52 150ms ease-in;
+}
+
+.slide-out-to-right-52 {
+  animation: slideOutToRight52 150ms ease-in;
+}
+
+.slide-out-to-right-full {
+  animation: slideOutToRightFull 150ms ease-in;
 }
