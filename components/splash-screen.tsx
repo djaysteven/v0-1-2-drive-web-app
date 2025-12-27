@@ -43,7 +43,7 @@ export function SplashScreen() {
   const dustParticles = [...Array(35)].map((_, index) => {
     const size = 8 + Math.random() * 12
     const horizontalOffset = -40 - Math.random() * 70
-    const verticalOffset = 30 + Math.random() * 70
+    const verticalOffset = 20 + Math.random() * 60
     const delay = Math.random() * 5.5
     const duration = 1.5 + Math.random() * 1.0
     const opacity = 0.3 + Math.random() * 0.3

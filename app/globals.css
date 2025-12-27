@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Removed tw-animate-css import that was causing build failures in production */
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -24,20 +24,20 @@
   --border: #2a2a2a;
   --input: #2a2a2a;
   --ring: #00ff3c;
-  --chart-1: #00ff3c;
-  --chart-2: #00d633;
-  --chart-3: #00ad2a;
-  --chart-4: #008421;
-  --chart-5: #005b18;
   --radius: 1rem;
-  --sidebar: #0b0b0b;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #00ff3c;
-  --sidebar-primary-foreground: #0b0b0b;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #2a2a2a;
-  --sidebar-ring: #00ff3c;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
@@ -77,7 +77,7 @@
 
 @theme inline {
   --font-sans: "Poppins", system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Monaco, "Cascadia Mono", "Segoe UI Mono", monospace;
+  --font-mono: ui-monospace, "SF Mono", Monaco, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -125,279 +125,128 @@
   }
 }
 
-/* Adding wheel spin animation for logo */
-@keyframes wheel-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-wheel-spin {
-  animation: wheel-spin 2.5s linear infinite;
-}
-
-/* Adding pulsing glow animation for urgent bookings */
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(0, 255, 60, 0.3), 0 0 20px rgba(0, 255, 60, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 255, 60, 0.6), 0 0 40px rgba(0, 255, 60, 0.4);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Adding hover glow effect for homepage cards */
-@keyframes card-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 20px rgba(0, 255, 60, 0.4), 0 0 40px rgba(0, 255, 60, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(0, 255, 60, 0.6), 0 0 60px rgba(0, 255, 60, 0.3);
-  }
-}
-
-/* Modified to only glow icons, not entire cards */
-.card-hover-glow {
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 255, 60, 0.3);
-}
-
-.card-hover-glow:hover {
-  border-color: rgba(0, 255, 60, 0.6);
-  box-shadow: 0 0 20px rgba(0, 255, 60, 0.2);
-  transform: translateY(-2px);
-}
-
-/* Special hover effect for logo card - only image glows */
-.card-hover-glow-logo {
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 255, 60, 0.3);
-}
-
-.card-hover-glow-logo:hover {
-  border-color: rgba(0, 255, 60, 0.6);
-  box-shadow: 0 0 20px rgba(0, 255, 60, 0.2);
-}
-
-.card-hover-glow-logo:hover img {
-  filter: drop-shadow(0 0 30px rgba(0, 255, 60, 0.9)) drop-shadow(0 0 60px rgba(0, 255, 60, 0.5)) !important;
-}
-
-/* Removed global icon glow - now handled per icon with group-hover */
-
-/* Added logo glow animation for spinning ball card on hover */
-@keyframes logo-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 20px rgba(0, 255, 60, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 60, 0.3));
-  }
-  50% {
-    filter: drop-shadow(0 0 30px rgba(0, 255, 60, 0.9)) drop-shadow(0 0 60px rgba(0, 255, 60, 0.5));
-  }
-}
-
-.card-hover-glow:hover img {
-  animation: logo-glow 1.5s ease-in-out infinite;
-}
-
-/* Navigation icon and text glow effects - enhanced for all white elements */
-.nav-icon-glow {
-  transition: all 0.3s ease;
-}
-
-.nav-icon-glow.active-glow {
-  filter: drop-shadow(0 0 8px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 16px rgba(0, 255, 60, 0.4));
-}
-
-/* Enhanced hover states to apply green glow via CSS with smooth transitions */
-.group:hover .nav-icon-glow,
-.group:hover span {
-  color: var(--primary);
-  filter: drop-shadow(0 0 10px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5));
-  transition: all 0.3s ease;
-}
-
-/* Ensure hover glow works on touch devices too */
-.group:active .nav-icon-glow,
-.group:active span {
-  color: var(--primary);
-  filter: drop-shadow(0 0 10px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.5));
-  transition: all 0.3s ease;
-}
-
-/* Add pulsing animation for active navigation items */
-@keyframes nav-glow-pulse {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 10px rgba(0, 255, 60, 0.8)) drop-shadow(0 0 15px rgba(0, 255, 60, 0.4));
-  }
-  50% {
-    filter: drop-shadow(0 0 15px rgba(0, 255, 60, 1)) drop-shadow(0 0 25px rgba(0, 255, 60, 0.6));
-  }
-}
-
-/* Add background glow for navigation items on hover */
-.group:hover {
-  background: radial-gradient(circle at center, rgba(0, 255, 60, 0.08) 0%, transparent 70%);
-}
-
-/* Ensure proper z-index layering for particle system */
-main {
-  position: relative;
-  z-index: 10;
-}
-
-/* Add smooth page transition styles */
-@keyframes page-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.page-transition-enter {
-  animation: page-fade-in 0.3s ease-out;
-}
-
-/* Adding splash screen animations to globals.css */
+/* Adding splash screen animations */
 @keyframes roll {
   0% {
-    transform: translateX(-120vw) rotate(0deg);
+    transform: translateX(-120vw) translateY(-50%) rotate(0deg);
   }
   50% {
-    transform: translateX(0) rotate(720deg);
+    transform: translateX(-50%) translateY(-50%) rotate(720deg);
   }
-  66.67% {
-    transform: translateX(0) rotate(720deg);
+  66.7% {
+    transform: translateX(-50%) translateY(-50%) rotate(720deg);
   }
   100% {
-    transform: translateX(120vw) rotate(1440deg);
+    transform: translateX(120vw) translateY(-50%) rotate(1080deg);
   }
 }
 
 @keyframes rollGlow {
   0% {
     transform: translateX(-120vw) translateY(-50%);
+    opacity: 0.8;
   }
   50% {
-    transform: translateX(0) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+    opacity: 1;
   }
-  66.67% {
-    transform: translateX(0) translateY(-50%);
+  66.7% {
+    transform: translateX(-50%) translateY(-50%);
+    opacity: 1;
   }
   100% {
     transform: translateX(120vw) translateY(-50%);
+    opacity: 0.8;
   }
 }
 
 @keyframes rollDust {
   0% {
     transform: translateX(-120vw) translateY(-50%);
+    opacity: 0.6;
   }
   50% {
-    transform: translateX(0) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+    opacity: 1;
   }
-  66.67% {
-    transform: translateX(0) translateY(-50%);
+  66.7% {
+    transform: translateX(-50%) translateY(-50%);
+    opacity: 1;
   }
   100% {
     transform: translateX(120vw) translateY(-50%);
+    opacity: 0.6;
   }
 }
 
 @keyframes smokeTrail0 {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 1;
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(-140px, -95px) scale(4.5) rotate(-45deg);
+    transform: translate(-15px, -25px) scale(1.4);
     opacity: 0;
   }
 }
 
 @keyframes smokeTrail1 {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 1;
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.5;
-  }
-  100% {
-    transform: translate(-170px, -110px) scale(5) rotate(60deg);
+    transform: translate(20px, -30px) scale(1.5);
     opacity: 0;
   }
 }
 
 @keyframes smokeTrail2 {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 1;
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.7;
-  }
-  100% {
-    transform: translate(-110px, -75px) scale(3.8) rotate(-30deg);
+    transform: translate(-25px, -20px) scale(1.3);
     opacity: 0;
   }
 }
 
 @keyframes smokeTrail3 {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 1;
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(-155px, -100px) scale(4.2) rotate(90deg);
+    transform: translate(15px, -35px) scale(1.6);
     opacity: 0;
   }
 }
 
 @keyframes smokeTrail4 {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 1;
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.5;
-  }
-  100% {
-    transform: translate(-125px, -85px) scale(4) rotate(-60deg);
+    transform: translate(-20px, -28px) scale(1.4);
     opacity: 0;
   }
 }
 
 @keyframes smokeTrail5 {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 1;
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(-160px, -105px) scale(4.8) rotate(45deg);
+    transform: translate(18px, -22px) scale(1.35);
     opacity: 0;
   }
 }
