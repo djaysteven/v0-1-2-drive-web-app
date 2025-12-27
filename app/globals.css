@@ -271,3 +271,133 @@ main {
 .page-transition-enter {
   animation: page-fade-in 0.3s ease-out;
 }
+
+/* Adding splash screen animations to globals.css */
+@keyframes roll {
+  0% {
+    transform: translateX(-120vw) rotate(0deg);
+  }
+  50% {
+    transform: translateX(0) rotate(720deg);
+  }
+  66.67% {
+    transform: translateX(0) rotate(720deg);
+  }
+  100% {
+    transform: translateX(120vw) rotate(1440deg);
+  }
+}
+
+@keyframes rollGlow {
+  0% {
+    transform: translateX(-120vw) translateY(-50%);
+  }
+  50% {
+    transform: translateX(0) translateY(-50%);
+  }
+  66.67% {
+    transform: translateX(0) translateY(-50%);
+  }
+  100% {
+    transform: translateX(120vw) translateY(-50%);
+  }
+}
+
+@keyframes rollDust {
+  0% {
+    transform: translateX(-120vw) translateY(-50%);
+  }
+  50% {
+    transform: translateX(0) translateY(-50%);
+  }
+  66.67% {
+    transform: translateX(0) translateY(-50%);
+  }
+  100% {
+    transform: translateX(120vw) translateY(-50%);
+  }
+}
+
+@keyframes smokeTrail0 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-140px, -95px) scale(4.5) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeTrail1 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-170px, -110px) scale(5) rotate(60deg);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeTrail2 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-110px, -75px) scale(3.8) rotate(-30deg);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeTrail3 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-155px, -100px) scale(4.2) rotate(90deg);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeTrail4 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-125px, -85px) scale(4) rotate(-60deg);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeTrail5 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-160px, -105px) scale(4.8) rotate(45deg);
+    opacity: 0;
+  }
+}

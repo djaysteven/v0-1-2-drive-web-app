@@ -4,18 +4,16 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 
 export function SplashScreen() {
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window !== "undefined") {
-      const shown = sessionStorage.getItem("splashShown")
-      return shown !== "true"
-    }
-    return true
-  })
+  const [isVisible, setIsVisible] = useState(true)
   const [isRolling, setIsRolling] = useState(false)
 
   useEffect(() => {
-    if (!isVisible) {
-      return
+    if (typeof window !== "undefined") {
+      const shown = sessionStorage.getItem("splashShown")
+      if (shown === "true") {
+        setIsVisible(false)
+        return
+      }
     }
 
     setIsRolling(true)
@@ -25,12 +23,12 @@ export function SplashScreen() {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("splashShown", "true")
       }
-    }, 6100) // 3s roll in + 1s pause + 2s roll out + 100ms buffer
+    }, 6100)
 
     return () => {
       clearTimeout(removeTimer)
     }
-  }, [isVisible])
+  }, [])
 
   const handleSkip = () => {
     setIsVisible(false)
@@ -151,136 +149,6 @@ export function SplashScreen() {
       <div className="absolute bottom-8 text-center text-muted-foreground text-sm animate-pulse">
         Tap anywhere to skip
       </div>
-
-      <style jsx>{`
-        @keyframes roll {
-          0% {
-            transform: translateX(-120vw) rotate(0deg);
-          }
-          50% {
-            transform: translateX(0) rotate(720deg);
-          }
-          66.67% {
-            transform: translateX(0) rotate(720deg);
-          }
-          100% {
-            transform: translateX(120vw) rotate(1440deg);
-          }
-        }
-        @keyframes rollGlow {
-          0% {
-            transform: translateX(-120vw) translateY(-50%);
-          }
-          50% {
-            transform: translateX(0) translateY(-50%);
-          }
-          66.67% {
-            transform: translateX(0) translateY(-50%);
-          }
-          100% {
-            transform: translateX(120vw) translateY(-50%);
-          }
-        }
-        
-        @keyframes rollDust {
-          0% {
-            transform: translateX(-120vw) translateY(-50%);
-          }
-          50% {
-            transform: translateX(0) translateY(-50%);
-          }
-          66.67% {
-            transform: translateX(0) translateY(-50%);
-          }
-          100% {
-            transform: translateX(120vw) translateY(-50%);
-          }
-        }
-        
-        @keyframes smokeTrail0 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(-140px, -95px) scale(4.5) rotate(-45deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail1 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translate(-170px, -110px) scale(5) rotate(60deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail2 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.7;
-          }
-          100% {
-            transform: translate(-110px, -75px) scale(3.8) rotate(-30deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail3 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(-155px, -100px) scale(4.2) rotate(90deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail4 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translate(-125px, -85px) scale(4) rotate(-60deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes smokeTrail5 {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(-160px, -105px) scale(4.8) rotate(45deg);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </div>
   )
 }
