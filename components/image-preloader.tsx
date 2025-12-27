@@ -7,7 +7,7 @@ export function ImagePreloader() {
   useEffect(() => {
     const preloadImages = async () => {
       try {
-        const [vehicles, condos] = await Promise.all([vehiclesApi.getAllWithBookingStatus(), condosApi.getAll()])
+        const [vehicles, condos] = await Promise.all([vehiclesApi.getAll(), condosApi.getAll()])
 
         const imageUrls: string[] = []
 
@@ -24,14 +24,6 @@ export function ImagePreloader() {
         })
 
         imageUrls.forEach((url) => {
-          // Use link preload for critical images
-          const link = document.createElement("link")
-          link.rel = "preload"
-          link.as = "image"
-          link.href = url
-          document.head.appendChild(link)
-
-          // Also create Image object for immediate cache
           const img = new Image()
           img.src = url
         })
