@@ -4,37 +4,63 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 
 export function SplashScreen() {
-  const [isVisible, setIsVisible] = useState(true)
+  console.log("[v0] SplashScreen component mounting")
+
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window !== "undefined") {
+      const shown = sessionStorage.getItem("splashShown")
+      console.log("[v0] SplashScreen checking sessionStorage, splashShown:", shown)
+      return shown !== "true"
+    }
+    return true
+  })
   const [isRolling, setIsRolling] = useState(false)
 
+  console.log("[v0] SplashScreen isVisible:", isVisible)
+
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
-      setIsVisible(false)
+    console.log("[v0] SplashScreen useEffect running, isVisible:", isVisible)
+
+    if (!isVisible) {
+      console.log("[v0] SplashScreen not visible, returning early")
       return
     }
 
+    console.log("[v0] SplashScreen setting up timers")
+
     const rollTimer = setTimeout(() => {
+      console.log("[v0] SplashScreen starting roll animation")
       setIsRolling(true)
     }, 100)
 
     const removeTimer = setTimeout(() => {
+      console.log("[v0] SplashScreen hiding splash")
       setIsVisible(false)
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("splashShown", "true")
+      }
     }, 8100)
 
     return () => {
       clearTimeout(rollTimer)
       clearTimeout(removeTimer)
     }
-  }, [])
+  }, [isVisible])
 
   const handleSkip = () => {
+    console.log("[v0] SplashScreen skip clicked")
     setIsVisible(false)
     if (typeof window !== "undefined") {
       sessionStorage.setItem("splashShown", "true")
     }
   }
 
-  if (!isVisible) return null
+  if (!isVisible) {
+    console.log("[v0] SplashScreen returning null")
+    return null
+  }
+
+  console.log("[v0] SplashScreen rendering splash content")
 
   const dustParticles = [...Array(35)].map((_, index) => {
     const size = 8 + Math.random() * 12 // 8-20px for cleaner, sharper wisps
