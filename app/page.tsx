@@ -18,8 +18,6 @@ import { vehiclesApi, condosApi, customersApi } from "@/lib/api"
 import { useRole } from "@/hooks/use-role"
 
 export default function HomePage() {
-  console.log("[v0] HomePage component starting to render")
-
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
   const [stats, setStats] = useState({
@@ -32,22 +30,15 @@ export default function HomePage() {
     totalCustomers: 0,
   })
 
-  console.log("[v0] HomePage state initialized")
-
   const { isOwner, loading: roleLoading } = useRole()
 
-  console.log("[v0] HomePage useRole hook completed, isOwner:", isOwner)
-
   const fetchStats = useCallback(async () => {
-    console.log("[v0] fetchStats starting")
     try {
       const [vehicles, condos, customers] = await Promise.all([
         vehiclesApi.getAll(),
         condosApi.getAll(),
         customersApi.getAll(),
       ])
-
-      console.log("[v0] fetchStats API calls completed successfully")
 
       const availableVehicles = vehicles.filter((v) => v.status === "available")
       const availableBikes = availableVehicles.filter((v) => v.type === "bike").length
@@ -63,7 +54,7 @@ export default function HomePage() {
         totalCustomers: customers.length,
       })
     } catch (error) {
-      console.error("[v0] Error fetching stats:", error)
+      console.error("Error fetching stats:", error)
       setStats({
         totalVehicles: 0,
         availableVehicles: 0,
