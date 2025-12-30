@@ -7,6 +7,9 @@ import type { Condo } from "@/lib/types"
 import { Edit, Trash2, Bed, Bath, Maximize, Settings } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { condosApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +31,41 @@ interface CondoCardProps {
 }
 
 export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: CondoCardProps) {
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+  const { toast } = useToast()
+
   const statusColors = {
     available: "bg-green-500/70 text-white border-green-500",
     rented: "bg-blue-500/70 text-white border-blue-500",
     maintenance: "bg-destructive/20 text-destructive border-destructive/30",
+  }
+
+  const handleStatusToggle = async () => {
+    if (!isAuthenticated || isTogglingStatus) return
+
+    setIsTogglingStatus(true)
+    try {
+      const newStatus = condo.status === "available" ? "rented" : "available"
+
+      await condosApi.update(condo.id, {
+        status: newStatus,
+      })
+
+      toast({
+        title: "Status updated",
+        description: `Condo status changed to ${newStatus}`,
+      })
+
+      window.location.reload()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update condo status",
+        variant: "destructive",
+      })
+    } finally {
+      setIsTogglingStatus(false)
+    }
   }
 
   const displayStatus = condo.isCurrentlyBooked ? "rented" : condo.status
@@ -49,8 +83,16 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           quality={85}
         />
-        <div className="absolute top-3 right-3">
-          <Badge className={`${statusColors[displayStatus]} font-semibold shadow-lg`}>{displayStatusText}</Badge>
+        <div
+          className="absolute top-3 right-3"
+          onClick={isAuthenticated && !condo.isCurrentlyBooked ? handleStatusToggle : undefined}
+          style={{ cursor: isAuthenticated && !condo.isCurrentlyBooked ? "pointer" : "default" }}
+        >
+          <Badge
+            className={`${statusColors[displayStatus]} font-semibold shadow-lg ${isAuthenticated && !condo.isCurrentlyBooked ? "hover:opacity-80 transition-opacity" : ""}`}
+          >
+            {isTogglingStatus ? "..." : displayStatusText}
+          </Badge>
         </div>
         <div className="absolute top-3 left-3 flex gap-2">
           <Badge variant="secondary" className="gap-1 bg-secondary/90 font-semibold shadow-lg">

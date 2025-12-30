@@ -40,6 +40,7 @@ export function VehicleCard({
 }: VehicleCardProps) {
   const [isSnoozing, setIsSnoozing] = useState(false)
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false) // Added state for toggling status
   const { toast } = useToast()
 
   const statusColors = {
@@ -127,6 +128,35 @@ export function VehicleCard({
     })
   }
 
+  const handleStatusToggle = async () => {
+    // Added handler to toggle status between available and rented
+    if (!isAuthenticated || isTogglingStatus) return
+
+    setIsTogglingStatus(true)
+    try {
+      const newStatus = vehicle.status === "available" ? "rented" : "available"
+
+      await vehiclesApi.update(vehicle.id, {
+        status: newStatus,
+      })
+
+      toast({
+        title: "Status updated",
+        description: `Vehicle status changed to ${newStatus}`,
+      })
+
+      window.location.reload()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update vehicle status",
+        variant: "destructive",
+      })
+    } finally {
+      setIsTogglingStatus(false)
+    }
+  }
+
   const displayStatus = isCurrentlyBooked ? "rented" : vehicle.status
   const displayStatusText = isCurrentlyBooked ? "rented" : vehicle.status
 
@@ -143,8 +173,16 @@ export function VehicleCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             quality={85}
           />
-          <div className="absolute top-3 right-3">
-            <Badge className={statusColors[displayStatus]}>{displayStatusText}</Badge>
+          <div
+            className="absolute top-3 right-3"
+            onClick={isAuthenticated && !isCurrentlyBooked ? handleStatusToggle : undefined}
+            style={{ cursor: isAuthenticated && !isCurrentlyBooked ? "pointer" : "default" }}
+          >
+            <Badge
+              className={`${statusColors[displayStatus]} ${isAuthenticated && !isCurrentlyBooked ? "hover:opacity-80 transition-opacity" : ""}`}
+            >
+              {isTogglingStatus ? "..." : displayStatusText}
+            </Badge>
           </div>
           <div className="absolute top-3 left-3">
             <Badge variant="secondary" className="gap-1">
