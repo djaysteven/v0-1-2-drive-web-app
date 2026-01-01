@@ -10,6 +10,7 @@ import type { Vehicle } from "@/lib/types"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { useRole } from "@/hooks/use-role"
 import { ArrowLeft, Car, Calendar, Fuel, Settings } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import Image from "next/image"
@@ -19,6 +20,7 @@ export default function VehicleDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
+  const { isOwner } = useRole()
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -178,7 +180,7 @@ export default function VehicleDetailPage() {
                 </div>
               </div>
             )}
-            {vehicle.year && (
+            {vehicle.year && isOwner && (
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <Calendar className="h-5 w-5 text-primary" />
