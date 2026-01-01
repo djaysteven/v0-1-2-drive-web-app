@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 
 export function SplashScreen() {
+  const pathname = usePathname()
   const [isVisible, setIsVisible] = useState(true)
   const [isRolling, setIsRolling] = useState(false)
 
+  const skipSplash = pathname !== "/" && pathname !== ""
+
   useEffect(() => {
+    if (skipSplash) {
+      setIsVisible(false)
+      return
+    }
+
     try {
       if (typeof window !== "undefined" && sessionStorage.getItem("splashShown") === "true") {
         setIsVisible(false)
@@ -33,18 +42,7 @@ export function SplashScreen() {
     return () => {
       clearTimeout(removeTimer)
     }
-  }, [])
-
-  const handleSkip = () => {
-    setIsVisible(false)
-    try {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("splashShown", "true")
-      }
-    } catch (error) {
-      console.log("[v0] Could not save splash state to sessionStorage")
-    }
-  }
+  }, [skipSplash])
 
   if (!isVisible) return null
 
@@ -75,6 +73,17 @@ export function SplashScreen() {
       baseColor,
     }
   })
+
+  const handleSkip = () => {
+    setIsVisible(false)
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("splashShown", "true")
+      }
+    } catch (error) {
+      console.log("[v0] Could not save splash state to sessionStorage")
+    }
+  }
 
   return (
     <div

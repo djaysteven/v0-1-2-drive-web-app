@@ -21,20 +21,30 @@ export default function VehicleDetailPage() {
   const { toast } = useToast()
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadVehicle()
-  }, [params.id])
+    if (params?.id && typeof params.id === "string") {
+      loadVehicle()
+    } else {
+      setError("Invalid vehicle ID")
+      setLoading(false)
+    }
+  }, [params?.id])
 
   const loadVehicle = async () => {
     setLoading(true)
+    setError(null)
     try {
       const data = await vehiclesApi.getById(params.id as string)
       if (data) {
         setVehicle(data)
+      } else {
+        setError("Vehicle not found")
       }
     } catch (error) {
       console.error("Failed to load vehicle:", error)
+      setError("Failed to load vehicle details")
       toast({
         title: "Error",
         description: "Failed to load vehicle details",
@@ -65,12 +75,12 @@ export default function VehicleDetailPage() {
     )
   }
 
-  if (!vehicle) {
+  if (error || !vehicle) {
     return (
       <AppShell
         header={
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl">
+            <Button variant="ghost" size="icon" onClick={() => router.push("/vehicles")} className="rounded-xl">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold text-foreground">Vehicle Not Found</h1>
@@ -79,7 +89,7 @@ export default function VehicleDetailPage() {
       >
         <div className="container mx-auto p-4 lg:p-6">
           <Card className="p-8 text-center">
-            <p className="text-muted-foreground">The requested vehicle could not be found.</p>
+            <p className="text-muted-foreground">{error || "The requested vehicle could not be found."}</p>
             <Button onClick={() => router.push("/vehicles")} className="mt-4 rounded-xl">
               View All Vehicles
             </Button>
@@ -90,7 +100,10 @@ export default function VehicleDetailPage() {
   }
 
   const vehicleTitle = `${vehicle.brand} ${vehicle.model}`
-  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/vehicles/${vehicle.id}` : ""
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/vehicles/${vehicle.id}`
+      : `https://www.1-2drive.com/vehicles/${vehicle.id}`
   const shareDescription = `Check out this ${vehicle.type} for rent: ${vehicleTitle} - ฿${vehicle.price.toLocaleString()}/day. ${vehicle.status === "available" ? "Available now!" : "Currently rented."}`
 
   return (
@@ -98,7 +111,7 @@ export default function VehicleDetailPage() {
       header={
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl">
+            <Button variant="ghost" size="icon" onClick={() => router.push("/vehicles")} className="rounded-xl">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
@@ -111,7 +124,6 @@ export default function VehicleDetailPage() {
       }
     >
       <div className="container mx-auto p-4 lg:p-6 space-y-6">
-        {/* Vehicle Image */}
         <Card className="overflow-hidden rounded-2xl bg-card border-border">
           <div className="relative aspect-video w-full">
             <Image
@@ -134,7 +146,6 @@ export default function VehicleDetailPage() {
           </div>
         </Card>
 
-        {/* Vehicle Details */}
         <Card className="p-6 bg-card border-border rounded-2xl">
           <h2 className="text-lg font-semibold text-foreground mb-4">Vehicle Information</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -177,7 +188,6 @@ export default function VehicleDetailPage() {
           </div>
         </Card>
 
-        {/* Pricing */}
         <Card className="p-6 bg-card border-border rounded-2xl">
           <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
           <div className="flex items-baseline gap-2">
@@ -194,7 +204,6 @@ export default function VehicleDetailPage() {
           )}
         </Card>
 
-        {/* Additional Info */}
         {(vehicle.licensePlate || vehicle.color) && (
           <Card className="p-6 bg-card border-border rounded-2xl">
             <h2 className="text-lg font-semibold text-foreground mb-4">Additional Details</h2>
