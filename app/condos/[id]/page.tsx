@@ -16,6 +16,7 @@ import { ArrowLeft, Calendar, CheckCircle2, Loader2, TestTube2, RefreshCw } from
 import { Skeleton } from "@/components/ui/skeleton"
 import { createClient } from "@/lib/supabase/client"
 import { parseICalEvents } from "@/lib/airbnb-ical"
+import { ShareButton } from "@/components/share-button"
 
 export default function CondoDetailPage() {
   const params = useParams()
@@ -294,21 +295,28 @@ export default function CondoDetailPage() {
     )
   }
 
+  const condoTitle = `${condo.building} - Unit ${condo.unitNo}`
+  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/condos/${condo.id}` : ""
+  const shareDescription = `Check out this ${condo.bedrooms} bedroom condo for rent: ${condoTitle} - ฿${condo.price.toLocaleString()}/${condo.priceMode}. ${condo.status === "available" ? "Available now!" : "Currently rented."}`
+
   return (
     <AppShell
       header={
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">
-              {condo.building} - {condo.unitNo}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {condo.bedrooms} bed • {condo.bathrooms} bath
-            </p>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">
+                {condo.building} - {condo.unitNo}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {condo.bedrooms} bed • {condo.bathrooms} bath
+              </p>
+            </div>
           </div>
+          <ShareButton url={shareUrl} title={condoTitle} description={shareDescription} />
         </div>
       }
     >

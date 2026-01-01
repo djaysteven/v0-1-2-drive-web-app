@@ -8,10 +8,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 interface ShareButtonProps {
   title: string
   url: string
+  description?: string // made description optional
   className?: string
 }
 
-export function ShareButton({ title, url, className = "" }: ShareButtonProps) {
+export function ShareButton({ title, url, description, className = "" }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const handleShare = async () => {
@@ -20,6 +21,7 @@ export function ShareButton({ title, url, className = "" }: ShareButtonProps) {
       try {
         await navigator.share({
           title,
+          text: description,
           url,
         })
       } catch (err) {
@@ -46,7 +48,8 @@ export function ShareButton({ title, url, className = "" }: ShareButtonProps) {
   }
 
   const handleWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(`${title} - ${url}`)}`, "_blank")
+    const message = description ? `${title}\n${description}\n${url}` : `${title} - ${url}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank")
   }
 
   return (
