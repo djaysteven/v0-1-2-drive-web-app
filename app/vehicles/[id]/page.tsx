@@ -99,12 +99,12 @@ export default function VehicleDetailPage() {
     )
   }
 
-  const vehicleTitle = `${vehicle.brand} ${vehicle.model}`
+  const vehicleTitle = vehicle.name
   const shareUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/vehicles/${vehicle.id}`
       : `https://www.1-2drive.com/vehicles/${vehicle.id}`
-  const shareDescription = `Check out this ${vehicle.type} for rent: ${vehicleTitle} - ฿${vehicle.price.toLocaleString()}/day. ${vehicle.status === "available" ? "Available now!" : "Currently rented."}`
+  const shareDescription = `Check out this ${vehicle.type} for rent: ${vehicleTitle} - ฿${vehicle.dailyPrice.toLocaleString()}/day. ${vehicle.status === "available" ? "Available now!" : "Currently rented."}`
 
   return (
     <AppShell
@@ -127,7 +127,7 @@ export default function VehicleDetailPage() {
         <Card className="overflow-hidden rounded-2xl bg-card border-border">
           <div className="relative aspect-video w-full">
             <Image
-              src={vehicle.imageUrl || "/placeholder.svg?height=400&width=800&query=vehicle"}
+              src={vehicle.photos[0] || "/placeholder.svg?height=400&width=800&query=vehicle"}
               alt={vehicleTitle}
               fill
               className="object-cover"
@@ -155,7 +155,7 @@ export default function VehicleDetailPage() {
               </div>
               <div>
                 <Label className="text-muted-foreground text-xs">Type</Label>
-                <p className="text-foreground font-medium">{vehicle.type}</p>
+                <p className="text-foreground font-medium capitalize">{vehicle.type}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -163,37 +163,53 @@ export default function VehicleDetailPage() {
                 <Settings className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <Label className="text-muted-foreground text-xs">Brand & Model</Label>
-                <p className="text-foreground font-medium">{vehicleTitle}</p>
+                <Label className="text-muted-foreground text-xs">Name</Label>
+                <p className="text-foreground font-medium">{vehicle.name}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Fuel className="h-5 w-5 text-primary" />
+            {vehicle.cc && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Fuel className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Engine CC</Label>
+                  <p className="text-foreground font-medium">{vehicle.cc} cc</p>
+                </div>
               </div>
-              <div>
-                <Label className="text-muted-foreground text-xs">Fuel Type</Label>
-                <p className="text-foreground font-medium">{vehicle.fuelType || "Petrol"}</p>
+            )}
+            {vehicle.year && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Year</Label>
+                  <p className="text-foreground font-medium">{vehicle.year}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-xs">Year</Label>
-                <p className="text-foreground font-medium">{vehicle.year || "N/A"}</p>
-              </div>
-            </div>
+            )}
           </div>
         </Card>
 
         <Card className="p-6 bg-card border-border rounded-2xl">
           <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-primary">฿{vehicle.price.toLocaleString()}</span>
+            <span className="text-3xl font-bold text-primary">฿{vehicle.dailyPrice.toLocaleString()}</span>
             <span className="text-muted-foreground">/ day</span>
           </div>
+          {vehicle.weeklyPrice && vehicle.weeklyPrice > 0 && (
+            <div className="flex items-baseline gap-2 mt-2">
+              <span className="text-xl font-semibold text-foreground">฿{vehicle.weeklyPrice.toLocaleString()}</span>
+              <span className="text-muted-foreground">/ week</span>
+            </div>
+          )}
+          {vehicle.monthlyPrice && vehicle.monthlyPrice > 0 && (
+            <div className="flex items-baseline gap-2 mt-2">
+              <span className="text-xl font-semibold text-foreground">฿{vehicle.monthlyPrice.toLocaleString()}</span>
+              <span className="text-muted-foreground">/ month</span>
+            </div>
+          )}
           {vehicle.status === "available" && (
             <Button
               onClick={() => router.push(`/vehicles?book=${vehicle.id}`)}
@@ -204,20 +220,20 @@ export default function VehicleDetailPage() {
           )}
         </Card>
 
-        {(vehicle.licensePlate || vehicle.color) && (
+        {(vehicle.plate || vehicle.color) && (
           <Card className="p-6 bg-card border-border rounded-2xl">
             <h2 className="text-lg font-semibold text-foreground mb-4">Additional Details</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              {vehicle.licensePlate && (
+              {vehicle.plate && (
                 <div>
                   <Label className="text-muted-foreground text-xs">License Plate</Label>
-                  <p className="text-foreground font-medium">{vehicle.licensePlate}</p>
+                  <p className="text-foreground font-medium">{vehicle.plate}</p>
                 </div>
               )}
               {vehicle.color && (
                 <div>
                   <Label className="text-muted-foreground text-xs">Color</Label>
-                  <p className="text-foreground font-medium">{vehicle.color}</p>
+                  <p className="text-foreground font-medium capitalize">{vehicle.color}</p>
                 </div>
               )}
             </div>
