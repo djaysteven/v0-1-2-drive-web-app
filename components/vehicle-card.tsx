@@ -29,6 +29,7 @@ interface VehicleCardProps {
   isAuthenticated?: boolean // Added prop to control admin features visibility
   onEdit?: () => void
   onDelete?: () => void
+  onReserve?: () => void
 }
 
 export function VehicleCard({
@@ -37,6 +38,7 @@ export function VehicleCard({
   isAuthenticated = false,
   onEdit,
   onDelete,
+  onReserve,
 }: VehicleCardProps) {
   const [isSnoozing, setIsSnoozing] = useState(false)
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
@@ -160,6 +162,12 @@ export function VehicleCard({
   const displayStatus = isCurrentlyBooked ? "rented" : vehicle.status
   const displayStatusText = isCurrentlyBooked ? "rented" : vehicle.status
 
+  console.log("[v0] Vehicle card data:", {
+    name: vehicle.name,
+    keyless: vehicle.keyless,
+    cc: vehicle.cc,
+  })
+
   return (
     <>
       <Card className="rounded-2xl border-border bg-card shadow-lg overflow-hidden group hover:border-primary/50 transition-colors">
@@ -230,6 +238,7 @@ export function VehicleCard({
             </h3>
             <p className="text-sm text-muted-foreground">
               {vehicle.plate} {vehicle.cc && `• ${vehicle.cc}cc`}
+              {vehicle.keyless && <span className="text-green-500 font-medium"> • Keyless</span>}
             </p>
           </div>
 
