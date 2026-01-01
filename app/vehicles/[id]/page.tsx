@@ -81,11 +81,19 @@ export default function VehicleDetailPage() {
     return (
       <AppShell
         header={
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => router.push("/vehicles")} className="rounded-xl">
-              <ArrowLeft className="h-5 w-5" />
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => router.push("/vehicles")} className="rounded-xl">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Vehicle Not Found</h1>
+                <p className="text-sm text-muted-foreground">{error || "The requested vehicle could not be found."}</p>
+              </div>
+            </div>
+            <Button onClick={() => router.push("/vehicles")} className="mt-4 rounded-xl">
+              View All Vehicles
             </Button>
-            <h1 className="text-xl font-bold text-foreground">Vehicle Not Found</h1>
           </div>
         }
       >
@@ -176,7 +184,9 @@ export default function VehicleDetailPage() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground text-xs">Engine CC</Label>
-                  <p className="text-foreground font-medium">{vehicle.cc} cc</p>
+                  <p className="text-foreground font-medium">
+                    {vehicle.cc} cc{vehicle.keyless && " • Keyless"}
+                  </p>
                 </div>
               </div>
             )}

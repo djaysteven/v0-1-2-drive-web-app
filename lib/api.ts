@@ -28,6 +28,7 @@ const MOCK_VEHICLES: Vehicle[] = [
     displayOrder: 1,
     cc: 160,
     popularity: 5,
+    keyless: true,
   },
   {
     id: "2",
@@ -49,6 +50,7 @@ const MOCK_VEHICLES: Vehicle[] = [
     displayOrder: 2,
     cc: 155,
     popularity: 4,
+    keyless: false,
   },
   {
     id: "3",
@@ -70,6 +72,7 @@ const MOCK_VEHICLES: Vehicle[] = [
     displayOrder: 3,
     cc: null,
     popularity: 3,
+    keyless: null,
   },
 ]
 
@@ -232,6 +235,7 @@ export async function createVehicle(vehicle: Omit<Vehicle, "id">): Promise<Vehic
     image_url: vehicle.photos?.[0] || null,
     display_order: vehicle.displayOrder || null,
     cc: vehicle.cc || null,
+    keyless: vehicle.keyless || false,
     popularity: vehicle.popularity ?? 5,
   }
   console.log("[v0] Inserting vehicle data:", JSON.stringify(insertData, null, 2))
@@ -273,6 +277,7 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
   if (updates.taxOverrideUntil !== undefined) updateData.tax_override_until = updates.taxOverrideUntil
   if (updates.displayOrder !== undefined) updateData.display_order = updates.displayOrder
   if (updates.cc !== undefined) updateData.cc = updates.cc
+  if (updates.keyless !== undefined) updateData.keyless = updates.keyless
   if (updates.popularity !== undefined) updateData.popularity = updates.popularity
 
   const { data, error } = await supabase.from("vehicles").update(updateData).eq("id", id).select().single()
@@ -1136,6 +1141,7 @@ function mapVehicleFromDB(data: any): Vehicle {
     taxOverrideUntil: data.tax_override_until,
     displayOrder: data.display_order ?? undefined,
     cc: data.cc ?? undefined,
+    keyless: data.keyless ?? undefined,
     popularity: data.popularity ?? undefined,
     notes: "",
   }

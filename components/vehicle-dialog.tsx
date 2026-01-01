@@ -45,6 +45,7 @@ export function VehicleDialog({ open, onOpenChange, vehicle, onSave }: VehicleDi
     year: "",
     mileage: "",
     cc: "", // Added CC field
+    keyless: false, // Added keyless field
     popularity: "", // Added popularity field
     taxExpires: "",
     status: "available" as VehicleStatus,
@@ -76,6 +77,7 @@ export function VehicleDialog({ open, onOpenChange, vehicle, onSave }: VehicleDi
         year: vehicle.year?.toString() || "",
         mileage: vehicle.mileage?.toString() || "",
         cc: vehicle.cc?.toString() || "", // Load CC value
+        keyless: vehicle.keyless || false, // Load keyless value
         popularity: vehicle.popularity?.toString() || "", // Load popularity value
         taxExpires: taxExpiresDisplay,
         status: vehicle.status,
@@ -97,6 +99,7 @@ export function VehicleDialog({ open, onOpenChange, vehicle, onSave }: VehicleDi
         year: "",
         mileage: "",
         cc: "",
+        keyless: false, // Reset keyless to false
         popularity: "",
         taxExpires: "",
         status: "available",
@@ -134,6 +137,7 @@ export function VehicleDialog({ open, onOpenChange, vehicle, onSave }: VehicleDi
         year: formData.year ? Number.parseInt(formData.year) : undefined,
         mileage: formData.mileage ? Number.parseInt(formData.mileage) : undefined,
         cc: formData.cc ? Number.parseInt(formData.cc) : undefined, // Save CC value
+        keyless: formData.keyless, // Save keyless value
         popularity: formData.popularity ? Number.parseInt(formData.popularity) : undefined, // Save popularity value
         taxExpires: taxExpiresDate,
         status: formData.status,
@@ -444,6 +448,19 @@ export function VehicleDialog({ open, onOpenChange, vehicle, onSave }: VehicleDi
                 min="0"
                 className="rounded-xl bg-secondary border-border"
               />
+            </div>
+
+            <div className="space-y-2 flex items-center gap-2 pt-6">
+              <input
+                id="keyless"
+                type="checkbox"
+                checked={formData.keyless}
+                onChange={(e) => setFormData({ ...formData, keyless: e.target.checked })}
+                className="h-4 w-4 rounded border-border"
+              />
+              <Label htmlFor="keyless" className="text-foreground cursor-pointer">
+                Keyless System
+              </Label>
             </div>
 
             <div className="space-y-2">

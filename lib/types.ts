@@ -17,6 +17,7 @@ export interface Vehicle {
   year?: number
   mileage?: number
   cc?: number // Added CC (engine size) field for bikes
+  keyless?: boolean // Added keyless field to indicate keyless ignition system
   popularity?: number // Added popularity field for sorting (1-10, higher = more popular)
   taxExpires?: string
   taxOverrideUntil?: string
