@@ -156,7 +156,7 @@ export function VehicleCard({
 
   return (
     <>
-      <Card className="rounded-2xl border-2 border-green-500/30 bg-card shadow-lg overflow-hidden group hover:border-green-500 hover:ring-2 hover:ring-green-500/50 hover:shadow-[0_0_30px_rgba(0,255,60,0.5)] transition-all duration-300">
+      <Card className="rounded-2xl border-2 border-green-500/30 bg-card shadow-lg overflow-hidden group hover:border-green-500 hover:shadow-[0_0_20px_rgba(0,255,60,0.4)] transition-all duration-200">
         <div className="relative aspect-video overflow-hidden bg-secondary">
           <Image
             src={vehicle.photos[0] || "/placeholder.svg"}
