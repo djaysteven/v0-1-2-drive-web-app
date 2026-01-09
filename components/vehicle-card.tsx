@@ -122,14 +122,6 @@ export function VehicleCard({
     }
   }
 
-  const formatSnoozeDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
-  }
-
   const handleStatusToggle = async () => {
     // Added handler to toggle status between available and rented
     if (!isAuthenticated || isTogglingStatus) return
@@ -164,15 +156,16 @@ export function VehicleCard({
 
   return (
     <>
-      <Card className="rounded-2xl border-border bg-card shadow-lg overflow-hidden group hover:border-primary/50 transition-colors">
+      <Card className="rounded-2xl border-2 border-green-500/30 bg-card shadow-lg overflow-hidden group hover:border-green-500 hover:ring-2 hover:ring-green-500/50 hover:shadow-[0_0_30px_rgba(0,255,60,0.5)] transition-all duration-300">
         <div className="relative aspect-video overflow-hidden bg-secondary">
           <Image
-            src={vehicle.photos[0] || "/placeholder.svg?height=300&width=400"}
+            src={vehicle.photos[0] || "/placeholder.svg"}
             alt={vehicle.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            loading="eager"
+            priority
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 45vw, 400px"
             quality={85}
           />
           <div

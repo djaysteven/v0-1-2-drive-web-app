@@ -18,6 +18,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { vehiclesApi, condosApi, customersApi } from "@/lib/api"
 import { useRole } from "@/hooks/use-role"
+import { ImagePreloader } from "@/components/image-preloader"
 
 const HomePage = () => {
   const [bookingWizardOpen, setBookingWizardOpen] = useState(false)
@@ -39,7 +40,7 @@ const HomePage = () => {
     try {
       const [vehiclesWithStatus, condos, customers] = await Promise.all([
         vehiclesApi.getAllWithBookingStatus(),
-        condosApi.getAll(),
+        condosApi.getAllWithBookingStatus(), // Updated to use getAllWithBookingStatus instead of getAll
         customersApi.getAll(),
       ])
 
@@ -47,13 +48,15 @@ const HomePage = () => {
       const availableBikes = availableVehicles.filter((v) => v.type === "bike").length
       const availableCars = availableVehicles.filter((v) => v.type === "car").length
 
+      const availableCondos = condos.filter((c) => !c.isCurrentlyBooked && c.status === "available")
+
       return {
         totalVehicles: vehiclesWithStatus.length,
         availableVehicles: availableVehicles.length,
         availableBikes,
         availableCars,
         totalCondos: condos.length,
-        availableCondos: condos.filter((c) => c.status === "available").length,
+        availableCondos: availableCondos.length, // Updated to use filtered count
         totalCustomers: customers.length,
       }
     } catch (error) {
@@ -99,6 +102,8 @@ const HomePage = () => {
         ) : null
       }
     >
+      <ImagePreloader />
+
       <div className="animate-in fade-in duration-1000">
         <div className="container mx-auto p-4 lg:p-6 space-y-6">
           {isOwner && <DatabaseSetupBanner />}
