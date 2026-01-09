@@ -20,7 +20,7 @@ export default function CondosPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [bedroomFilter, setBedroomFilter] = useState<"all" | "studio" | "1">("all")
-  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "rented" | "maintenance">("all")
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "rented">("all")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCondo, setEditingCondo] = useState<Condo | undefined>()
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -124,7 +124,8 @@ export default function CondosPage() {
       (bedroomFilter === "studio" ? condo.bedrooms === 0 : condo.bedrooms === Number.parseInt(bedroomFilter))
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "rented" ? condo.status === "rented" || condo.isCurrentlyBooked : condo.status === statusFilter)
+      (statusFilter === "available" && condo.status === "available" && !condo.isCurrentlyBooked) ||
+      (statusFilter === "rented" && (condo.status === "rented" || condo.isCurrentlyBooked))
     return matchesSearch && matchesBedrooms && matchesStatus
   })
 
@@ -183,11 +184,10 @@ export default function CondosPage() {
               onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
               className="w-full sm:w-auto"
             >
-              <TabsList className="grid w-full grid-cols-4 bg-secondary">
+              <TabsList className="grid w-full grid-cols-3 bg-secondary">
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="available">Available</TabsTrigger>
                 <TabsTrigger value="rented">Rented</TabsTrigger>
-                <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -209,52 +209,49 @@ export default function CondosPage() {
             <div className="rounded-full bg-secondary p-6 mb-4">
               <Search className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No condos found</h3>
-            <p className="text-sm text-muted-foreground mb-4">Try adjusting your search or filters</p>
-            {isAuthenticated && (
-              <Button onClick={handleCreate} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Your First Condo
-              </Button>
+            {statusFilter === "available" ? (
+              <>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Sorry, we are all rented out!</h3>
+                <p className="text-sm text-muted-foreground">
+                  All condos are currently rented. Please check back later.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No condos found</h3>
+                <p className="text-sm text-muted-foreground mb-4">Try adjusting your search or filters</p>
+                {isAuthenticated && (
+                  <Button onClick={handleCreate} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Your First Condo
+                  </Button>
+                )}
+              </>
             )}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {condos.map((condo, index) => {
-              const matchesSearch =
-                condo.building.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                condo.unitNo.toLowerCase().includes(searchQuery.toLowerCase())
-              const matchesBedrooms =
-                bedroomFilter === "all" ||
-                (bedroomFilter === "studio" ? condo.bedrooms === 0 : condo.bedrooms === Number.parseInt(bedroomFilter))
-              const matchesStatus =
-                statusFilter === "all" ||
-                (statusFilter === "rented"
-                  ? condo.status === "rented" || condo.isCurrentlyBooked
-                  : condo.status === statusFilter)
-
-              if (!matchesSearch || !matchesBedrooms || !matchesStatus) return null
-
-              return (
-                <div
-                  key={condo.id}
-                  draggable={isAuthenticated}
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`transition-opacity ${draggedIndex === index ? "opacity-50" : "opacity-100"} ${
-                    isAuthenticated ? "cursor-move" : ""
-                  }`}
-                >
-                  <CondoCard
-                    condo={condo}
-                    isAuthenticated={isAuthenticated}
-                    onEdit={isAuthenticated ? () => handleEdit(condo) : undefined}
-                    onDelete={isAuthenticated ? () => handleDelete(condo.id) : undefined}
-                  />
-                </div>
-              )
-            })}
+            {filteredCondos.map((condo, index) => (
+              <div
+                key={condo.id}
+                draggable={isAuthenticated}
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`transition-opacity ${draggedIndex === index ? "opacity-50" : "opacity-100"} ${
+                  isAuthenticated ? "cursor-move" : ""
+                }`}
+              >
+                <CondoCard
+                  condo={condo}
+                  isAuthenticated={isAuthenticated}
+                  onEdit={isAuthenticated ? () => handleEdit(condo) : undefined}
+                  onDelete={isAuthenticated ? () => handleDelete(condo.id) : undefined}
+                  onMoveUp={isAuthenticated ? () => handleMoveUp(condo.id) : undefined}
+                  onMoveDown={isAuthenticated ? () => handleMoveDown(condo.id) : undefined}
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>

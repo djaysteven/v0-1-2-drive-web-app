@@ -1,7 +1,10 @@
 "use client"
 
 import type React from "react"
-
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +34,10 @@ export default function VehiclesPage() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const { isAuthenticated } = useRole()
+  const [dateFilterEnabled, setDateFilterEnabled] = useState(false)
+  const [filterStartDate, setFilterStartDate] = useState<Date | undefined>()
+  const [filterEndDate, setFilterEndDate] = useState<Date | undefined>()
+  const [dateFilteredVehicleIds, setDateFilteredVehicleIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadVehicles()
@@ -47,6 +54,31 @@ export default function VehiclesPage() {
       setLoading(false)
     }
   }
+
+  const checkDateAvailability = async () => {
+    if (!filterStartDate || !filterEndDate) {
+      setDateFilteredVehicleIds(new Set())
+      return
+    }
+
+    try {
+      const startDateStr = format(filterStartDate, "yyyy-MM-dd")
+      const endDateStr = format(filterEndDate, "yyyy-MM-dd")
+      const availableIds = await vehiclesApi.getAvailableForDateRange(startDateStr, endDateStr)
+      setDateFilteredVehicleIds(new Set(availableIds))
+    } catch (error) {
+      console.error("[v0] Failed to check date availability:", error)
+      setDateFilteredVehicleIds(new Set())
+    }
+  }
+
+  useEffect(() => {
+    if (dateFilterEnabled && filterStartDate && filterEndDate) {
+      checkDateAvailability()
+    } else {
+      setDateFilteredVehicleIds(new Set())
+    }
+  }, [dateFilterEnabled, filterStartDate, filterEndDate])
 
   const handleCreate = () => {
     setEditingVehicle(undefined)
@@ -134,7 +166,9 @@ export default function VehiclesPage() {
         vehicle.plate.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesType = typeFilter === "all" || vehicle.type === typeFilter
       const matchesStatus = statusFilter === "all" || vehicle.status === statusFilter
-      return matchesSearch && matchesType && matchesStatus
+      const matchesDateFilter =
+        !dateFilterEnabled || (dateFilteredVehicleIds.size > 0 && dateFilteredVehicleIds.has(vehicle.id))
+      return matchesSearch && matchesType && matchesStatus && matchesDateFilter
     }),
   )
 
@@ -157,7 +191,7 @@ export default function VehiclesPage() {
   }
 
   const hasActiveFilters =
-    searchQuery !== "" || typeFilter !== "all" || statusFilter !== "all" || sortBy !== "popularity"
+    searchQuery !== "" || typeFilter !== "all" || statusFilter !== "all" || sortBy !== "popularity" || dateFilterEnabled
 
   return (
     <AppShell
@@ -191,6 +225,82 @@ export default function VehiclesPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 rounded-xl bg-card border-border"
             />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="date-filter-toggle"
+                checked={dateFilterEnabled}
+                onChange={(e) => setDateFilterEnabled(e.target.checked)}
+                className="rounded border-border"
+              />
+              <label htmlFor="date-filter-toggle" className="text-sm font-medium text-foreground cursor-pointer">
+                Filter by availability dates
+              </label>
+            </div>
+
+            {dateFilterEnabled && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-secondary border border-border">
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Start Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-card border-border"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filterStartDate ? format(filterStartDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filterStartDate}
+                        onSelect={setFilterStartDate}
+                        initialFocus
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">End Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-card border-border"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filterEndDate ? format(filterEndDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filterEndDate}
+                        onSelect={setFilterEndDate}
+                        initialFocus
+                        disabled={(date) => !filterStartDate || date < filterStartDate}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                {filterStartDate && filterEndDate && dateFilteredVehicleIds.size > 0 && (
+                  <div className="col-span-full text-sm text-green-600 font-medium">
+                    {dateFilteredVehicleIds.size} vehicle(s) available for selected dates
+                  </div>
+                )}
+                {filterStartDate && filterEndDate && dateFilteredVehicleIds.size === 0 && (
+                  <div className="col-span-full text-sm text-orange-600 font-medium">
+                    No vehicles available for selected dates
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
@@ -262,13 +372,24 @@ export default function VehiclesPage() {
             <div className="rounded-full bg-secondary p-6 mb-4">
               <Search className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No vehicles found</h3>
-            <p className="text-sm text-muted-foreground mb-4">Try adjusting your search or filters</p>
-            {isAuthenticated && (
-              <Button onClick={handleCreate} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Your First Vehicle
-              </Button>
+            {statusFilter === "available" ? (
+              <>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Sorry, we are all rented out!</h3>
+                <p className="text-sm text-muted-foreground">
+                  All vehicles are currently rented. Please check back later.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No vehicles found</h3>
+                <p className="text-sm text-muted-foreground mb-4">Try adjusting your search or filters</p>
+                {isAuthenticated && (
+                  <Button onClick={handleCreate} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Your First Vehicle
+                  </Button>
+                )}
+              </>
             )}
           </div>
         ) : (

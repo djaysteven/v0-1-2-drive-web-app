@@ -419,6 +419,42 @@ export async function getVehiclesWithBookingStatus(): Promise<(Vehicle & { isCur
 }
 
 /**
+ * Get vehicles available for a specific date range
+ */
+export async function getAvailableVehiclesForDateRange(startDate: string, endDate: string): Promise<string[]> {
+  const supabase = createClient()
+
+  // Get all vehicle IDs first
+  const { data: allVehicles, error: vehiclesError } = await supabase.from("vehicles").select("id")
+
+  if (vehiclesError) {
+    console.error("[v0] Error fetching vehicles for date filter:", vehiclesError)
+    return []
+  }
+
+  // Get all bookings that overlap with the requested date range
+  const { data: overlappingBookings, error: bookingsError } = await supabase
+    .from("bookings")
+    .select("vehicle_id")
+    .not("vehicle_id", "is", null)
+    .in("status", ["active", "confirmed"])
+    .or(`and(start_date.lte.${endDate},end_date.gte.${startDate})`)
+
+  if (bookingsError) {
+    console.error("[v0] Error fetching bookings for date filter:", bookingsError)
+    return []
+  }
+
+  // Get the set of booked vehicle IDs
+  const bookedVehicleIds = new Set(overlappingBookings?.map((b) => b.vehicle_id).filter(Boolean) || [])
+
+  // Return vehicle IDs that are NOT in the booked set
+  const availableVehicleIds = allVehicles?.filter((v) => !bookedVehicleIds.has(v.id)).map((v) => v.id) || []
+
+  return availableVehicleIds
+}
+
+/**
  * Condos API
  */
 export async function getCondos(): Promise<Condo[]> {
@@ -1312,6 +1348,7 @@ export const vehiclesApi = {
   moveDown: (id: string) => moveEntity("vehicles", id, "down"),
   reorder: reorderVehicles, // Added reorder function
   isCurrentlyBooked: isVehicleCurrentlyBooked, // Added function to check if vehicle is currently booked
+  getAvailableForDateRange: getAvailableVehiclesForDateRange, // Added date range availability method
 }
 
 export const customersApi = {

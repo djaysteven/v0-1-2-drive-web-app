@@ -72,6 +72,7 @@ export function ReserveVehicleModal({
   const [deliveryTime, setDeliveryTime] = useState("")
   const [openStartPicker, setOpenStartPicker] = useState(false)
   const [openEndPicker, setOpenEndPicker] = useState(false)
+  const [isRequestMode, setIsRequestMode] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -157,6 +158,12 @@ export function ReserveVehicleModal({
   }, [open, selectedVehicle, booking])
 
   useEffect(() => {
+    if (!open) {
+      setIsRequestMode(false)
+    }
+  }, [open])
+
+  useEffect(() => {
     if (booking && open) {
       console.log("[v0] Populating form with booking data:", {
         customerName: booking.customerName,
@@ -222,6 +229,7 @@ export function ReserveVehicleModal({
       setDeliveryAddress("")
       setEtaDate(undefined)
       setDeliveryTime("")
+      setIsRequestMode(false)
     }
   }, [booking, open, selectedVehicle])
 
@@ -505,6 +513,68 @@ export function ReserveVehicleModal({
     }
   }
 
+  const handleRequestLaterDate = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!selectedVehicle || !startDate || !endDate || !customerName || !email) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (isLongTerm) {
+      toast({
+        title: "Long-term booking not available",
+        description: "Please uncheck 'Long-term rental' for booking requests",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      const emailResponse = await fetch("/api/booking/request-later-date", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName,
+          customerEmail: email,
+          customerPhone: phone,
+          assetName: selectedVehicle.name,
+          requestedStartDate: format(startDate, "yyyy-MM-dd"),
+          requestedEndDate: format(endDate, "yyyy-MM-dd"),
+          notes,
+        }),
+      })
+
+      const emailResult = await emailResponse.json()
+
+      if (!emailResult.ok) {
+        throw new Error(emailResult.error || "Failed to send booking request")
+      }
+
+      toast({
+        title: "Request sent!",
+        description: "Your booking request has been sent. We'll respond within 24 hours.",
+      })
+
+      onOpenChange(false)
+    } catch (error: any) {
+      console.error("[v0] Error sending booking request:", error)
+      toast({
+        title: "Request failed",
+        description: error.message || "Failed to send booking request. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleStartDateSelect = (date: Date | undefined) => {
     if (date) {
       setStartDate(date)
@@ -537,13 +607,15 @@ export function ReserveVehicleModal({
     return name.replace(/\s*\d{4}\s*/g, "").trim()
   }
 
+  const isVehicleRented = selectedVehicle.status === "rented" || (availability === "unavailable" && !isOwner)
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
-              <span>{booking ? "Edit Booking" : "Reserve Vehicle"}</span>
+              <span>{booking ? "Edit Booking" : isRequestMode ? "Request Booking" : "Reserve Vehicle"}</span>
               {availability === "checking" && (
                 <Badge variant="outline" className="gap-1">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -559,7 +631,17 @@ export function ReserveVehicleModal({
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {!booking && isVehicleRented && !isOwner && (
+            <Alert className="bg-secondary border-border">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                This vehicle is currently rented. You can request a booking for a later date, and we'll confirm within
+                24 hours.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={isRequestMode ? handleRequestLaterDate : handleSubmit} className="space-y-4">
             {booking && allVehicles.length > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="vehicleSelect">
@@ -627,181 +709,137 @@ export function ReserveVehicleModal({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="customerName">
-                Customer Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="customerName"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Enter customer name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">
-                Email {!isOwner && <span className="text-destructive">*</span>}
-                {isOwner && <span className="text-xs text-muted-foreground ml-2">(optional for owner)</span>}
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter email address"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone (optional)</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Enter phone number"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>
-                Delivery / Pickup date <span className="text-destructive">*</span>
-              </Label>
-              <Popover open={openStartPicker} onOpenChange={setOpenStartPicker}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-between text-left font-normal bg-background hover:bg-accent"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Delivery/Pickup:</span>
-                      {startDate ? format(startDate, "dd MMM yyyy", { locale: enGB }) : "Select date"}
-                    </span>
-                    <CalendarIcon className="h-4 w-4 opacity-60" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="p-0">
-                  <div className="px-3 py-2 border-b bg-secondary/50">
-                    <p className="text-sm font-semibold text-center">Delivery / Pickup Date</p>
-                  </div>
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={handleStartDateSelect}
-                    disabled={isOwner ? undefined : (date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                    modifiers={{ today: startOfToday() }}
-                    modifiersClassNames={{ today: "ring-2 ring-lime-400/60 rounded-md" }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label>
-                Return date <span className="text-destructive">*</span>
-              </Label>
-              <Popover open={openEndPicker} onOpenChange={setOpenEndPicker}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-between text-left font-normal bg-background hover:bg-accent"
-                    disabled={!startDate}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Return:</span>
-                      {endDate ? format(endDate, "dd MMM yyyy", { locale: enGB }) : "Select date"}
-                    </span>
-                    <CalendarIcon className="h-4 w-4 opacity-60" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="p-0">
-                  <div className="px-3 py-2 border-b bg-secondary/50">
-                    <p className="text-sm font-semibold text-center">Return Date</p>
-                  </div>
-                  <Calendar
-                    mode="single"
-                    defaultMonth={startDate}
-                    selected={endDate}
-                    onSelect={handleEndDateSelect}
-                    disabled={(date) =>
-                      startDate ? date < startDate : isOwner ? false : date < new Date(new Date().setHours(0, 0, 0, 0))
-                    }
-                    modifiers={{ today: startOfToday() }}
-                    modifiersClassNames={{ today: "ring-2 ring-lime-400/60 rounded-md" }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {startDate && endDate && (
-                <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
-                  <p className="text-sm text-muted-foreground">
-                    Duration:{" "}
-                    <span className="font-semibold">{diffCalendarDaysInclusive(startDate, endDate)} days</span>
-                  </p>
-                  <p className="text-lg font-bold" style={{ color: "#00FF3C" }}>
-                    {getPriceBreakdown()} = ฿{calculateTotal().toLocaleString()}
-                  </p>
-                  {diffCalendarDaysInclusive(startDate, endDate) >= 30 && (
-                    <p className="text-xs font-semibold pt-1" style={{ color: "#00FF3C" }}>
-                      🎉 1+ month = Save More!
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {isOwner && (
-              <div className="space-y-3 p-3 rounded-lg bg-secondary/50 border border-primary/30">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="useManualPrice" className="text-sm font-semibold">
-                    Custom Price (Owner Only)
+            {/* Hide customer fields in request mode if owner */}
+            {!isOwner && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="customerName">
+                    Name <span className="text-destructive">*</span>
                   </Label>
-                  <Checkbox
-                    id="useManualPrice"
-                    checked={useManualPrice}
-                    onCheckedChange={(checked) => {
-                      setUseManualPrice(checked === true)
-                      if (!checked) setManualPrice("")
-                    }}
+                  <Input
+                    id="customerName"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Your full name"
+                    required
                   />
                 </div>
-                {useManualPrice && (
-                  <div className="space-y-2">
-                    <Label htmlFor="manualPrice">Total Price (฿)</Label>
-                    <Input
-                      id="manualPrice"
-                      type="number"
-                      value={manualPrice}
-                      onChange={(e) => setManualPrice(e.target.value)}
-                      placeholder="Enter custom price"
-                      min="0"
-                      step="1"
-                    />
-                    {startDate && endDate && (
-                      <p className="text-xs text-muted-foreground">
-                        Calculated price: ฿{calculateTotal().toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                )}
 
-                <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="isLongTerm" className="text-sm font-semibold">
-                      Long-term Rental
-                    </Label>
-                    <p className="text-xs text-muted-foreground">Mark this as a long-term booking</p>
-                  </div>
-                  <Checkbox
-                    id="isLongTerm"
-                    checked={isLongTerm}
-                    onCheckedChange={(checked) => setIsLongTerm(checked === true)}
+                <div className="space-y-2">
+                  <Label htmlFor="email">
+                    Email <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your.email@example.com"
+                    required
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone (Optional)</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+66 XX XXX XXXX"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Show the request mode toggle if vehicle is rented and not owner */}
+            {!booking && isVehicleRented && !isOwner && (
+              <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg border border-border">
+                <Checkbox
+                  id="isRequestMode"
+                  checked={isRequestMode}
+                  onCheckedChange={(checked) => setIsRequestMode(!!checked)}
+                />
+                <Label htmlFor="isRequestMode" className="cursor-pointer font-normal">
+                  Request booking for a later date
+                </Label>
               </div>
             )}
+
+            {!isRequestMode && isOwner && (
+              <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg border border-border">
+                <Checkbox
+                  id="isLongTerm"
+                  checked={isLongTerm}
+                  onCheckedChange={(checked) => setIsLongTerm(!!checked)}
+                />
+                <Label htmlFor="isLongTerm" className="cursor-pointer font-normal">
+                  Long-term rental (no end date required)
+                </Label>
+              </div>
+            )}
+
+            {/* Date pickers */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">
+                  {deliveryMethod === "pickup" ? "Pickup" : "Delivery"} Date <span className="text-destructive">*</span>
+                </Label>
+                <Popover open={openStartPicker} onOpenChange={setOpenStartPicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="startDate"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !startDate && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={handleStartDateSelect}
+                      disabled={(date) => date < startOfToday()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endDate">
+                  Return Date <span className="text-destructive">*</span>
+                </Label>
+                <Popover open={openEndPicker} onOpenChange={setOpenEndPicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="endDate"
+                      variant="outline"
+                      className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={handleEndDateSelect}
+                      disabled={(date) => !startDate || date < startDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* ... existing owner fields ... */}
 
             <div className="space-y-4">
               <div className="space-y-2">
@@ -1003,20 +1041,24 @@ export function ReserveVehicleModal({
               </Alert>
             )}
 
-            <DialogFooter className="gap-2">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={saving || checking || availability === "unavailable" || hasValidationErrors}
+                disabled={
+                  saving || (availability === "unavailable" && !isOwner && !isRequestMode) || hasValidationErrors
+                }
                 style={{ backgroundColor: "#00FF3C", color: "#000" }}
               >
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {booking ? "Updating..." : "Creating..."}
+                    {isRequestMode ? "Sending Request..." : booking ? "Updating..." : "Booking..."}
                   </>
+                ) : isRequestMode ? (
+                  "Send Request"
                 ) : booking ? (
                   "Update Booking"
                 ) : (
