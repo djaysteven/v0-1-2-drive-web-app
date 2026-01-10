@@ -18,6 +18,9 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [startPos, setStartPos] = useState({ x: 0, y: 0 })
   const [hasMoved, setHasMoved] = useState(false)
+  const [scale, setScale] = useState(1)
+  const [isPinching, setIsPinching] = useState(false)
+  const [lastPinchDistance, setLastPinchDistance] = useState(0)
 
   useEffect(() => {
     if (open) {
@@ -26,6 +29,8 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
       document.body.style.overflow = ""
       setDragOffset({ x: 0, y: 0 })
       setHasMoved(false)
+      setScale(1)
+      setIsPinching(false)
     }
     return () => {
       document.body.style.overflow = ""
@@ -34,10 +39,14 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
 
   if (!open) return null
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    // Don't drag if clicking on close button
-    if ((e.target as HTMLElement).closest("button")) return
+  const getDistance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX
+    const dy = touches[0].clientY - touches[1].clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return
     e.stopPropagation()
     setIsDragging(true)
     setHasMoved(false)
@@ -46,7 +55,7 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return
+    if (!isDragging || isPinching) return
 
     const newX = e.clientX - startPos.x
     const newY = e.clientY - startPos.y
@@ -64,11 +73,39 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
     setIsDragging(false)
     const distance = Math.sqrt(dragOffset.x ** 2 + dragOffset.y ** 2)
 
-    if (distance > 50) {
+    if (distance > 50 && !isPinching) {
       onClose()
     } else {
-      // Spring back to center
       setDragOffset({ x: 0, y: 0 })
+    }
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault()
+      setIsPinching(true)
+      setIsDragging(false)
+      setLastPinchDistance(getDistance(e.touches))
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && isPinching) {
+      e.preventDefault()
+      const currentDistance = getDistance(e.touches)
+      const delta = currentDistance - lastPinchDistance
+      const newScale = Math.max(1, Math.min(4, scale + delta / 200))
+      setScale(newScale)
+      setLastPinchDistance(currentDistance)
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      setIsPinching(false)
+      if (scale < 1.1) {
+        setScale(1)
+      }
     }
   }
 
@@ -82,7 +119,6 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
         transition: isDragging ? "none" : "background-color 300ms ease-out",
       }}
       onClick={(e) => {
-        // Only close on backdrop click if not dragging
         if (e.target === e.currentTarget && !hasMoved) {
           onClose()
         }
@@ -100,10 +136,10 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
       <div
         className="relative rounded-2xl overflow-hidden border-4 border-green-500 shadow-[0_0_40px_rgba(0,255,60,0.6)]"
         style={{
-          width: "min(85vw, 1200px)",
-          height: "min(85vh, 900px)",
-          maxWidth: "calc(100vw - 32px)", // Account for padding
-          maxHeight: "calc(100vh - 32px)",
+          width: "min(80vw, 1200px)",
+          height: "min(75vh, 800px)",
+          maxWidth: "calc(100vw - 48px)",
+          maxHeight: "calc(100vh - 120px)", // More space for iOS bottom safe area
           transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${isDragging ? 0.95 : 1})`,
           transition: isDragging ? "none" : "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
           cursor: isDragging ? "grabbing" : "grab",
@@ -114,14 +150,23 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        <div className="absolute inset-0 bg-black">
+        <div
+          className="absolute inset-0 bg-black transition-transform duration-200"
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "center center",
+          }}
+        >
           <Image
             src={src || "/placeholder.svg?height=800&width=800"}
             alt={alt}
             fill
             className="object-contain"
-            sizes="85vw"
+            sizes="80vw"
             quality={95}
             priority
             unoptimized={src?.includes("blob.vercel-storage.com")}
@@ -130,7 +175,7 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-sm font-medium bg-black/50 px-4 py-2 rounded-full border border-green-500/50">
-        Swipe to close • Tap outside to close
+        Pinch to zoom • Swipe to close
       </div>
     </div>
   )
