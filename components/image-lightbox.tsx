@@ -19,8 +19,6 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
   const [startPos, setStartPos] = useState({ x: 0, y: 0 })
   const [hasMoved, setHasMoved] = useState(false)
 
-  console.log("[v0] Lightbox opened with src:", src)
-
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden"
@@ -53,8 +51,7 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
     const newX = e.clientX - startPos.x
     const newY = e.clientY - startPos.y
 
-    // Mark as moved if dragged more than 5px (prevents accidental drags)
-    if (Math.abs(newX) > 5 || Math.abs(newY) > 5) {
+    if (Math.abs(newX) > 3 || Math.abs(newY) > 3) {
       setHasMoved(true)
     }
 
@@ -67,8 +64,7 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
     setIsDragging(false)
     const distance = Math.sqrt(dragOffset.x ** 2 + dragOffset.y ** 2)
 
-    // Close if dragged more than 100px
-    if (distance > 100) {
+    if (distance > 50) {
       onClose()
     } else {
       // Spring back to center
@@ -80,7 +76,7 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       style={{
         backgroundColor: `rgba(0, 0, 0, ${0.9 * opacity})`,
         transition: isDragging ? "none" : "background-color 300ms ease-out",
@@ -102,13 +98,17 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
       </Button>
 
       <div
-        className="relative w-full h-full max-w-[90vw] max-h-[90vh] rounded-2xl overflow-hidden border-4 border-green-500 shadow-[0_0_40px_rgba(0,255,60,0.6)]"
+        className="relative rounded-2xl overflow-hidden border-4 border-green-500 shadow-[0_0_40px_rgba(0,255,60,0.6)]"
         style={{
+          width: "min(85vw, 1200px)",
+          height: "min(85vh, 900px)",
+          maxWidth: "calc(100vw - 32px)", // Account for padding
+          maxHeight: "calc(100vh - 32px)",
           transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${isDragging ? 0.95 : 1})`,
           transition: isDragging ? "none" : "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
           cursor: isDragging ? "grabbing" : "grab",
-          touchAction: "none", // Prevent browser touch gestures
-          userSelect: "none", // Prevent text selection
+          touchAction: "none",
+          userSelect: "none",
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -121,7 +121,7 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
             alt={alt}
             fill
             className="object-contain"
-            sizes="90vw"
+            sizes="85vw"
             quality={95}
             priority
             unoptimized={src?.includes("blob.vercel-storage.com")}
@@ -130,7 +130,7 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-sm font-medium bg-black/50 px-4 py-2 rounded-full border border-green-500/50">
-        Drag to dismiss • Tap outside to close
+        Swipe to close • Tap outside to close
       </div>
     </div>
   )
