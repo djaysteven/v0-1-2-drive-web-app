@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -22,6 +24,7 @@ import { vehiclesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { ReserveVehicleModal } from "./reserve-vehicle-modal"
 import { ShareButton } from "./share-button"
+import { ImageLightbox } from "./image-lightbox"
 
 interface VehicleCardProps {
   vehicle: Vehicle
@@ -43,6 +46,7 @@ export function VehicleCard({
   const [isSnoozing, setIsSnoozing] = useState(false)
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false) // Added state for toggling status
+  const [lightboxOpen, setLightboxOpen] = useState(false) // Added state for image lightbox
   const { toast } = useToast()
 
   const statusColors = {
@@ -154,10 +158,33 @@ export function VehicleCard({
   const displayStatus = isCurrentlyBooked ? "rented" : vehicle.status
   const displayStatusText = isCurrentlyBooked ? "rented" : vehicle.status
 
+  // Added handler to open lightbox only on actual click (not during scroll)
+  const [clickStart, setClickStart] = useState<{ x: number; y: number } | null>(null)
+
+  const handleImagePointerDown = (e: React.PointerEvent) => {
+    setClickStart({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    if (!clickStart) return
+    const dx = e.clientX - clickStart.x
+    const dy = e.clientY - clickStart.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    if (distance < 10) {
+      setLightboxOpen(true)
+    }
+    setClickStart(null)
+  }
+
   return (
     <>
       <Card className="rounded-2xl border-2 border-green-500/30 bg-card shadow-lg overflow-hidden group hover:border-green-500 hover:shadow-[0_0_20px_rgba(0,255,60,0.4)] transition-all duration-200">
-        <div className="relative aspect-video overflow-hidden bg-secondary">
+        <div
+          className="relative aspect-video overflow-hidden bg-secondary cursor-pointer"
+          onPointerDown={handleImagePointerDown}
+          onClick={handleImageClick}
+        >
           <Image
             src={vehicle.photos[0] || "/placeholder.svg"}
             alt={vehicle.name}
@@ -359,6 +386,13 @@ export function VehicleCard({
       </Card>
 
       <ReserveVehicleModal vehicle={vehicle} open={bookingModalOpen} onOpenChange={setBookingModalOpen} />
+
+      <ImageLightbox
+        src={vehicle.photos[0] || "/placeholder.svg"}
+        alt={vehicle.name}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </>
   )
 }

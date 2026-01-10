@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +26,7 @@ import {
 import { ShareButton } from "./share-button"
 import { BookingWizard } from "./booking-wizard"
 import { RequestLaterDateModal } from "./request-later-date-modal"
+import { ImageLightbox } from "./image-lightbox"
 
 interface CondoCardProps {
   condo: Condo & { isCurrentlyBooked?: boolean }
@@ -36,6 +39,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
   const [showBookingWizard, setShowBookingWizard] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false) // Added state for image lightbox
   const { toast } = useToast()
 
   const statusColors = {
@@ -83,10 +87,32 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
     }
   }
 
+  const [clickStart, setClickStart] = useState<{ x: number; y: number } | null>(null)
+
+  const handleImagePointerDown = (e: React.PointerEvent) => {
+    setClickStart({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    if (!clickStart) return
+    const dx = e.clientX - clickStart.x
+    const dy = e.clientY - clickStart.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    if (distance < 10) {
+      setLightboxOpen(true)
+    }
+    setClickStart(null)
+  }
+
   return (
     <>
       <Card className="rounded-2xl border-2 border-green-500/30 bg-card shadow-lg overflow-hidden group hover:border-green-500 hover:shadow-[0_0_20px_rgba(0,255,60,0.4)] transition-all duration-200">
-        <div className="relative aspect-video overflow-hidden bg-secondary">
+        <div
+          className="relative aspect-video overflow-hidden bg-secondary cursor-pointer"
+          onPointerDown={handleImagePointerDown}
+          onClick={handleImageClick}
+        >
           <Image
             src={condo.photos[0] || "/placeholder.svg"}
             alt={`${condo.building} ${condo.unitNo}`}
@@ -240,6 +266,13 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
         assetType="condo"
         assetId={condo.id}
         assetName={`${condo.building} Unit ${condo.unitNo}`}
+      />
+
+      <ImageLightbox
+        src={condo.photos[0] || "/placeholder.svg"}
+        alt={`${condo.building} Unit ${condo.unitNo}`}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
       />
     </>
   )
