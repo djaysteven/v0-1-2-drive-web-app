@@ -19,12 +19,13 @@ import { Badge } from "@/components/ui/badge"
 import type { Vehicle } from "@/lib/types"
 import { Edit, Trash2, Car, Bike, Calendar, Clock, List } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { vehiclesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { ReserveVehicleModal } from "./reserve-vehicle-modal"
 import { ShareButton } from "./share-button"
 import { ImageLightbox } from "./image-lightbox"
+import { RenterNameDialog } from "./renter-name-dialog"
 
 interface VehicleCardProps {
   vehicle: Vehicle
@@ -47,7 +48,11 @@ export function VehicleCard({
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false) // Added state for toggling status
   const [lightboxOpen, setLightboxOpen] = useState(false) // Added state for image lightbox
+  const [localVehicle, setLocalVehicle] = useState(vehicle) // Local state for optimistic updates
+  const [renterNameDialogOpen, setRenterNameDialogOpen] = useState(false) // State for renter name dialog
   const { toast } = useToast()
+  const statusBadgeRef = useRef<HTMLDivElement>(null)
+  const isDragging = useRef(false)
 
   const statusColors = {
     available: "bg-green-500/70 text-white border-green-500", // Changed available to use explicit green color instead of primary
@@ -72,8 +77,8 @@ export function VehicleCard({
     return new Date(dateString) < new Date()
   }
 
-  const isTaxSnoozed = vehicle.taxOverrideUntil && new Date(vehicle.taxOverrideUntil) > new Date()
-  const taxStatus = isTaxSnoozed ? "snoozed" : isTaxExpired(vehicle.taxExpires) ? "expired" : "expiring"
+  const isTaxSnoozed = localVehicle.taxOverrideUntil && new Date(localVehicle.taxOverrideUntil) > new Date()
+  const taxStatus = isTaxSnoozed ? "snoozed" : isTaxExpired(localVehicle.taxExpires) ? "expired" : "expiring"
 
   const handleSnooze = async () => {
     setIsSnoozing(true)
@@ -126,14 +131,21 @@ export function VehicleCard({
     }
   }
 
-  const handleStatusToggle = async () => {
-    // Added handler to toggle status between available and rented
-    if (!isAuthenticated || isTogglingStatus) return
+  const handleStatusToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
 
+    if (!isAuthenticated || isTogglingStatus) {
+      return
+    }
+
+    const newStatus = localVehicle.status === "available" ? "rented" : "available"
+
+    // Optimistic update
+    setLocalVehicle({ ...localVehicle, status: newStatus })
     setIsTogglingStatus(true)
-    try {
-      const newStatus = vehicle.status === "available" ? "rented" : "available"
 
+    try {
       await vehiclesApi.update(vehicle.id, {
         status: newStatus,
       })
@@ -142,9 +154,9 @@ export function VehicleCard({
         title: "Status updated",
         description: `Vehicle status changed to ${newStatus}`,
       })
-
-      window.location.reload()
     } catch (error) {
+      // Revert on error
+      setLocalVehicle({ ...localVehicle, status: vehicle.status })
       toast({
         title: "Error",
         description: "Failed to update vehicle status",
@@ -155,8 +167,34 @@ export function VehicleCard({
     }
   }
 
-  const displayStatus = isCurrentlyBooked ? "rented" : vehicle.status
-  const displayStatusText = isCurrentlyBooked ? "rented" : vehicle.status
+  const handleSaveRenterName = async (name: string) => {
+    const trimmedName = name.trim()
+
+    // Optimistic update
+    setLocalVehicle({ ...localVehicle, renterName: trimmedName || undefined })
+
+    try {
+      await vehiclesApi.update(vehicle.id, {
+        renter_name: trimmedName || null,
+      })
+
+      toast({
+        title: "Renter name updated",
+        description: trimmedName ? `Renter set to ${trimmedName}` : "Renter name cleared",
+      })
+    } catch (error) {
+      // Revert on error
+      setLocalVehicle({ ...localVehicle, renterName: vehicle.renterName })
+      toast({
+        title: "Error",
+        description: "Failed to update renter name",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
+  const displayStatus = isCurrentlyBooked ? "rented" : localVehicle.status // Use localVehicle for display
 
   // Added handler to open lightbox only on actual click (not during scroll)
   const [clickStart, setClickStart] = useState<{ x: number; y: number } | null>(null)
@@ -180,104 +218,131 @@ export function VehicleCard({
   return (
     <>
       <Card className="rounded-2xl border-2 border-green-500/30 bg-card shadow-lg overflow-hidden group hover:border-green-500 hover:shadow-[0_0_20px_rgba(0,255,60,0.4)] transition-all duration-200">
-        <div
-          className="relative aspect-video overflow-hidden bg-secondary cursor-pointer"
-          onPointerDown={handleImagePointerDown}
-          onClick={handleImageClick}
-        >
-          <Image
-            src={vehicle.photos[0] || "/placeholder.svg"}
-            alt={vehicle.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="eager"
-            priority
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 45vw, 400px"
-            quality={85}
-          />
-          <div
-            className="absolute top-3 right-3"
-            onClick={isAuthenticated && !isCurrentlyBooked ? handleStatusToggle : undefined}
-            style={{ cursor: isAuthenticated && !isCurrentlyBooked ? "pointer" : "default" }}
-          >
-            <Badge
-              className={`${statusColors[displayStatus]} ${isAuthenticated && !isCurrentlyBooked ? "hover:opacity-80 transition-opacity" : ""}`}
+        <div className="relative">
+          <div className="relative aspect-video overflow-hidden bg-secondary">
+            {/* Clickable image container - ONLY contains the image */}
+            <div
+              className="absolute inset-0 cursor-pointer"
+              onClick={handleImageClick}
+              onPointerDown={handleImagePointerDown}
             >
-              {isTogglingStatus ? "..." : displayStatusText}
-            </Badge>
+              <Image
+                src={localVehicle.photos[0] || "/placeholder.svg"}
+                alt={localVehicle.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+                loading="eager"
+                priority
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 45vw, 400px"
+                quality={85}
+              />
+            </div>
+
+            {/* Type badge - positioned absolutely */}
+            <div className="absolute top-3 left-3 z-10 pointer-events-none">
+              <Badge variant="secondary" className="gap-1">
+                {localVehicle.type === "bike" ? <Bike className="h-3 w-3" /> : <Car className="h-3 w-3" />}
+                {localVehicle.type}
+              </Badge>
+            </div>
+
+            {/* Share button - positioned absolutely */}
+            <div className="absolute bottom-3 right-3 z-10">
+              <ShareButton
+                title={`${localVehicle.name} - ${localVehicle.plate}`}
+                url={`${typeof window !== "undefined" ? window.location.origin : ""}/vehicles/${vehicle.id}`}
+              />
+            </div>
+
+            {/* Tax badge */}
+            {isAuthenticated && localVehicle.taxExpires && (
+              <div className="absolute bottom-3 left-3 flex items-center gap-2 pointer-events-none">
+                {isTaxSnoozed ? (
+                  <>
+                    <Badge style={{ backgroundColor: "#00FF3C", color: "#000" }} className="font-medium">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Tax OK
+                    </Badge>
+                  </>
+                ) : (
+                  (isTaxExpired(localVehicle.taxExpires) || isTaxExpiringSoon(localVehicle.taxExpires)) && (
+                    <Badge
+                      style={{
+                        backgroundColor: isTaxExpired(localVehicle.taxExpires) ? "#FF4040" : "#FFA500",
+                        color: "#fff",
+                      }}
+                      className="font-medium"
+                    >
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {isTaxExpired(localVehicle.taxExpires) ? "Tax Expired" : "Tax Expiring Soon"}
+                    </Badge>
+                  )
+                )}
+              </div>
+            )}
           </div>
-          <div className="absolute top-3 left-3">
-            <Badge variant="secondary" className="gap-1">
-              {vehicle.type === "bike" ? <Bike className="h-3 w-3" /> : <Car className="h-3 w-3" />}
-              {vehicle.type}
-            </Badge>
-          </div>
-          <div className="absolute bottom-3 right-3">
-            <ShareButton
-              title={`${vehicle.name} - ${vehicle.plate}`}
-              url={`${typeof window !== "undefined" ? window.location.origin : ""}/vehicles/${vehicle.id}`}
-            />
-          </div>
-          {isAuthenticated && vehicle.taxExpires && (
-            <div className="absolute bottom-3 left-3 flex items-center gap-2">
-              {isTaxSnoozed ? (
-                <>
-                  <Badge style={{ backgroundColor: "#00FF3C", color: "#000" }} className="font-medium">
-                    <Clock className="h-3 w-3 mr-1" />
-                    Tax OK
-                  </Badge>
-                </>
-              ) : (
-                (isTaxExpired(vehicle.taxExpires) || isTaxExpiringSoon(vehicle.taxExpires)) && (
-                  <Badge
-                    style={{
-                      backgroundColor: isTaxExpired(vehicle.taxExpires) ? "#FF4040" : "#FFA500",
-                      color: "#fff",
-                    }}
-                    className="font-medium"
-                  >
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {isTaxExpired(vehicle.taxExpires) ? "Tax Expired" : "Tax Expiring Soon"}
-                  </Badge>
-                )
-              )}
+
+          {/* Status badge - OUTSIDE the aspect-video container */}
+          {isAuthenticated && !isCurrentlyBooked ? (
+            <button
+              onClick={handleStatusToggle}
+              style={{ cursor: "pointer", pointerEvents: "auto" }}
+              className={`absolute top-3 right-3 z-[999] ${statusColors[displayStatus]} px-3 py-1 rounded-full text-xs font-semibold shadow-lg hover:opacity-80 transition-opacity`}
+            >
+              {isTogglingStatus ? "..." : displayStatus}
+            </button>
+          ) : (
+            <div className="absolute top-3 right-3 z-[999]">
+              <Badge className={`${statusColors[displayStatus]} font-semibold shadow-lg cursor-default`}>
+                {displayStatus}
+              </Badge>
             </div>
           )}
         </div>
 
+        {/* Card content */}
         <CardContent className="p-4 space-y-3">
           <div>
             <h3 className="font-semibold text-lg text-foreground text-balance">
-              {vehicle.name.replace(/\s*\d{4}\s*/g, "").trim()}
+              {localVehicle.name.replace(/\s*\d{4}\s*/g, "").trim()}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {vehicle.plate} {vehicle.cc && `• ${vehicle.cc}cc`}
-              {vehicle.keyless && <span className="text-green-500 font-medium"> • Keyless</span>}
+              {localVehicle.plate} {localVehicle.cc && `• ${localVehicle.cc}cc`}
+              {localVehicle.keyless && <span className="text-green-500 font-medium"> • Keyless</span>}
             </p>
+            {isAuthenticated && displayStatus === "rented" && (
+              <button
+                onClick={() => setRenterNameDialogOpen(true)}
+                className="mt-1 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                <span className="font-medium">Renter:</span>
+                <span className="underline decoration-dashed">{localVehicle.renterName || "Click to add"}</span>
+              </button>
+            )}
           </div>
 
           <div className="space-y-1">
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-primary">฿{vehicle.dailyPrice}</span>
+              <span className="text-2xl font-bold text-primary">฿{localVehicle.dailyPrice}</span>
               <span className="text-sm text-muted-foreground">/day</span>
             </div>
-            {(vehicle.weeklyPrice || vehicle.monthlyPrice) && (
+            {(localVehicle.weeklyPrice || localVehicle.monthlyPrice) && (
               <div className="space-y-1">
                 <div className="flex gap-3 text-sm text-muted-foreground">
-                  {vehicle.weeklyPrice && (
+                  {localVehicle.weeklyPrice && (
                     <span>
-                      ฿{vehicle.weeklyPrice}
+                      ฿{localVehicle.weeklyPrice}
                       <span className="text-xs">/week</span>
                     </span>
                   )}
-                  {vehicle.monthlyPrice && (
+                  {localVehicle.monthlyPrice && (
                     <span>
-                      ฿{vehicle.monthlyPrice}
+                      ฿{localVehicle.monthlyPrice}
                       <span className="text-xs">/month</span>
                     </span>
                   )}
                 </div>
-                {vehicle.monthlyPrice && (
+                {localVehicle.monthlyPrice && (
                   <div className="inline-flex items-center gap-1 text-xs font-medium text-green-500">
                     <span>1+ month =</span>
                     <span className="font-bold">Save More</span>
@@ -287,11 +352,11 @@ export function VehicleCard({
             )}
           </div>
 
-          {isAuthenticated && vehicle.taxExpires && (
+          {isAuthenticated && localVehicle.taxExpires && (
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                Tax expires: {formatDate(vehicle.taxExpires)}
+                Tax expires: {formatDate(localVehicle.taxExpires)}
               </div>
               <div className="flex items-center gap-2">
                 {!isTaxSnoozed ? (
@@ -319,9 +384,9 @@ export function VehicleCard({
             </div>
           )}
 
-          {vehicle.tags.length > 0 && (
+          {localVehicle.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {vehicle.tags.map((tag) => (
+              {localVehicle.tags.map((tag) => (
                 <Badge key={tag} variant="outline" className="text-xs">
                   {tag}
                 </Badge>
@@ -330,6 +395,7 @@ export function VehicleCard({
           )}
         </CardContent>
 
+        {/* Card footer */}
         <CardFooter className="p-4 pt-0 flex gap-2">
           <Button
             onClick={() => setBookingModalOpen(true)}
@@ -366,7 +432,7 @@ export function VehicleCard({
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-foreground">Delete Vehicle</AlertDialogTitle>
                     <AlertDialogDescription className="text-muted-foreground">
-                      Are you sure you want to delete {vehicle.name}? This action cannot be undone.
+                      Are you sure you want to delete {localVehicle.name}? This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -385,13 +451,22 @@ export function VehicleCard({
         </CardFooter>
       </Card>
 
+      {/* Modals */}
       <ReserveVehicleModal vehicle={vehicle} open={bookingModalOpen} onOpenChange={setBookingModalOpen} />
 
       <ImageLightbox
-        src={vehicle.photos[0] || "/placeholder.svg"}
-        alt={vehicle.name}
+        src={localVehicle.photos[0] || "/placeholder.svg"}
+        alt={localVehicle.name}
         open={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
+      />
+
+      <RenterNameDialog
+        open={renterNameDialogOpen}
+        onOpenChange={setRenterNameDialogOpen}
+        currentName={localVehicle.renterName}
+        onSave={handleSaveRenterName}
+        assetType="vehicle"
       />
     </>
   )

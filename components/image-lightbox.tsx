@@ -134,12 +134,12 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
       </Button>
 
       <div
-        className="relative rounded-2xl overflow-hidden border-4 border-green-500 shadow-[0_0_40px_rgba(0,255,60,0.6)]"
+        className="relative rounded-2xl overflow-hidden border-4 border-green-500 shadow-[0_0_40px_rgba(0,255,60,0.6)] bg-black"
         style={{
-          width: "min(80vw, 1200px)",
-          height: "min(75vh, 800px)",
-          maxWidth: "calc(100vw - 48px)",
-          maxHeight: "calc(100vh - 120px)", // More space for iOS bottom safe area
+          width: "95vw",
+          height: "90vh",
+          maxWidth: "1800px",
+          maxHeight: "1200px",
           transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${isDragging ? 0.95 : 1})`,
           transition: isDragging ? "none" : "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
           cursor: isDragging ? "grabbing" : "grab",
@@ -155,18 +155,18 @@ export function ImageLightbox({ src, alt, open, onClose }: ImageLightboxProps) {
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="absolute inset-0 bg-black transition-transform duration-200"
+          className="relative w-full h-full transition-transform duration-200"
           style={{
             transform: `scale(${scale})`,
             transformOrigin: "center center",
           }}
         >
           <Image
-            src={src || "/placeholder.svg?height=800&width=800"}
+            src={src || "/placeholder.svg?height=1200&width=1200"}
             alt={alt}
             fill
-            className="object-contain"
-            sizes="80vw"
+            className="object-cover"
+            sizes="95vw"
             quality={95}
             priority
             unoptimized={src?.includes("blob.vercel-storage.com")}

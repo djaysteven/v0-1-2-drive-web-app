@@ -11,22 +11,34 @@ export function useRole() {
 
   useEffect(() => {
     const supabase = createClient()
+    const abortController = new AbortController()
 
     async function loadProfile() {
       try {
+        if (abortController.signal.aborted) return
+
         const session = await getSession()
+
+        if (abortController.signal.aborted) return
 
         if (session) {
           const userProfile = await getProfile()
-          setProfile(userProfile)
+          if (!abortController.signal.aborted) {
+            setProfile(userProfile)
+          }
         } else {
           setProfile(null)
         }
       } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return
+        }
         console.error("Error loading profile:", error)
         setProfile(null)
       } finally {
-        setLoading(false)
+        if (!abortController.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
@@ -35,6 +47,8 @@ export function useRole() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (abortController.signal.aborted) return
+
       if (session) {
         loadProfile()
       } else {
@@ -43,6 +57,7 @@ export function useRole() {
     })
 
     return () => {
+      abortController.abort()
       subscription.unsubscribe()
     }
   }, [])

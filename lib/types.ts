@@ -26,6 +26,7 @@ export interface Vehicle {
   tags: string[]
   notes?: string
   displayOrder?: number // Added display order for manual sorting
+  renterName?: string // Added renter name for tracking who has the vehicle
 }
 
 export type CondoStatus = "available" | "rented" | "maintenance"
@@ -49,6 +50,7 @@ export interface Condo {
   airbnbIcalUrl?: string
   lastSyncedAt?: string
   displayOrder?: number // Added display order for manual sorting
+  renterName?: string // Added renter name for tracking who has the condo
 }
 
 export interface Customer {

@@ -237,6 +237,7 @@ export async function createVehicle(vehicle: Omit<Vehicle, "id">): Promise<Vehic
     cc: vehicle.cc || null,
     keyless: vehicle.keyless || false,
     popularity: vehicle.popularity ?? 5,
+    renter_name: vehicle.renterName || null, // Map renter_name to database
   }
   console.log("[v0] Inserting vehicle data:", JSON.stringify(insertData, null, 2))
 
@@ -279,6 +280,7 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
   if (updates.cc !== undefined) updateData.cc = updates.cc
   if (updates.keyless !== undefined) updateData.keyless = updates.keyless
   if (updates.popularity !== undefined) updateData.popularity = updates.popularity
+  if (updates.renterName !== undefined) updateData.renter_name = updates.renterName // Map renter_name to database
 
   const { data, error } = await supabase.from("vehicles").update(updateData).eq("id", id).select().single()
 
@@ -523,6 +525,7 @@ export async function createCondo(condo: Omit<Condo, "id">): Promise<Condo> {
     notes: condo.notes,
     airbnb_ical_url: condo.airbnbIcalUrl || null,
     last_synced_at: condo.lastSyncedAt || null,
+    renter_name: condo.renterName || null, // Map renter_name to database
   }
   console.log("[v0] Inserting condo data:", JSON.stringify(insertData, null, 2))
 
@@ -561,6 +564,7 @@ export async function updateCondo(id: string, updates: Partial<Condo>): Promise<
   if (updates.airbnbIcalUrl !== undefined) updateData.airbnb_ical_url = updates.airbnbIcalUrl
   if (updates.lastSyncedAt !== undefined) updateData.last_synced_at = updates.lastSyncedAt
   if (updates.displayOrder !== undefined) updateData.display_order = updates.displayOrder
+  if (updates.renterName !== undefined) updateData.renter_name = updates.renterName // Map renter_name to database
 
   const { data, error } = await supabase.from("condos").update(updateData).eq("id", id).select().single()
 
@@ -570,7 +574,7 @@ export async function updateCondo(id: string, updates: Partial<Condo>): Promise<
 
 export async function moveEntity(tableName: string, id: string, direction: "up" | "down"): Promise<void> {
   const supabase = createClient()
-  const { data, error } = await supabase.from(tableName).select("*").order("display_order").single()
+  const { data, error } = await supabase.from(tableName).select("*").order("display_order")
 
   if (error || !data) {
     console.error("[v0] Error fetching entity for reordering:", error)
@@ -1180,6 +1184,7 @@ function mapVehicleFromDB(data: any): Vehicle {
     keyless: data.keyless ?? undefined,
     popularity: data.popularity ?? undefined,
     notes: "",
+    renterName: data.renter_name ?? undefined, // Map renter_name from database
   }
 }
 
@@ -1202,6 +1207,7 @@ function mapCondoFromDB(data: any): Condo {
     airbnbIcalUrl: data.airbnb_ical_url,
     lastSyncedAt: data.last_synced_at,
     displayOrder: data.display_order ?? undefined,
+    renterName: data.renter_name ?? undefined, // Map renter_name from database
   }
 }
 
@@ -1222,7 +1228,7 @@ function mapCustomerFromDB(data: any): Customer {
 function mapBookingFromDB(data: any): Booking {
   const assetName =
     data.vehicle?.name ||
-    data.condo?.building + " " + data.condo?.unit_no ||
+    (data.condo?.building && data.condo?.unit_no ? `${data.condo.building} ${data.condo.unit_no}` : undefined) ||
     data.vehicle_name ||
     data.condo_name ||
     "Unknown Asset"
