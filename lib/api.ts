@@ -282,16 +282,16 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
   if (updates.popularity !== undefined) updateData.popularity = updates.popularity
   if (updates.renterName !== undefined) updateData.renter_name = updates.renterName
 
-  const { data, error } = await supabase.from("vehicles").update(updateData).eq("id", id).select().maybeSingle()
+  const { data, error } = await supabase.from("vehicles").update(updateData).eq("id", id).select().single()
 
   if (error) {
     console.error("[v0] Error updating vehicle:", error)
-    throw new Error(error.message)
+    throw new Error(`Failed to update vehicle: ${error.message}`)
   }
 
-  if (!data) {
-    throw new Error("Vehicle not found")
-  }
+  // if (!data) {
+  //   throw new Error("Vehicle not found")
+  // }
 
   console.log("[v0] Vehicle updated successfully:", data)
   return mapVehicleFromDB(data)
