@@ -316,7 +316,7 @@ export function VehicleCard({
                 className="mt-2 px-2 py-1 text-sm bg-green-500/10 border border-green-500/30 rounded-md text-foreground hover:bg-green-500/20 hover:border-green-500/50 transition-colors flex items-center gap-1.5"
               >
                 <span className="font-semibold text-green-500">Renter:</span>
-                <span className="underline decoration-dashed">{localVehicle.renterName || "Click to add"}</span>
+                <span className="underline">{localVehicle.renterName || "Click to add"}</span>
               </button>
             )}
           </div>
