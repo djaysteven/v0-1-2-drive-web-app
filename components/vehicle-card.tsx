@@ -36,6 +36,7 @@ interface VehicleCardProps {
   onEdit?: () => void
   onDelete?: () => void
   onReserve?: () => void
+  onRenterNameSaved?: (vehicleId: string, renterName: string) => void
 }
 
 export function VehicleCard({
@@ -44,6 +45,7 @@ export function VehicleCard({
   isAuthenticated = false,
   onEdit,
   onDelete,
+  onRenterNameSaved,
   onReserve,
 }: VehicleCardProps) {
   const [isSnoozing, setIsSnoozing] = useState(false)
@@ -184,6 +186,11 @@ export function VehicleCard({
       await vehiclesApi.update(vehicle.id, {
         renter_name: trimmedName || null,
       })
+
+      // Notify parent component to update vehicles list
+      if (onRenterNameSaved) {
+        onRenterNameSaved(vehicle.id, trimmedName || "")
+      }
 
       toast({
         title: "Renter name updated",

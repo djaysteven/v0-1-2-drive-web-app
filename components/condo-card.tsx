@@ -37,9 +37,10 @@ interface CondoCardProps {
   isAuthenticated?: boolean
   onEdit?: () => void
   onDelete?: () => void
+  onRenterNameSaved?: (condoId: string, renterName: string) => void
 }
 
-export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: CondoCardProps) {
+export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, onRenterNameSaved }: CondoCardProps) {
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
   const [showBookingWizard, setShowBookingWizard] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -104,6 +105,11 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
       await condosApi.update(condo.id, {
         renter_name: trimmedName || null,
       })
+
+      // Notify parent component to update condos list
+      if (onRenterNameSaved) {
+        onRenterNameSaved(condo.id, trimmedName || "")
+      }
 
       toast({
         title: "Renter name updated",

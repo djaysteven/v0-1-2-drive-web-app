@@ -95,9 +95,17 @@ export default function VehiclesPage() {
     setDialogOpen(false)
   }
 
-  const handleDelete = async (id: string) => {
+  const handleRenterNameSaved = (vehicleId: string, renterName: string) => {
+    setVehicles((prevVehicles) =>
+      prevVehicles.map((v) =>
+        v.id === vehicleId ? { ...v, renterName } : v
+      )
+    )
+  }
+
+  const handleDelete = async (vehicleId: string) => {
     try {
-      await vehiclesApi.delete(id)
+      await vehiclesApi.delete(vehicleId)
       await loadVehicles()
     } catch (error) {
       console.error("[v0] Failed to delete vehicle:", error)
@@ -411,6 +419,7 @@ export default function VehiclesPage() {
                   isAuthenticated={isAuthenticated}
                   onEdit={isAuthenticated ? () => handleEdit(vehicle) : undefined}
                   onDelete={isAuthenticated ? () => handleDelete(vehicle.id) : undefined}
+                  onRenterNameSaved={handleRenterNameSaved}
                 />
               </div>
             ))}

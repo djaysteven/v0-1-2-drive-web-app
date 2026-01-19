@@ -42,6 +42,14 @@ export default function CondosPage() {
     }
   }
 
+  const handleRenterNameSaved = (condoId: string, renterName: string) => {
+    setCondos((prevCondos) =>
+      prevCondos.map((c) =>
+        c.id === condoId ? { ...c, renterName } : c
+      )
+    )
+  }
+
   const handleCreate = () => {
     setEditingCondo(undefined)
     setDialogOpen(true)
@@ -249,6 +257,7 @@ export default function CondosPage() {
                   onDelete={isAuthenticated ? () => handleDelete(condo.id) : undefined}
                   onMoveUp={isAuthenticated ? () => handleMoveUp(condo.id) : undefined}
                   onMoveDown={isAuthenticated ? () => handleMoveDown(condo.id) : undefined}
+                  onRenterNameSaved={handleRenterNameSaved}
                 />
               </div>
             ))}
