@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect } from "react"
+
 import type React from "react"
 
 import {
@@ -53,6 +55,11 @@ export function VehicleCard({
   const { toast } = useToast()
   const statusBadgeRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
+
+  // Sync localVehicle with vehicle prop when it changes (e.g., after update from parent)
+  useEffect(() => {
+    setLocalVehicle(vehicle)
+  }, [vehicle])
 
   const statusColors = {
     available: "bg-green-500/70 text-white border-green-500", // Changed available to use explicit green color instead of primary

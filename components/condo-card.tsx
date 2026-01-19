@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect } from "react"
+
 import type React from "react"
 import { useRef } from "react"
 
@@ -46,6 +48,11 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete }: 
   const [renterNameDialogOpen, setRenterNameDialogOpen] = useState(false) // State for renter name dialog
   const { toast } = useToast()
   const statusBadgeRef = useRef<HTMLDivElement>(null)
+
+  // Sync localCondo with condo prop when it changes (e.g., after update from parent)
+  useEffect(() => {
+    setLocalCondo(condo)
+  }, [condo])
 
   const statusColors = {
     available: "bg-green-500/70 text-white border-green-500",
