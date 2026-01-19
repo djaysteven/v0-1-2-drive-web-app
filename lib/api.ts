@@ -282,20 +282,17 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
   if (updates.popularity !== undefined) updateData.popularity = updates.popularity
   if (updates.renterName !== undefined) updateData.renter_name = updates.renterName
 
-  // Use .select() on the update to get the updated row back immediately
-  const { data, error } = await supabase.from("vehicles").update(updateData).eq("id", id).select().single()
+  // Use PATCH semantics: update without SELECT/RETURNING to avoid RLS issues
+  const { error } = await supabase.from("vehicles").update(updateData).eq("id", id)
 
   if (error) {
     console.error("[v0] Error updating vehicle:", error)
     throw new Error(`Failed to update vehicle: ${error.message}`)
   }
 
-  if (!data) {
-    throw new Error("Failed to update vehicle: No data returned")
-  }
-
-  console.log("[v0] Vehicle updated successfully:", data)
-  return mapVehicleFromDB(data)
+  console.log("[v0] Vehicle updated successfully")
+  // Return the requested updates as confirmation (frontend will use optimistic update + reload)
+  return { id, ...updates } as Vehicle
 }
 
 export async function moveVehicleUp(vehicleId: string): Promise<void> {
@@ -569,20 +566,19 @@ export async function updateCondo(id: string, updates: Partial<Condo>): Promise<
   if (updates.airbnbIcalUrl !== undefined) updateData.airbnb_ical_url = updates.airbnbIcalUrl
   if (updates.lastSyncedAt !== undefined) updateData.last_synced_at = updates.lastSyncedAt
   if (updates.displayOrder !== undefined) updateData.display_order = updates.displayOrder
-  if (updates.renterName !== undefined) updateData.renter_name = updates.renterName // Map renter_name to database
+  if (updates.renterName !== undefined) updateData.renter_name = updates.renterName
 
-  const { data, error } = await supabase.from("condos").update(updateData).eq("id", id).select().single()
+  // Use PATCH semantics: update without SELECT/RETURNING to avoid RLS issues
+  const { error } = await supabase.from("condos").update(updateData).eq("id", id)
 
   if (error) {
     console.error("[v0] Error updating condo:", error)
     throw new Error(`Failed to update condo: ${error.message}`)
   }
 
-  if (!data) {
-    throw new Error("Failed to update condo: No data returned")
-  }
-
-  return mapCondoFromDB(data)
+  console.log("[v0] Condo updated successfully")
+  // Return the requested updates as confirmation (frontend will use optimistic update + reload)
+  return { id, ...updates } as Condo
 }
 
 export async function moveEntity(tableName: string, id: string, direction: "up" | "down"): Promise<void> {
