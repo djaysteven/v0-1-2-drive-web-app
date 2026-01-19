@@ -184,7 +184,7 @@ export function VehicleCard({
 
     try {
       await vehiclesApi.update(vehicle.id, {
-        renter_name: trimmedName || null,
+        renterName: trimmedName || undefined,
       })
 
       // Notify parent component to update vehicles list

@@ -103,7 +103,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
 
     try {
       await condosApi.update(condo.id, {
-        renter_name: trimmedName || null,
+        renterName: trimmedName || undefined,
       })
 
       // Notify parent component to update condos list
