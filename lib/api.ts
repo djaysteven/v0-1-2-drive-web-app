@@ -257,7 +257,7 @@ export async function createVehicle(vehicle: Omit<Vehicle, "id">): Promise<Vehic
   return mapVehicleFromDB(data)
 }
 
-export async function updateVehicle(id: string, updates: Partial<Vehicle>): Promise<Vehicle> {
+export async function updateVehicle(id: string, updates: Partial<Vehicle>): Promise<Partial<Vehicle>> {
   console.log("[v0] Updating vehicle with data:", updates)
   const supabase = createClient()
 
@@ -292,7 +292,7 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
 
   console.log("[v0] Vehicle updated successfully")
   // Return the requested updates as confirmation (frontend will use optimistic update + reload)
-  return { id, ...updates } as Vehicle
+  return { id, ...updates }
 }
 
 export async function moveVehicleUp(vehicleId: string): Promise<void> {
@@ -547,7 +547,7 @@ export async function createCondo(condo: Omit<Condo, "id">): Promise<Condo> {
   return mapCondoFromDB(data)
 }
 
-export async function updateCondo(id: string, updates: Partial<Condo>): Promise<Condo> {
+export async function updateCondo(id: string, updates: Partial<Condo>): Promise<Partial<Condo>> {
   const supabase = createClient()
 
   const updateData: any = {}
@@ -578,7 +578,7 @@ export async function updateCondo(id: string, updates: Partial<Condo>): Promise<
 
   console.log("[v0] Condo updated successfully")
   // Return the requested updates as confirmation (frontend will use optimistic update + reload)
-  return { id, ...updates } as Condo
+  return { id, ...updates }
 }
 
 export async function moveEntity(tableName: string, id: string, direction: "up" | "down"): Promise<void> {
