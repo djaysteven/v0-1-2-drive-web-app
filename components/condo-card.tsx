@@ -116,6 +116,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
         description: trimmedName ? `Renter set to ${trimmedName}` : "Renter name cleared",
       })
     } catch (error) {
+      console.error("[v0] Error saving renter name:", error)
       // Revert on error
       setLocalCondo({ ...localCondo, renterName: condo.renterName })
       toast({
@@ -123,7 +124,6 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
         description: "Failed to update renter name",
         variant: "destructive",
       })
-      throw error
     }
   }
 

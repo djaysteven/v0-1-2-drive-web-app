@@ -197,6 +197,7 @@ export function VehicleCard({
         description: trimmedName ? `Renter set to ${trimmedName}` : "Renter name cleared",
       })
     } catch (error) {
+      console.error("[v0] Error saving renter name:", error)
       // Revert on error
       setLocalVehicle({ ...localVehicle, renterName: vehicle.renterName })
       toast({
@@ -204,7 +205,6 @@ export function VehicleCard({
         description: "Failed to update renter name",
         variant: "destructive",
       })
-      throw error
     }
   }
 
