@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,13 @@ interface RenterNameDialogProps {
 export function RenterNameDialog({ open, onOpenChange, currentName = "", onSave, assetType }: RenterNameDialogProps) {
   const [name, setName] = useState(currentName)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Sync name when dialog opens or currentName changes
+  useEffect(() => {
+    if (open) {
+      setName(currentName)
+    }
+  }, [open, currentName])
 
   const handleSave = async () => {
     setIsSaving(true)
