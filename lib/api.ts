@@ -282,19 +282,16 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
   if (updates.popularity !== undefined) updateData.popularity = updates.popularity
   if (updates.renterName !== undefined) updateData.renter_name = updates.renterName
 
-  const { error: updateError } = await supabase.from("vehicles").update(updateData).eq("id", id)
+  // Use .select() on the update to get the updated row back immediately
+  const { data, error } = await supabase.from("vehicles").update(updateData).eq("id", id).select().single()
 
-  if (updateError) {
-    console.error("[v0] Error updating vehicle:", updateError)
-    throw new Error(`Failed to update vehicle: ${updateError.message}`)
+  if (error) {
+    console.error("[v0] Error updating vehicle:", error)
+    throw new Error(`Failed to update vehicle: ${error.message}`)
   }
 
-  // Now fetch the updated vehicle
-  const { data, error: fetchError } = await supabase.from("vehicles").select("*").eq("id", id).single()
-
-  if (fetchError || !data) {
-    console.error("[v0] Error fetching updated vehicle:", fetchError)
-    throw new Error(`Failed to fetch updated vehicle: ${fetchError?.message || "Vehicle not found"}`)
+  if (!data) {
+    throw new Error("Failed to update vehicle: No data returned")
   }
 
   console.log("[v0] Vehicle updated successfully:", data)
@@ -576,7 +573,15 @@ export async function updateCondo(id: string, updates: Partial<Condo>): Promise<
 
   const { data, error } = await supabase.from("condos").update(updateData).eq("id", id).select().single()
 
-  if (error) throw error
+  if (error) {
+    console.error("[v0] Error updating condo:", error)
+    throw new Error(`Failed to update condo: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error("Failed to update condo: No data returned")
+  }
+
   return mapCondoFromDB(data)
 }
 
