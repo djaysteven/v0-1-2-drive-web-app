@@ -177,18 +177,23 @@ export function VehicleCard({
   }
 
   const handleSaveRenterName = async (name: string) => {
+    console.log("[v0] handleSaveRenterName called with:", name)
     const trimmedName = name.trim()
+    console.log("[v0] Trimmed name:", trimmedName)
 
     // Optimistic update
     setLocalVehicle({ ...localVehicle, renterName: trimmedName || undefined })
 
     try {
+      console.log("[v0] Calling vehiclesApi.update with renterName:", trimmedName)
       await vehiclesApi.update(vehicle.id, {
         renterName: trimmedName || undefined,
       })
+      console.log("[v0] vehiclesApi.update succeeded")
 
       // Notify parent component to update vehicles list
       if (onRenterNameSaved) {
+        console.log("[v0] Calling onRenterNameSaved callback")
         onRenterNameSaved(vehicle.id, trimmedName || "")
       }
 
