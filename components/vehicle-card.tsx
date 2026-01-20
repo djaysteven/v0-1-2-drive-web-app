@@ -45,8 +45,8 @@ export function VehicleCard({
   isAuthenticated = false,
   onEdit,
   onDelete,
-  onRenterNameSaved,
   onReserve,
+  onRenterNameSaved,
 }: VehicleCardProps) {
   const [isSnoozing, setIsSnoozing] = useState(false)
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
@@ -205,6 +205,7 @@ export function VehicleCard({
         description: "Failed to update renter name",
         variant: "destructive",
       })
+      throw error // Re-throw so dialog knows it failed
     }
   }
 

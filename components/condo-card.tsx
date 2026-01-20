@@ -37,10 +37,12 @@ interface CondoCardProps {
   isAuthenticated?: boolean
   onEdit?: () => void
   onDelete?: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   onRenterNameSaved?: (condoId: string, renterName: string) => void
 }
 
-export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, onRenterNameSaved }: CondoCardProps) {
+export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, onMoveUp, onMoveDown, onRenterNameSaved }: CondoCardProps) {
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
   const [showBookingWizard, setShowBookingWizard] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -124,6 +126,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
         description: "Failed to update renter name",
         variant: "destructive",
       })
+      throw error // Re-throw so dialog knows it failed
     }
   }
 
