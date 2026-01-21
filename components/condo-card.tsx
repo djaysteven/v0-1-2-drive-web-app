@@ -1,9 +1,17 @@
 "use client"
 
+import { AlertDialogAction } from "@/components/ui/alert-dialog"
+import { AlertDialogCancel } from "@/components/ui/alert-dialog"
+import { AlertDialogFooter } from "@/components/ui/alert-dialog"
+import { AlertDialogDescription } from "@/components/ui/alert-dialog"
+import { AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { AlertDialogHeader } from "@/components/ui/alert-dialog"
+import { AlertDialogContent } from "@/components/ui/alert-dialog"
+import { AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { AlertDialog } from "@/components/ui/alert-dialog"
 import { useEffect } from "react"
 import { useState } from "react"
 import { useRef } from "react"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +26,7 @@ import { BookingWizard } from "./booking-wizard"
 import { RequestLaterDateModal } from "./request-later-date-modal"
 import { ImageLightbox } from "./image-lightbox"
 import { RenterNameDialog } from "./renter-name-dialog"
+import { Condo } from "@/lib/types" // Import Condo type
 
 interface CondoCardProps {
   condo: Condo & { isCurrentlyBooked?: boolean }
@@ -26,7 +35,7 @@ interface CondoCardProps {
   onDelete?: () => void
   onMoveUp?: () => void
   onMoveDown?: () => void
-  onRenterNameSaved?: (condoId: string, renterName: string) => Promise<void>
+  onRenterNameSaved?: (condoId: string, renterName: string) => void
 }
 
 export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, onMoveUp, onMoveDown, onRenterNameSaved }: CondoCardProps) {
@@ -97,7 +106,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
 
       // Notify parent component to update condos list
       if (onRenterNameSaved) {
-        await onRenterNameSaved(condo.id, trimmedName || "")
+        onRenterNameSaved(condo.id, trimmedName || "")
       }
 
       toast({

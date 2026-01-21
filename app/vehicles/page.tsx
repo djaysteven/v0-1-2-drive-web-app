@@ -95,15 +95,15 @@ export default function VehiclesPage() {
     setDialogOpen(false)
   }
 
-  const handleRenterNameSaved = async (vehicleId: string, renterName: string) => {
+  const handleRenterNameSaved = (vehicleId: string, renterName: string) => {
     // Update local state optimistically
     setVehicles((prevVehicles) =>
       prevVehicles.map((v) =>
         v.id === vehicleId ? { ...v, renterName } : v
       )
     )
-    // Reload from database to ensure persistence
-    await loadVehicles()
+    // Reload from database to ensure persistence (fire and forget)
+    loadVehicles().catch((err) => console.error("[v0] Failed to reload vehicles:", err))
   }
 
   const handleDelete = async (vehicleId: string) => {

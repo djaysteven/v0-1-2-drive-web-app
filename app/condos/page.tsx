@@ -42,15 +42,15 @@ export default function CondosPage() {
     }
   }
 
-  const handleRenterNameSaved = async (condoId: string, renterName: string) => {
+  const handleRenterNameSaved = (condoId: string, renterName: string) => {
     // Update local state optimistically
     setCondos((prevCondos) =>
       prevCondos.map((c) =>
         c.id === condoId ? { ...c, renterName } : c
       )
     )
-    // Reload from database to ensure persistence
-    await loadCondos()
+    // Reload from database to ensure persistence (fire and forget)
+    loadCondos().catch((err) => console.error("[v0] Failed to reload condos:", err))
   }
 
   const handleCreate = () => {

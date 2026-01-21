@@ -34,7 +34,7 @@ interface VehicleCardProps {
   onEdit?: () => void
   onDelete?: () => void
   onReserve?: () => void
-  onRenterNameSaved?: (vehicleId: string, renterName: string) => Promise<void>
+  onRenterNameSaved?: (vehicleId: string, renterName: string) => void
 }
 
 export function VehicleCard({
@@ -187,7 +187,7 @@ export function VehicleCard({
 
       // Notify parent component to update vehicles list
       if (onRenterNameSaved) {
-        await onRenterNameSaved(vehicle.id, trimmedName || "")
+        onRenterNameSaved(vehicle.id, trimmedName || "")
       }
 
       toast({
