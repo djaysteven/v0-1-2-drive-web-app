@@ -6,8 +6,13 @@ export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   try {
-    const url = process.env.SUPABASE_SUPABASE_URL!
-    const key = process.env.SUPABASE_SUPABASE_ANON_KEY!
+    const url = process.env.SUPABASE_SUPABASE_URL
+    const key = process.env.SUPABASE_SUPABASE_ANON_KEY
+    
+    if (!url || !key) {
+      return NextResponse.json({ error: "Missing Supabase env" }, { status: 503 })
+    }
+    
     const sb = createClient(url, key)
     const { items, defaultDate } = await req.json()
 
