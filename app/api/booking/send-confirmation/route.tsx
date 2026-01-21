@@ -1,10 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: NextRequest) {
   try {
+    // Instantiate Resend inside the function to handle missing API key at build time
+    if (!process.env.RESEND_API_KEY) {
+      console.warn("[v0] RESEND_API_KEY not configured, email sending disabled")
+      return NextResponse.json({ ok: true, message: "Email sending disabled" })
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const body = await request.json()
     const {
       customerName,
