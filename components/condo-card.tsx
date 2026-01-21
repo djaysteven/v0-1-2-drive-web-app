@@ -1,31 +1,18 @@
 "use client"
 
 import { useEffect } from "react"
-
-import type React from "react"
+import { useState } from "react"
 import { useRef } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { Condo } from "@/lib/types"
+import type React from "react"
 import { Edit, Trash2, Bed, Bath, Maximize, Settings } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { condosApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
-import { useState } from "react"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { ShareButton } from "./share-button"
 import { BookingWizard } from "./booking-wizard"
 import { RequestLaterDateModal } from "./request-later-date-modal"
@@ -39,7 +26,7 @@ interface CondoCardProps {
   onDelete?: () => void
   onMoveUp?: () => void
   onMoveDown?: () => void
-  onRenterNameSaved?: (condoId: string, renterName: string) => void
+  onRenterNameSaved?: (condoId: string, renterName: string) => Promise<void>
 }
 
 export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, onMoveUp, onMoveDown, onRenterNameSaved }: CondoCardProps) {
@@ -110,7 +97,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
 
       // Notify parent component to update condos list
       if (onRenterNameSaved) {
-        onRenterNameSaved(condo.id, trimmedName || "")
+        await onRenterNameSaved(condo.id, trimmedName || "")
       }
 
       toast({

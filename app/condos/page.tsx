@@ -42,12 +42,15 @@ export default function CondosPage() {
     }
   }
 
-  const handleRenterNameSaved = (condoId: string, renterName: string) => {
+  const handleRenterNameSaved = async (condoId: string, renterName: string) => {
+    // Update local state optimistically
     setCondos((prevCondos) =>
       prevCondos.map((c) =>
         c.id === condoId ? { ...c, renterName } : c
       )
     )
+    // Reload from database to ensure persistence
+    await loadCondos()
   }
 
   const handleCreate = () => {

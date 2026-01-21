@@ -33,12 +33,9 @@ export function RenterNameDialog({ open, onOpenChange, currentName = "", onSave,
   }, [open, currentName])
 
   const handleSave = async () => {
-    console.log("[v0] RenterNameDialog.handleSave called with name:", name)
     setIsSaving(true)
     try {
-      console.log("[v0] Calling onSave with name:", name)
       await onSave(name)
-      console.log("[v0] onSave succeeded, closing dialog")
       onOpenChange(false)
     } catch (error) {
       console.error("[v0] Failed to save renter name:", error)
@@ -48,7 +45,6 @@ export function RenterNameDialog({ open, onOpenChange, currentName = "", onSave,
   }
 
   const handleClear = async () => {
-    console.log("[v0] RenterNameDialog.handleClear called")
     setIsSaving(true)
     try {
       await onSave("")

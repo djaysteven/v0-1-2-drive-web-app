@@ -95,12 +95,15 @@ export default function VehiclesPage() {
     setDialogOpen(false)
   }
 
-  const handleRenterNameSaved = (vehicleId: string, renterName: string) => {
+  const handleRenterNameSaved = async (vehicleId: string, renterName: string) => {
+    // Update local state optimistically
     setVehicles((prevVehicles) =>
       prevVehicles.map((v) =>
         v.id === vehicleId ? { ...v, renterName } : v
       )
     )
+    // Reload from database to ensure persistence
+    await loadVehicles()
   }
 
   const handleDelete = async (vehicleId: string) => {

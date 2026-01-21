@@ -237,7 +237,6 @@ export async function createVehicle(vehicle: Omit<Vehicle, "id">): Promise<Vehic
     cc: vehicle.cc || null,
     keyless: vehicle.keyless || false,
     popularity: vehicle.popularity ?? 5,
-    renter_name: vehicle.renterName || null, // Map renter_name to database
   }
   console.log("[v0] Inserting vehicle data:", JSON.stringify(insertData, null, 2))
 
@@ -545,7 +544,6 @@ export async function createCondo(condo: Omit<Condo, "id">): Promise<Condo> {
     notes: condo.notes,
     airbnb_ical_url: condo.airbnbIcalUrl || null,
     last_synced_at: condo.lastSyncedAt || null,
-    renter_name: condo.renterName || null, // Map renter_name to database
   }
   console.log("[v0] Inserting condo data:", JSON.stringify(insertData, null, 2))
 

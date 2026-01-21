@@ -1,9 +1,14 @@
 "use client"
 
 import { useEffect } from "react"
-
+import { useState, useRef } from "react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import type React from "react"
-
+import type { Vehicle } from "@/lib/types"
+import { Edit, Trash2, Car, Bike, Calendar, Clock, List } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -15,13 +20,6 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { Vehicle } from "@/lib/types"
-import { Edit, Trash2, Car, Bike, Calendar, Clock, List } from "lucide-react"
-import Image from "next/image"
-import { useState, useRef } from "react"
 import { vehiclesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { ReserveVehicleModal } from "./reserve-vehicle-modal"
@@ -36,7 +34,7 @@ interface VehicleCardProps {
   onEdit?: () => void
   onDelete?: () => void
   onReserve?: () => void
-  onRenterNameSaved?: (vehicleId: string, renterName: string) => void
+  onRenterNameSaved?: (vehicleId: string, renterName: string) => Promise<void>
 }
 
 export function VehicleCard({
@@ -177,24 +175,19 @@ export function VehicleCard({
   }
 
   const handleSaveRenterName = async (name: string) => {
-    console.log("[v0] handleSaveRenterName called with:", name)
     const trimmedName = name.trim()
-    console.log("[v0] Trimmed name:", trimmedName)
 
     // Optimistic update
     setLocalVehicle({ ...localVehicle, renterName: trimmedName || undefined })
 
     try {
-      console.log("[v0] Calling vehiclesApi.update with renterName:", trimmedName)
       await vehiclesApi.update(vehicle.id, {
         renterName: trimmedName || undefined,
       })
-      console.log("[v0] vehiclesApi.update succeeded")
 
       // Notify parent component to update vehicles list
       if (onRenterNameSaved) {
-        console.log("[v0] Calling onRenterNameSaved callback")
-        onRenterNameSaved(vehicle.id, trimmedName || "")
+        await onRenterNameSaved(vehicle.id, trimmedName || "")
       }
 
       toast({
@@ -210,7 +203,7 @@ export function VehicleCard({
         description: "Failed to update renter name",
         variant: "destructive",
       })
-      throw error // Re-throw so dialog knows it failed
+      throw error
     }
   }
 
