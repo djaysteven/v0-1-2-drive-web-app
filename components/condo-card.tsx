@@ -358,6 +358,7 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
         currentName={localCondo.renterName}
         onSave={handleSaveRenterName}
         assetType="condo"
+        assetId={condo.id}
       />
     </>
   )

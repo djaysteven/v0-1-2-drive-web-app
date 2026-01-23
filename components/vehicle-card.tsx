@@ -484,6 +484,7 @@ export function VehicleCard({
         currentName={localVehicle.renterName}
         onSave={handleSaveRenterName}
         assetType="vehicle"
+        assetId={vehicle.id}
       />
     </>
   )

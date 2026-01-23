@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
 
 interface RenterNameDialogProps {
   open: boolean
@@ -19,39 +20,129 @@ interface RenterNameDialogProps {
   currentName?: string
   onSave: (name: string) => Promise<void>
   assetType: "vehicle" | "condo"
+  assetId: string
 }
 
-export function RenterNameDialog({ open, onOpenChange, currentName = "", onSave, assetType }: RenterNameDialogProps) {
+export function RenterNameDialog({
+  open,
+  onOpenChange,
+  currentName = "",
+  onSave,
+  assetType,
+  assetId,
+}: RenterNameDialogProps) {
   const [name, setName] = useState(currentName)
   const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   // Sync name when dialog opens or currentName changes
   useEffect(() => {
     if (open) {
       setName(currentName)
+      setError(null)
     }
   }, [open, currentName])
 
   const handleSave = async () => {
+    setError(null)
     setIsSaving(true)
+
     try {
-      await onSave(name)
+      const endpoint = assetType === "vehicle" ? "/api/vehicles/renter" : "/api/condos/renter"
+      const idField = assetType === "vehicle" ? "vehicleId" : "condoId"
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          [idField]: assetId,
+          renterName: name.trim(),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const errorMsg = data.error || "Failed to save renter name"
+        setError(errorMsg)
+        toast({
+          title: "Error",
+          description: errorMsg,
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Call parent callback for state sync
+      await onSave(name.trim())
+
+      toast({
+        title: "Success",
+        description: `Renter name saved to ${name.trim() ? name.trim() : "empty"}`,
+      })
+
       onOpenChange(false)
-    } catch (error) {
-      console.error("[v0] Failed to save renter name:", error)
+    } catch (e: any) {
+      const errorMsg = e?.message || "Failed to save renter name"
+      setError(errorMsg)
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive",
+      })
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleClear = async () => {
+    setError(null)
     setIsSaving(true)
+
     try {
+      const endpoint = assetType === "vehicle" ? "/api/vehicles/renter" : "/api/condos/renter"
+      const idField = assetType === "vehicle" ? "vehicleId" : "condoId"
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          [idField]: assetId,
+          renterName: "",
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const errorMsg = data.error || "Failed to clear renter name"
+        setError(errorMsg)
+        toast({
+          title: "Error",
+          description: errorMsg,
+          variant: "destructive",
+        })
+        return
+      }
+
       await onSave("")
       setName("")
+
+      toast({
+        title: "Success",
+        description: "Renter name cleared",
+      })
+
       onOpenChange(false)
-    } catch (error) {
-      console.error("[v0] Failed to clear renter name:", error)
+    } catch (e: any) {
+      const errorMsg = e?.message || "Failed to clear renter name"
+      setError(errorMsg)
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive",
+      })
     } finally {
       setIsSaving(false)
     }
@@ -78,12 +169,19 @@ export function RenterNameDialog({ open, onOpenChange, currentName = "", onSave,
               placeholder="Enter renter's name"
               className="bg-background border-border text-foreground"
               autoFocus
+              disabled={isSaving}
             />
           </div>
+          {error && <div className="text-sm text-red-500">{error}</div>}
         </div>
         <DialogFooter className="flex gap-2">
           {currentName && (
-            <Button variant="outline" onClick={handleClear} disabled={isSaving} className="rounded-xl bg-transparent">
+            <Button
+              variant="outline"
+              onClick={handleClear}
+              disabled={isSaving}
+              className="rounded-xl bg-transparent"
+            >
               Clear
             </Button>
           )}
@@ -91,7 +189,7 @@ export function RenterNameDialog({ open, onOpenChange, currentName = "", onSave,
             onClick={handleSave}
             disabled={isSaving}
             style={{ backgroundColor: "#00FF3C", color: "#000" }}
-            className="rounded-xl font-semibold hover:opacity-90"
+            className="rounded-xl font-semibold hover:opacity-90 disabled:opacity-50"
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
