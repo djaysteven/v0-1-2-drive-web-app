@@ -175,39 +175,14 @@ export function VehicleCard({
   }
 
   const handleSaveRenterName = async (name: string) => {
+    // Dialog already saved to API via /api/vehicles/renter
+    // Just update local state and notify parent
     const trimmedName = name.trim()
-    console.log("[v0] RENTER_SAVE_CLICK - Vehicle ID:", vehicle.id, "Name:", trimmedName)
-
-    // Optimistic update
     setLocalVehicle({ ...localVehicle, renterName: trimmedName || undefined })
-
-    try {
-      console.log("[v0] Calling vehiclesApi.update with payload:", { id: vehicle.id, renterName: trimmedName || undefined })
-      await vehiclesApi.update(vehicle.id, {
-        renterName: trimmedName || undefined,
-      })
-      console.log("[v0] vehiclesApi.update succeeded")
-
-      // Notify parent component to update vehicles list
-      if (onRenterNameSaved) {
-        console.log("[v0] Calling onRenterNameSaved callback")
-        onRenterNameSaved(vehicle.id, trimmedName || "")
-      }
-
-      toast({
-        title: "Renter name updated",
-        description: trimmedName ? `Renter set to ${trimmedName}` : "Renter name cleared",
-      })
-    } catch (error) {
-      console.error("[v0] Error saving renter name:", error)
-      // Revert on error
-      setLocalVehicle({ ...localVehicle, renterName: vehicle.renterName })
-      toast({
-        title: "Error",
-        description: "Failed to update renter name",
-        variant: "destructive",
-      })
-      throw error
+    
+    // Notify parent to reload vehicles from database
+    if (onRenterNameSaved) {
+      onRenterNameSaved(vehicle.id, trimmedName || "")
     }
   }
 
