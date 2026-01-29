@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-const DEBUG = false // Set to true for console logs
+const DEBUG = true // Set to true for console logs
 
 export async function POST(request: NextRequest) {
   try {

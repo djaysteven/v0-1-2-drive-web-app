@@ -94,35 +94,14 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
   }
 
   const handleSaveRenterName = async (name: string) => {
+    // Dialog already saved to API via /api/condos/renter
+    // Just update local state and notify parent
     const trimmedName = name.trim()
-
-    // Optimistic update
     setLocalCondo({ ...localCondo, renterName: trimmedName || undefined })
-
-    try {
-      await condosApi.update(condo.id, {
-        renterName: trimmedName || undefined,
-      })
-
-      // Notify parent component to update condos list
-      if (onRenterNameSaved) {
-        onRenterNameSaved(condo.id, trimmedName || "")
-      }
-
-      toast({
-        title: "Renter name updated",
-        description: trimmedName ? `Renter set to ${trimmedName}` : "Renter name cleared",
-      })
-    } catch (error) {
-      console.error("[v0] Error saving renter name:", error)
-      // Revert on error
-      setLocalCondo({ ...localCondo, renterName: condo.renterName })
-      toast({
-        title: "Error",
-        description: "Failed to update renter name",
-        variant: "destructive",
-      })
-      throw error // Re-throw so dialog knows it failed
+    
+    // Notify parent to reload condos from database
+    if (onRenterNameSaved) {
+      onRenterNameSaved(condo.id, trimmedName || "")
     }
   }
 
