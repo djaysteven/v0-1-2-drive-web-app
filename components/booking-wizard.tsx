@@ -523,7 +523,7 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
                     mode="single"
                     selected={startDate}
                     onSelect={handleStartDateSelect}
-                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    disabled={(date) => !isOwner && date < new Date(new Date().setHours(0, 0, 0, 0))}
                     modifiers={{ today: startOfToday() }}
                     modifiersClassNames={{ today: "ring-2 ring-lime-400/60 rounded-md" }}
                     initialFocus
@@ -560,7 +560,7 @@ export function BookingWizard({ open, onOpenChange, onSave, isOwner }: BookingWi
                     selected={endDate}
                     onSelect={handleEndDateSelect}
                     disabled={(date) =>
-                      startDate ? date < startDate : date < new Date(new Date().setHours(0, 0, 0, 0))
+                      startDate ? (isOwner ? false : date < startDate) : !isOwner && date < new Date(new Date().setHours(0, 0, 0, 0))
                     }
                     modifiers={{ today: startOfToday() }}
                     modifiersClassNames={{ today: "ring-2 ring-lime-400/60 rounded-md" }}
