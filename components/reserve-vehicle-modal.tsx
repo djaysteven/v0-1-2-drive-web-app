@@ -610,467 +610,485 @@ export function ReserveVehicleModal({
   const isVehicleRented = selectedVehicle.status === "rented" || (availability === "unavailable" && !isOwner)
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>{booking ? "Edit Booking" : isRequestMode ? "Request Booking" : "Reserve Vehicle"}</span>
-              {availability === "checking" && (
-                <Badge variant="outline" className="gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Checking...
-                </Badge>
-              )}
-              {availability === "available" && (
-                <Badge style={{ backgroundColor: "#00FF3C", color: "#000" }}>Available</Badge>
-              )}
-              {availability === "unavailable" && (
-                <Badge style={{ backgroundColor: "#FF4040", color: "#fff" }}>Unavailable</Badge>
-              )}
-            </DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            <span>{booking ? "Edit Booking" : isRequestMode ? "Request Booking" : "Reserve Vehicle"}</span>
+            {availability === "checking" && (
+              <Badge variant="outline" className="gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Checking...
+              </Badge>
+            )}
+            {availability === "available" && (
+              <Badge style={{ backgroundColor: "#00FF3C", color: "#000" }}>Available</Badge>
+            )}
+            {availability === "unavailable" && (
+              <Badge style={{ backgroundColor: "#FF4040", color: "#fff" }}>Unavailable</Badge>
+            )}
+          </DialogTitle>
+        </DialogHeader>
 
+        {!booking && isVehicleRented && !isOwner && (
+          <Alert className="bg-secondary border-border">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              This vehicle is currently rented. You can request a booking for a later date, and we'll confirm within
+              24 hours.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <form onSubmit={isRequestMode ? handleRequestLaterDate : handleSubmit} className="space-y-4">
+          {booking && allVehicles.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="vehicleSelect">
+                Vehicle <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={selectedVehicle.id}
+                onValueChange={(vehicleId) => {
+                  const vehicle = allVehicles.find((v) => v.id === vehicleId)
+                  if (vehicle) setSelectedVehicle(vehicle)
+                }}
+              >
+                <SelectTrigger id="vehicleSelect">
+                  <SelectValue placeholder="Select vehicle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allVehicles.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.name} {v.plate && `(${v.plate})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="p-4 rounded-lg bg-secondary/50 border border-primary/20">
+            <div className="font-semibold text-lg text-center mb-1">
+              {getVehicleNameWithoutYear(selectedVehicle.name)}
+            </div>
+            {selectedVehicle.plate && (
+              <div className="text-sm text-muted-foreground text-center mb-3">{selectedVehicle.plate}</div>
+            )}
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-3 py-2 rounded bg-background/50">
+                <span className="text-sm text-muted-foreground">Daily Rate</span>
+                <span className="font-bold text-lg" style={{ color: "#00FF3C" }}>
+                  ฿{selectedVehicle.dailyPrice}
+                </span>
+              </div>
+
+              {selectedVehicle.weeklyPrice && (
+                <div className="flex items-center justify-between px-3 py-2 rounded bg-background/50">
+                  <span className="text-sm text-muted-foreground">Weekly Rate</span>
+                  <span className="font-bold text-lg" style={{ color: "#00FF3C" }}>
+                    ฿{selectedVehicle.weeklyPrice}
+                  </span>
+                </div>
+              )}
+
+              {selectedVehicle.monthlyPrice && (
+                <div className="flex items-center justify-between px-3 py-2 rounded bg-primary/10 border border-primary/30">
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">Monthly Rate</span>
+                    <span className="text-xs font-semibold" style={{ color: "#00FF3C" }}>
+                      💰 Save More!
+                    </span>
+                  </div>
+                  <span className="font-bold text-xl" style={{ color: "#00FF3C" }}>
+                    ฿{selectedVehicle.monthlyPrice}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Hide customer fields in request mode if owner */}
+          {!isOwner && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="customerName">
+                  Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="customerName"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Your full name"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  Email <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone (Optional)</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+66 XX XXX XXXX"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Show the request mode toggle if vehicle is rented and not owner */}
           {!booking && isVehicleRented && !isOwner && (
-            <Alert className="bg-secondary border-border">
+            <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg border border-border">
+              <Checkbox
+                id="isRequestMode"
+                checked={isRequestMode}
+                onCheckedChange={(checked) => setIsRequestMode(!!checked)}
+              />
+              <Label htmlFor="isRequestMode" className="cursor-pointer font-normal">
+                Request booking for a later date
+              </Label>
+            </div>
+          )}
+
+          {!isRequestMode && isOwner && (
+            <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg border border-border">
+              <Checkbox
+                id="isLongTerm"
+                checked={isLongTerm}
+                onCheckedChange={(checked) => setIsLongTerm(!!checked)}
+              />
+              <Label htmlFor="isLongTerm" className="cursor-pointer font-normal">
+                Long-term rental (no end date required)
+              </Label>
+            </div>
+          )}
+
+          {/* Date pickers */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="startDate">
+                {deliveryMethod === "pickup" ? "Pickup" : "Delivery"} Date <span className="text-destructive">*</span>
+              </Label>
+              <Popover open={openStartPicker} onOpenChange={setOpenStartPicker}>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="startDate"
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={handleStartDateSelect}
+                    disabled={(date) => !isOwner && date < startOfToday()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="endDate">
+                Return Date <span className="text-destructive">*</span>
+              </Label>
+              <Popover open={openEndPicker} onOpenChange={setOpenEndPicker}>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="endDate"
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={handleEndDateSelect}
+                    disabled={(date) => !startDate || date < startDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          {/* Cost Calculation Display */}
+          {startDate && endDate && (
+            <div
+              className="p-4 rounded-lg border-2 space-y-3"
+              style={{ borderColor: "#00FF3C", backgroundColor: "rgba(0, 255, 60, 0.05)" }}
+            >
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Price Breakdown:</p>
+                  <p className="text-sm font-medium">{getPriceBreakdown()}</p>
+                </div>
+              </div>
+              <div className="flex justify-between items-center pt-3 border-t border-[#00FF3C]/30">
+                <span className="font-semibold text-base">Total Cost:</span>
+                <span className="font-bold text-2xl" style={{ color: "#00FF3C" }}>
+                  ฿{useManualPrice && isOwner && manualPrice ? Number(manualPrice).toLocaleString() : calculateTotal().toLocaleString()}
+                </span>
+              </div>
+              {useManualPrice && isOwner && (
+                <p className="text-xs text-amber-600 bg-amber-500/10 p-2 rounded">
+                  Using manual price override
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>Delivery Method</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                onClick={() => setDeliveryMethod("pickup")}
+                className={cn(
+                  "w-full",
+                  deliveryMethod === "pickup"
+                    ? "bg-[#00FF3C] text-black hover:bg-[#00DD35]"
+                    : "bg-zinc-800 text-zinc-200 hover:bg-zinc-700",
+                )}
+              >
+                Pickup
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setDeliveryMethod("delivery")}
+                className={cn(
+                  "w-full",
+                  deliveryMethod === "delivery"
+                    ? "bg-[#00FF3C] text-black hover:bg-[#00DD35]"
+                    : "bg-zinc-800 text-zinc-200 hover:bg-zinc-700",
+                )}
+              >
+                Free Delivery
+              </Button>
+            </div>
+          </div>
+
+          {deliveryMethod === "pickup" && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Pickup Location</Label>
+                <div className="flex items-center gap-2">
+                  <Input value="Unixx South Pattaya" disabled className="flex-1 bg-secondary" />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open("https://maps.google.com/?q=Unixx+South+Pattaya", "_blank")}
+                  >
+                    <MapPin className="h-4 w-4 mr-1" />
+                    Maps
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pickup-time">
+                  Pickup Time <span className="text-destructive">*</span>
+                </Label>
+                <Select value={deliveryTime} onValueChange={setDeliveryTime} required>
+                  <SelectTrigger id="pickup-time">
+                    <SelectValue placeholder="Select time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="08:00">08:00 AM</SelectItem>
+                    <SelectItem value="08:30">08:30 AM</SelectItem>
+                    <SelectItem value="09:00">09:00 AM</SelectItem>
+                    <SelectItem value="09:30">09:30 AM</SelectItem>
+                    <SelectItem value="10:00">10:00 AM</SelectItem>
+                    <SelectItem value="10:30">10:30 AM</SelectItem>
+                    <SelectItem value="11:00">11:00 AM</SelectItem>
+                    <SelectItem value="11:30">11:30 AM</SelectItem>
+                    <SelectItem value="12:00">12:00 PM</SelectItem>
+                    <SelectItem value="12:30">12:30 PM</SelectItem>
+                    <SelectItem value="13:00">01:00 PM</SelectItem>
+                    <SelectItem value="13:30">01:30 PM</SelectItem>
+                    <SelectItem value="14:00">02:00 PM</SelectItem>
+                    <SelectItem value="14:30">02:30 PM</SelectItem>
+                    <SelectItem value="15:00">03:00 PM</SelectItem>
+                    <SelectItem value="15:30">03:30 PM</SelectItem>
+                    <SelectItem value="16:00">04:00 PM</SelectItem>
+                    <SelectItem value="16:30">04:30 PM</SelectItem>
+                    <SelectItem value="17:00">05:00 PM</SelectItem>
+                    <SelectItem value="17:30">05:30 PM</SelectItem>
+                    <SelectItem value="18:00">06:00 PM</SelectItem>
+                    <SelectItem value="18:30">06:30 PM</SelectItem>
+                    <SelectItem value="19:00">07:00 PM</SelectItem>
+                    <SelectItem value="19:30">07:30 PM</SelectItem>
+                    <SelectItem value="20:00">08:00 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {deliveryMethod === "delivery" && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="delivery-hotel">
+                  Hotel/Condo Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="delivery-hotel"
+                  value={deliveryHotel}
+                  onChange={(e) => setDeliveryHotel(e.target.value)}
+                  placeholder="e.g., Hilton Pattaya"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="delivery-address">
+                  Delivery Address <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="delivery-address"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder="Full delivery address"
+                  rows={2}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="delivery-time">
+                  Delivery Time <span className="text-destructive">*</span>
+                </Label>
+                <Select value={deliveryTime} onValueChange={setDeliveryTime} required>
+                  <SelectTrigger id="delivery-time">
+                    <SelectValue placeholder="Select time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="08:00">08:00 AM</SelectItem>
+                    <SelectItem value="08:30">08:30 AM</SelectItem>
+                    <SelectItem value="09:00">09:00 AM</SelectItem>
+                    <SelectItem value="09:30">09:30 AM</SelectItem>
+                    <SelectItem value="10:00">10:00 AM</SelectItem>
+                    <SelectItem value="10:30">10:30 AM</SelectItem>
+                    <SelectItem value="11:00">11:00 AM</SelectItem>
+                    <SelectItem value="11:30">11:30 AM</SelectItem>
+                    <SelectItem value="12:00">12:00 PM</SelectItem>
+                    <SelectItem value="12:30">12:30 PM</SelectItem>
+                    <SelectItem value="13:00">01:00 PM</SelectItem>
+                    <SelectItem value="13:30">01:30 PM</SelectItem>
+                    <SelectItem value="14:00">02:00 PM</SelectItem>
+                    <SelectItem value="14:30">02:30 PM</SelectItem>
+                    <SelectItem value="15:00">03:00 PM</SelectItem>
+                    <SelectItem value="15:30">03:30 PM</SelectItem>
+                    <SelectItem value="16:00">04:00 PM</SelectItem>
+                    <SelectItem value="16:30">04:30 PM</SelectItem>
+                    <SelectItem value="17:00">05:00 PM</SelectItem>
+                    <SelectItem value="17:30">05:30 PM</SelectItem>
+                    <SelectItem value="18:00">06:00 PM</SelectItem>
+                    <SelectItem value="18:30">06:30 PM</SelectItem>
+                    <SelectItem value="19:00">07:00 PM</SelectItem>
+                    <SelectItem value="19:30">07:30 PM</SelectItem>
+                    <SelectItem value="20:00">08:00 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Special Notes</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add any special requests or notes"
+              rows={3}
+            />
+          </div>
+
+          <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Long-term rentals available</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Contact us for special rates on extended rentals
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  window.open("https://wa.me/66884866866?text=I'm interested in long-term rental discounts", "_blank")
+                }}
+                className="shrink-0 font-semibold"
+                style={{ backgroundColor: "#00FF3C", color: "#000" }}
+              >
+                Request Offer
+              </Button>
+            </div>
+          </div>
+
+          {hasValidationErrors && (
+            <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                This vehicle is currently rented. You can request a booking for a later date, and we'll confirm within
-                24 hours.
+                Please fill in the following required fields: {validationErrors.join(", ")}
               </AlertDescription>
             </Alert>
           )}
 
-          <form onSubmit={isRequestMode ? handleRequestLaterDate : handleSubmit} className="space-y-4">
-            {booking && allVehicles.length > 0 && (
-              <div className="space-y-2">
-                <Label htmlFor="vehicleSelect">
-                  Vehicle <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={selectedVehicle.id}
-                  onValueChange={(vehicleId) => {
-                    const vehicle = allVehicles.find((v) => v.id === vehicleId)
-                    if (vehicle) setSelectedVehicle(vehicle)
-                  }}
-                >
-                  <SelectTrigger id="vehicleSelect">
-                    <SelectValue placeholder="Select vehicle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allVehicles.map((v) => (
-                      <SelectItem key={v.id} value={v.id}>
-                        {v.name} {v.plate && `(${v.plate})`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div className="p-4 rounded-lg bg-secondary/50 border border-primary/20">
-              <div className="font-semibold text-lg text-center mb-1">
-                {getVehicleNameWithoutYear(selectedVehicle.name)}
-              </div>
-              {selectedVehicle.plate && (
-                <div className="text-sm text-muted-foreground text-center mb-3">{selectedVehicle.plate}</div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={
+                saving || (availability === "unavailable" && !isOwner && !isRequestMode) || hasValidationErrors
+              }
+              style={{ backgroundColor: "#00FF3C", color: "#000" }}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {isRequestMode ? "Sending Request..." : booking ? "Updating..." : "Booking..."}
+                </>
+              ) : isRequestMode ? (
+                "Send Request"
+              ) : booking ? (
+                "Update Booking"
+              ) : (
+                "Confirm Booking"
               )}
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between px-3 py-2 rounded bg-background/50">
-                  <span className="text-sm text-muted-foreground">Daily Rate</span>
-                  <span className="font-bold text-lg" style={{ color: "#00FF3C" }}>
-                    ฿{selectedVehicle.dailyPrice}
-                  </span>
-                </div>
-
-                {selectedVehicle.weeklyPrice && (
-                  <div className="flex items-center justify-between px-3 py-2 rounded bg-background/50">
-                    <span className="text-sm text-muted-foreground">Weekly Rate</span>
-                    <span className="font-bold text-lg" style={{ color: "#00FF3C" }}>
-                      ฿{selectedVehicle.weeklyPrice}
-                    </span>
-                  </div>
-                )}
-
-                {selectedVehicle.monthlyPrice && (
-                  <div className="flex items-center justify-between px-3 py-2 rounded bg-primary/10 border border-primary/30">
-                    <div className="flex flex-col">
-                      <span className="text-sm text-muted-foreground">Monthly Rate</span>
-                      <span className="text-xs font-semibold" style={{ color: "#00FF3C" }}>
-                        💰 Save More!
-                      </span>
-                    </div>
-                    <span className="font-bold text-xl" style={{ color: "#00FF3C" }}>
-                      ฿{selectedVehicle.monthlyPrice}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Hide customer fields in request mode if owner */}
-            {!isOwner && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="customerName">
-                    Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="customerName"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Your full name"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">
-                    Email <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your.email@example.com"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone (Optional)</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+66 XX XXX XXXX"
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Show the request mode toggle if vehicle is rented and not owner */}
-            {!booking && isVehicleRented && !isOwner && (
-              <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg border border-border">
-                <Checkbox
-                  id="isRequestMode"
-                  checked={isRequestMode}
-                  onCheckedChange={(checked) => setIsRequestMode(!!checked)}
-                />
-                <Label htmlFor="isRequestMode" className="cursor-pointer font-normal">
-                  Request booking for a later date
-                </Label>
-              </div>
-            )}
-
-            {!isRequestMode && isOwner && (
-              <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg border border-border">
-                <Checkbox
-                  id="isLongTerm"
-                  checked={isLongTerm}
-                  onCheckedChange={(checked) => setIsLongTerm(!!checked)}
-                />
-                <Label htmlFor="isLongTerm" className="cursor-pointer font-normal">
-                  Long-term rental (no end date required)
-                </Label>
-              </div>
-            )}
-
-            {/* Date pickers */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="startDate">
-                  {deliveryMethod === "pickup" ? "Pickup" : "Delivery"} Date <span className="text-destructive">*</span>
-                </Label>
-                <Popover open={openStartPicker} onOpenChange={setOpenStartPicker}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="startDate"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground",
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={handleStartDateSelect}
-                      disabled={(date) => date < startOfToday()}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="endDate">
-                  Return Date <span className="text-destructive">*</span>
-                </Label>
-                <Popover open={openEndPicker} onOpenChange={setOpenEndPicker}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="endDate"
-                      variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={handleEndDateSelect}
-                      disabled={(date) => !startDate || date < startDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-
-            {/* ... existing owner fields ... */}
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Delivery Method</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => setDeliveryMethod("pickup")}
-                    className={cn(
-                      "w-full",
-                      deliveryMethod === "pickup"
-                        ? "bg-[#00FF3C] text-black hover:bg-[#00DD35]"
-                        : "bg-zinc-800 text-zinc-200 hover:bg-zinc-700",
-                    )}
-                  >
-                    Pickup
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setDeliveryMethod("delivery")}
-                    className={cn(
-                      "w-full",
-                      deliveryMethod === "delivery"
-                        ? "bg-[#00FF3C] text-black hover:bg-[#00DD35]"
-                        : "bg-zinc-800 text-zinc-200 hover:bg-zinc-700",
-                    )}
-                  >
-                    Free Delivery
-                  </Button>
-                </div>
-              </div>
-
-              {deliveryMethod === "pickup" && (
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label>Pickup Location</Label>
-                    <div className="flex items-center gap-2">
-                      <Input value="Unixx South Pattaya" disabled className="flex-1 bg-secondary" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open("https://maps.google.com/?q=Unixx+South+Pattaya", "_blank")}
-                      >
-                        <MapPin className="h-4 w-4 mr-1" />
-                        Maps
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="pickup-time">
-                      Pickup Time <span className="text-destructive">*</span>
-                    </Label>
-                    <Select value={deliveryTime} onValueChange={setDeliveryTime} required>
-                      <SelectTrigger id="pickup-time">
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="08:00">08:00 AM</SelectItem>
-                        <SelectItem value="08:30">08:30 AM</SelectItem>
-                        <SelectItem value="09:00">09:00 AM</SelectItem>
-                        <SelectItem value="09:30">09:30 AM</SelectItem>
-                        <SelectItem value="10:00">10:00 AM</SelectItem>
-                        <SelectItem value="10:30">10:30 AM</SelectItem>
-                        <SelectItem value="11:00">11:00 AM</SelectItem>
-                        <SelectItem value="11:30">11:30 AM</SelectItem>
-                        <SelectItem value="12:00">12:00 PM</SelectItem>
-                        <SelectItem value="12:30">12:30 PM</SelectItem>
-                        <SelectItem value="13:00">01:00 PM</SelectItem>
-                        <SelectItem value="13:30">01:30 PM</SelectItem>
-                        <SelectItem value="14:00">02:00 PM</SelectItem>
-                        <SelectItem value="14:30">02:30 PM</SelectItem>
-                        <SelectItem value="15:00">03:00 PM</SelectItem>
-                        <SelectItem value="15:30">03:30 PM</SelectItem>
-                        <SelectItem value="16:00">04:00 PM</SelectItem>
-                        <SelectItem value="16:30">04:30 PM</SelectItem>
-                        <SelectItem value="17:00">05:00 PM</SelectItem>
-                        <SelectItem value="17:30">05:30 PM</SelectItem>
-                        <SelectItem value="18:00">06:00 PM</SelectItem>
-                        <SelectItem value="18:30">06:30 PM</SelectItem>
-                        <SelectItem value="19:00">07:00 PM</SelectItem>
-                        <SelectItem value="19:30">07:30 PM</SelectItem>
-                        <SelectItem value="20:00">08:00 PM</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              {deliveryMethod === "delivery" && (
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-hotel">
-                      Hotel/Condo Name <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="delivery-hotel"
-                      value={deliveryHotel}
-                      onChange={(e) => setDeliveryHotel(e.target.value)}
-                      placeholder="e.g., Hilton Pattaya"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-address">
-                      Delivery Address <span className="text-destructive">*</span>
-                    </Label>
-                    <Textarea
-                      id="delivery-address"
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      placeholder="Full delivery address"
-                      rows={2}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-time">
-                      Delivery Time <span className="text-destructive">*</span>
-                    </Label>
-                    <Select value={deliveryTime} onValueChange={setDeliveryTime} required>
-                      <SelectTrigger id="delivery-time">
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="08:00">08:00 AM</SelectItem>
-                        <SelectItem value="08:30">08:30 AM</SelectItem>
-                        <SelectItem value="09:00">09:00 AM</SelectItem>
-                        <SelectItem value="09:30">09:30 AM</SelectItem>
-                        <SelectItem value="10:00">10:00 AM</SelectItem>
-                        <SelectItem value="10:30">10:30 AM</SelectItem>
-                        <SelectItem value="11:00">11:00 AM</SelectItem>
-                        <SelectItem value="11:30">11:30 AM</SelectItem>
-                        <SelectItem value="12:00">12:00 PM</SelectItem>
-                        <SelectItem value="12:30">12:30 PM</SelectItem>
-                        <SelectItem value="13:00">01:00 PM</SelectItem>
-                        <SelectItem value="13:30">01:30 PM</SelectItem>
-                        <SelectItem value="14:00">02:00 PM</SelectItem>
-                        <SelectItem value="14:30">02:30 PM</SelectItem>
-                        <SelectItem value="15:00">03:00 PM</SelectItem>
-                        <SelectItem value="15:30">03:30 PM</SelectItem>
-                        <SelectItem value="16:00">04:00 PM</SelectItem>
-                        <SelectItem value="16:30">04:30 PM</SelectItem>
-                        <SelectItem value="17:00">05:00 PM</SelectItem>
-                        <SelectItem value="17:30">05:30 PM</SelectItem>
-                        <SelectItem value="18:00">06:00 PM</SelectItem>
-                        <SelectItem value="18:30">06:30 PM</SelectItem>
-                        <SelectItem value="19:00">07:00 PM</SelectItem>
-                        <SelectItem value="19:30">07:30 PM</SelectItem>
-                        <SelectItem value="20:00">08:00 PM</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Special Notes</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any special requests or notes"
-                rows={3}
-              />
-            </div>
-
-            <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">Long-term rentals available</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Contact us for special rates on extended rentals
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    window.open("https://wa.me/66884866866?text=I'm interested in long-term rental discounts", "_blank")
-                  }}
-                  className="shrink-0 font-semibold"
-                  style={{ backgroundColor: "#00FF3C", color: "#000" }}
-                >
-                  Request Offer
-                </Button>
-              </div>
-            </div>
-
-            {hasValidationErrors && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Please fill in the following required fields: {validationErrors.join(", ")}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  saving || (availability === "unavailable" && !isOwner && !isRequestMode) || hasValidationErrors
-                }
-                style={{ backgroundColor: "#00FF3C", color: "#000" }}
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isRequestMode ? "Sending Request..." : booking ? "Updating..." : "Booking..."}
-                  </>
-                ) : isRequestMode ? (
-                  "Send Request"
-                ) : booking ? (
-                  "Update Booking"
-                ) : (
-                  "Confirm Booking"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <BookingSuccessDialog open={showSuccess} onOpenChange={setShowSuccess} bookingDetails={successDetails} />
-    </>
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
