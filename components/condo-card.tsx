@@ -25,8 +25,7 @@ import { ShareButton } from "./share-button"
 import { BookingWizard } from "./booking-wizard"
 import { RequestLaterDateModal } from "./request-later-date-modal"
 import { ImageLightbox } from "./image-lightbox"
-import { RenterNameDialog } from "./renter-name-dialog"
-import { Condo } from "@/lib/types" // Import Condo type
+import { Condo } from "@/lib/types"
 
 interface CondoCardProps {
   condo: Condo & { isCurrentlyBooked?: boolean }
@@ -35,7 +34,6 @@ interface CondoCardProps {
   onDelete?: () => void
   onMoveUp?: () => void
   onMoveDown?: () => void
-  onRenterNameSaved?: (condoId: string, renterName: string) => void
 }
 
 export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, onMoveUp, onMoveDown, onRenterNameSaved }: CondoCardProps) {
@@ -44,7 +42,9 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false) // Added state for image lightbox
   const [localCondo, setLocalCondo] = useState(condo) // Local state for optimistic updates
-  const [renterNameDialogOpen, setRenterNameDialogOpen] = useState(false) // State for renter name dialog
+  const [renterNameInput, setRenterNameInput] = useState(localCondo.renterName || "")
+  const [editingRenterName, setEditingRenterName] = useState(false)
+  const [savingRenterName, setSavingRenterName] = useState(false)
   const { toast } = useToast()
   const statusBadgeRef = useRef<HTMLDivElement>(null)
 
@@ -93,15 +93,18 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
     }
   }
 
-  const handleSaveRenterName = async (name: string) => {
-    // Dialog already saved to API via /api/condos/renter
-    // Just update local state and notify parent
-    const trimmedName = name.trim()
-    setLocalCondo({ ...localCondo, renterName: trimmedName || undefined })
-    
-    // Notify parent to reload condos from database
-    if (onRenterNameSaved) {
-      onRenterNameSaved(condo.id, trimmedName || "")
+  const handleSaveRenterName = async () => {
+    const trimmed = renterNameInput.trim()
+    setSavingRenterName(true)
+    try {
+      await condosApi.update(condo.id, { renterName: trimmed || undefined })
+      setLocalCondo({ ...localCondo, renterName: trimmed || undefined })
+      setEditingRenterName(false)
+      toast({ title: "Renter name saved" })
+    } catch (error) {
+      toast({ title: "Error saving renter name", variant: "destructive" })
+    } finally {
+      setSavingRenterName(false)
     }
   }
 
@@ -203,13 +206,47 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
             <h3 className="font-semibold text-lg text-foreground text-balance">{localCondo.building}</h3>
             <p className="text-sm text-muted-foreground">Unit {localCondo.unitNo}</p>
             {isAuthenticated && displayStatus === "rented" && (
-              <button
-                onClick={() => setRenterNameDialogOpen(true)}
-                className="mt-2 px-2 py-1 text-sm bg-green-500/10 border border-green-500/30 rounded-md text-foreground hover:bg-green-500/20 hover:border-green-500/50 transition-colors flex items-center gap-1.5"
-              >
-                <span className="font-semibold text-green-500">Renter:</span>
-                <span className="underline">{localCondo.renterName || "Click to add"}</span>
-              </button>
+              editingRenterName ? (
+                <div className="mt-2 flex gap-2">
+                  <input
+                    type="text"
+                    value={renterNameInput}
+                    onChange={(e) => setRenterNameInput(e.target.value)}
+                    placeholder="Enter renter name"
+                    className="flex-1 px-2 py-1 text-sm bg-background border border-green-500/30 rounded-md text-foreground focus:outline-none focus:border-green-500"
+                    autoFocus
+                    disabled={savingRenterName}
+                  />
+                  <button
+                    onClick={handleSaveRenterName}
+                    disabled={savingRenterName}
+                    className="px-3 py-1 text-sm bg-green-500/20 border border-green-500/50 rounded-md text-green-500 hover:bg-green-500/30 disabled:opacity-50"
+                  >
+                    {savingRenterName ? "..." : "Save"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingRenterName(false)
+                      setRenterNameInput(localCondo.renterName || "")
+                    }}
+                    disabled={savingRenterName}
+                    className="px-2 py-1 text-sm bg-transparent border border-muted-foreground/30 rounded-md text-muted-foreground hover:bg-muted/20 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setRenterNameInput(localCondo.renterName || "")
+                    setEditingRenterName(true)
+                  }}
+                  className="mt-2 px-2 py-1 text-sm bg-green-500/10 border border-green-500/30 rounded-md text-foreground hover:bg-green-500/20 hover:border-green-500/50 transition-colors flex items-center gap-1.5"
+                >
+                  <span className="font-semibold text-green-500">Renter:</span>
+                  <span className="underline">{localCondo.renterName || "Click to add"}</span>
+                </button>
+              )
             )}
           </div>
 
@@ -329,15 +366,6 @@ export function CondoCard({ condo, isAuthenticated = false, onEdit, onDelete, on
         alt={`${localCondo.building} Unit ${localCondo.unitNo}`}
         open={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
-      />
-
-      <RenterNameDialog
-        open={renterNameDialogOpen}
-        onOpenChange={setRenterNameDialogOpen}
-        currentName={localCondo.renterName}
-        onSave={handleSaveRenterName}
-        assetType="condo"
-        assetId={condo.id}
       />
     </>
   )
